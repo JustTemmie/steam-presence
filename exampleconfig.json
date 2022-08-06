@@ -1,0 +1,11 @@
+{
+    "KEY":  "KEY",
+    "USERID": "USERID",
+
+    "DISCORD_APPLICATION_ID": "DISCORD_APPLICATION_ID",
+
+    "COVER_ART": {
+        "ENABLED": false,
+        "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
+    }
+}
