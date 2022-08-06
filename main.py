@@ -52,7 +52,7 @@ def get_steam_presence():
     r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={KEY}&format=json&steamids={str(USER)}").json()
 
     if len(r["response"]["players"]) == 0:
-        print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] Player found, this is likely because the userID is invalid, the key is invalid, or steam is down. Please try again later or read thru the readme again.")
+        print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] Player not found, this is likely because the userID is invalid, the key is invalid, or steam is down. Please try again later or read thru the readme again.")
 
     try:
         game_title = None
@@ -111,14 +111,14 @@ def get_steam_grid_icon(gameName):
             icons.close()
         return newURL
     except Exception as e:
-        print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while fetching icon, this is likely because no icons exist as it's niece - error: {e}\n(can probably just be ignored lmao)\n")
+        print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while fetching icon, this is likely because no icons exist as it's a niece game or something - error: {e}\n(can probably just be ignored lmao)\n")
         return None
 
 def set_game(game_title, game_icon, start_time):
     if coverImage is None:
-        RPC.update(state=game_title, start=startTime)
+        RPC.update(state=game_title, start=start_time)
     else:
-        RPC.update(state=game_title, large_image=f"{coverImage[:-1]}", large_text=f"{game_title}", start=startTime)
+        RPC.update(state=game_title, large_image=f"{game_icon[:-1]}", large_text=f"{game_title}", start=start_time)
 
 if __name__ == "__main__":
     if GRID_ENABLED:
