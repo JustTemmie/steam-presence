@@ -1,5 +1,6 @@
 # steam presence on discord
  
+ ![Example](readmeimages/exmaple.png)
 ## Setup
 create a file named `config.json` in the same directory as this file and fill it in accordingly.
  
