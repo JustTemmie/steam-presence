@@ -2,18 +2,18 @@
 
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
 
-![Example](readmeimages/exmaple.png)
+![ExampleImage](readmeimages/exmaple.png)
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
 
 see, no.
 
-Discord has severe limitations when it comes to Linux as most games running thru a compatability layer (like 90% of them) are displayed as pr-wrap or something
+Discord has severe limitations when it comes to Linux as most games running thru a compatability layer (like 90% of them) are displayed as pr-wrap or something similar.
 
 in addition to this, there's the Steam Deck, a handheld linux game "console".
 
-having discord constantly run in the background is a terrible idea considering how that's gonna lose you at least half an hour of battery life, in addition to the prevous issues with linux.
+having discord constantly run in the background is a terrible idea considering how that's gonna lose you at least half an hour of battery life, in addition to the previous issues with linux.
 
 so this script is a way of circumventing these issues by instead having this run on something like a server 24/7.
 
@@ -48,6 +48,8 @@ the `USERID` is the steam user id of the user you want to track.
 the easiest way i've found to get the ID is by throwing your url into the steamDB calculator https://steamdb.info/calculator/
 
 and then taking the ID from that url
+
+![ExampleImage](readmeimages/steamDB.png)
 
 # Discord Application ID
 the `DISCORD_APPLICATION_ID` is the discord application ID of the app you want to use.
