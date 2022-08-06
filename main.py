@@ -1,6 +1,6 @@
 # creating rich presences for discord
 from pypresence import Presence
-from time import sleep
+from time import sleep, time
 
 # used to get the game's cover art
 # the original library is currently broken at the time of writing this, so i'm using a self made fork
@@ -67,50 +67,58 @@ def get_steam_presence():
         pass
 
 def get_steam_grid_icon(gameName):
-    with open(f'icons.txt', 'r') as icons:
-        for i in icons:
-            if gameName in i:
-                return i.split("=")[1]
+    try:
+        with open(f'icons.txt', 'r') as icons:
+            for i in icons:
+                if gameName in i:
+                    return i.split("=")[1]
+            
+        results = sgdb.search_game(gameName)
+
+        # yes this is terrible code but i really couldn't figure out a better way to do this, sorry - pull request anyone?
+        result = str(results).split(',')[0][1:]
+        steamGridAppID = result[9:].split(' ')[0]
         
-    results = sgdb.search_game(gameName)
-
-    # yes this is terrible code but i really couldn't figure out a better way to do this, sorry - pull request anyone?
-    result = str(results).split(',')[0][1:]
-    steamGridAppID = result[9:].split(' ')[0]
-    
-    resolutions = [
-        512,
-        256,
-        128,
-        64,
-        32,
-        16
-    ]
-    
-    grids = sgdb.get_icons_by_gameid(game_ids=[steamGridAppID])
-    icon = grids[0]
-    
-    # basically some of the icons are .ico files, discord cannot display these
-    # what this does is basically brute force test a bunch of resolutions and pick the first one that works
-    # as steamgriddb actually hosts png versions of all the .ico files, they're just not returned by the API
-    for res in resolutions:
-        icon = str(icon)
-        newURL = icon[:-4] + f"/32/{res}x{res}.png"
+        resolutions = [
+            512,
+            256,
+            128,
+            64,
+            32,
+            16
+        ]
         
-        r = requests.get(newURL)
-        if r.status_code == 200:
-            break
-
-        if res == 16:
-            return None
+        grids = sgdb.get_icons_by_gameid(game_ids=[steamGridAppID])
+        icon = grids[0]
         
-    
-    with open(f'icons.txt', 'a') as icons:
-        icons.write(f"{gameName}={newURL}\n")
-        icons.close()
-    return newURL
+        # basically some of the icons are .ico files, discord cannot display these
+        # what this does is basically brute force test a bunch of resolutions and pick the first one that works
+        # as steamgriddb actually hosts png versions of all the .ico files, they're just not returned by the API
+        for res in resolutions:
+            icon = str(icon)
+            newURL = icon[:-4] + f"/32/{res}x{res}.png"
+            
+            r = requests.get(newURL)
+            if r.status_code == 200:
+                break
 
+            if res == 16:
+                return None
+            
+        
+        with open(f'icons.txt', 'a') as icons:
+            icons.write(f"{gameName}={newURL}\n")
+            icons.close()
+        return newURL
+    except Exception as e:
+        print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while fetching icon, this is likely because no icons exist as it's niece - error: {e}\n(can probably just be ignored lmao)\n")
+        return None
 
+def set_game(game_title, game_icon, start_time):
+    if coverImage is None:
+        RPC.update(state=game_title, start=startTime)
+    else:
+        RPC.update(state=game_title, large_image=f"{coverImage[:-1]}", large_text=f"{game_title}", start=startTime)
 
 if __name__ == "__main__":
     if GRID_ENABLED:
@@ -118,21 +126,25 @@ if __name__ == "__main__":
     
     RPC = Presence(client_id=APP_ID)
     RPC.connect()
+    startTime = 0
+    coverImage = None
     
     while True:
         game_title = get_steam_presence()
-        #print(game_title)
         
         if game_title is None:
             # note, this completely hides your current rich presence
             RPC.clear()
-            
+            startTime = 0
+    
         else:
+            if startTime == 0:
+                startTime = round(time())
+    
             if GRID_ENABLED:
                 coverImage = get_steam_grid_icon(game_title)
-                RPC.update(state=game_title, large_image=f"{coverImage[:-1]}", large_text=f"{game_title}")
-            else:
-                RPC.update(state=game_title)
+
+            set_game(game_title, coverImage, startTime)
             
-        sleep(20)
+        sleep(15)
 
