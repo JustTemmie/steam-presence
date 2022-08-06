@@ -16,12 +16,12 @@ create a file named `config.json` in the same directory as this file and fill it
     }
 }
 ```
-
+# Steam web API
 the `KEY` in this case is regarding to the Steam web API.
 
 this you can obtain by registering here https://steamcommunity.com/dev/apikey while logged in
 
-
+# User ID
 the `USERID` is the steam user id of the user you want to track.
 
 **NOTE** this is not the same as the display URL of the user.
@@ -30,7 +30,7 @@ the easiest way i've found to get the ID is by throwing your url into the steamD
 
 and then taking the ID from that url
 
-
+# Discord Application ID
 the `DISCORD_APPLICATION_ID` is the discord application ID of the app you want to use.
 
 please generate one here https://discordapp.com/developers/applications/
@@ -39,7 +39,7 @@ the only thing you need to fill out on their site is the application name itself
 
 for example i named mine "on my steam decK" as i'll have this script running on a server and it'll detect my steam deck activity without me running discord on it.
 
-
+# Cover Art
 and then lastly we have the `COVER_ART` section.
 
 this will download an icon from steamGridDB and use it as the cover art for the discord presence.
