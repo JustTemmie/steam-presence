@@ -54,7 +54,7 @@ please generate one here https://discordapp.com/developers/applications/
 
 the only thing you need to fill out on their site is the application name itself.
 
-for example i named mine "on my steam decK" as i'll have this script running on a server and it'll detect my steam deck activity without me running discord on it.
+for example i named mine "a game on steam" as shown in the screenshot above.
 
 # Cover Art
 and then lastly we have the `COVER_ART` section.
