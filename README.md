@@ -1,6 +1,22 @@
 # steam presence on discord
  
- ![Example](readmeimages/exmaple.png)
+![Example](readmeimages/exmaple.png)
+
+### Why??
+well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
+
+see, no.
+
+Discord has severe limitations when it comes to Linux as most games running thru a compatability layer (like 90% of them) are displayed as pr-wrap or something
+
+in addition to this, there's the Steam Deck, a handheld linux game "console".
+
+having discord constantly run in the background is a terrible idea considering how that's gonna lose you at least half an hour of battery life, in addition to the prevous issues with linux.
+
+so this script is a way of circumventing these issues by instead having this run on something like a server 24/7.
+
+also yes this is very dumb you're right lmao
+
 ## Setup
 create a file named `config.json` in the same directory as this file and fill it in accordingly.
  
