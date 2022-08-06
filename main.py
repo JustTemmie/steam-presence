@@ -4,7 +4,7 @@ from time import sleep, time
 
 # used to get the game's cover art
 # the original library is currently broken at the time of writing this, so i'm using a self made fork
-from python_steamgriddb.steamgrid import StyleType, PlatformType, MimeType, ImageType, SteamGridDB
+from python_steamgriddb.steamgrid import SteamGridDB
 
 # requesting data from steam's API
 import requests
