@@ -1,5 +1,7 @@
 # steam presence on discord
- 
+
+a simple script to check a Steam user's current game, and display that as a Discord rich presence
+
 ![Example](readmeimages/exmaple.png)
 
 ### Why??
@@ -68,3 +70,12 @@ change the ENABLED field to true and fill in the api key enable this.
 you can get your API key here https://www.steamgriddb.com/profile/preferences/api
 
 additionally, this caches the url to a file named icons.txt, so if you don't like an icon it found you can replace the url in that file for whatever game.
+
+# Python
+python3.8 or higher is required.
+
+run `pip install -r requirements.txt` to install all the dependencies
+
+then run `python3 main.py`
+
+(these are linux commands, if you're on windows you might need to change them into something, idk search it up)
