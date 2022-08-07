@@ -12,5 +12,10 @@
     "CUSTOM_GAME_OVERWRITE": {
         "ENABLED": false,
         "NAME": "NAME"
+    },
+
+    "CUSTOM_STATUS_STATE": {
+        "ENABLED": false,
+        "STATUS": "https://github.com/JustTemmie/steam-presence-on-discord"
     }
 }

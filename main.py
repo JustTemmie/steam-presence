@@ -107,8 +107,10 @@ def get_steam_grid_icon(gameName):
     try:
         with open(f'icons.txt', 'r') as icons:
             for i in icons:
-                if gameName in i:
-                    return i.split("=")[1]
+                game = i.split("=")[0]
+                if gameName == game:
+                    URL = i.split("=")[1]
+                    return URL
 
         results = sgdb.search_game(gameName)
 
@@ -122,7 +124,7 @@ def get_steam_grid_icon(gameName):
             return None
         
         with open(f'icons.txt', 'a') as icons:
-            icons.write(f"\n{gameName}={newURL}")
+            icons.write(f"{gameName}={newURL}\n")
             icons.close()
 
         return newURL
@@ -131,11 +133,24 @@ def get_steam_grid_icon(gameName):
         print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while fetching icon, this is likely because no icons exist as it's a niece game or something - error: {e}\n(can probably just be ignored lmao)\n")
         return None
 
-def set_game(game_title, game_icon, start_time):
-    if coverImage is None:
-        RPC.update(state=game_title, start=start_time)
-    else:
-        RPC.update(state=game_title, large_image=f"{game_icon}", large_text=f"{game_title}", start=start_time)
+def set_game(game_title, game_icon, start_time, do_custom_state, state):
+    try:
+        # GOD THIS IS BAD I HATE IT I HATE IT I HATE IT I HATE IT I HATE IT I HATE IT I HATE IT I HATE IT I HATE IT I HATE IT 
+        if coverImage:
+            if do_custom_state:
+                RPC.update(details=game_title, state=state, large_image=f"{game_icon[:-1]}", large_text=f"{game_title}", start=start_time)
+            else:
+                RPC.update(details=game_title, large_image=f"{game_icon[:-1]}", large_text=f"{game_title}", start=start_time)
+                
+        else:
+            if do_custom_state:
+                RPC.update(details=game_title, start=start_time)
+            else:
+                RPC.update(details=game_title, state=state, start=start_time)
+                
+    except Exception as e:
+        print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while setting game, error: {e}")
+        return None
 
 if __name__ == "__main__":
     if GRID_ENABLED:
@@ -150,6 +165,8 @@ if __name__ == "__main__":
         config = get_config()
         do_custom_game = config["CUSTOM_GAME_OVERWRITE"]["ENABLED"]
         custom_game_name = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
+        do_custom_state = config["CUSTOM_STATUS_STATE"]["ENABLED"]
+        custom_state = config["CUSTOM_STATUS_STATE"]["STATUS"]
 
         if not do_custom_game:
             game_title = get_steam_presence()
@@ -170,7 +187,7 @@ if __name__ == "__main__":
             if GRID_ENABLED:
                 coverImage = get_steam_grid_icon(game_title)
 
-            set_game(game_title, coverImage, startTime)
+            set_game(game_title, coverImage, startTime, do_custom_state, custom_state)
             
             
         sleep(15)
