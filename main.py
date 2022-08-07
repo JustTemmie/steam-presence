@@ -47,6 +47,10 @@ APP_ID = config["DISCORD_APPLICATION_ID"]
 GRID_ENABLED = config["COVER_ART"]["ENABLED"]
 GRID_KEY = config["COVER_ART"]["STEAM_GRID_API_KEY"]
 
+do_custom_game = config["CUSTOM_GAME_OVERWRITE"]["ENABLED"]
+custom_game_name = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
+
+
 
 def get_steam_presence():
     r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={KEY}&format=json&steamids={str(USER)}").json()
@@ -66,20 +70,8 @@ def get_steam_presence():
     except:
         pass
 
-def get_steam_grid_icon(gameName):
-    try:
-        with open(f'icons.txt', 'r') as icons:
-            for i in icons:
-                if gameName in i:
-                    return i.split("=")[1]
-            
-        results = sgdb.search_game(gameName)
-
-        # yes this is terrible code but i really couldn't figure out a better way to do this, sorry - pull request anyone?
-        result = str(results).split(',')[0][1:]
-        steamGridAppID = result[9:].split(' ')[0]
-        
-        resolutions = [
+def try_fetching_icon(gameName, steamGridAppID):
+    resolutions = [
             512,
             256,
             128,
@@ -88,28 +80,53 @@ def get_steam_grid_icon(gameName):
             16
         ]
         
-        grids = sgdb.get_icons_by_gameid(game_ids=[steamGridAppID])
-        icon = grids[0]
-        
-        # basically some of the icons are .ico files, discord cannot display these
-        # what this does is basically brute force test a bunch of resolutions and pick the first one that works
-        # as steamgriddb actually hosts png versions of all the .ico files, they're just not returned by the API
+    grids = sgdb.get_icons_by_gameid(game_ids=[steamGridAppID])
+    
+    # basically some of the icons are .ico files, discord cannot display these
+    # what this does is basically brute force test a bunch of resolutions and pick the first one that works
+    # as steamgriddb actually hosts png versions of all the .ico files, they're just not returned by the API
+    for icon in grids:
         for res in resolutions:
             icon = str(icon)
             newURL = icon[:-4] + f"/32/{res}x{res}.png"
             
             r = requests.get(newURL)
             if r.status_code == 200:
-                break
+                return newURL
 
-            if res == 16:
-                return None
+    
+    if res == 16:
+        with open(f'icons.txt', 'a') as icons:
+            icons.write(f"\n{gameName}=None")
+            icons.close()
+        print(f"could not find icon for {gameName} either ignore this or manually add one to icons.txt")
             
         
+                
+def get_steam_grid_icon(gameName):
+    try:
+        with open(f'icons.txt', 'r') as icons:
+            for i in icons:
+                if gameName in i:
+                    return i.split("=")[1]
+
+        results = sgdb.search_game(gameName)
+
+        # yes this is terrible code but i really couldn't figure out a better way to do this, sorry - pull request anyone?
+        result = str(results).split(',')[0][1:]
+        steamGridAppID = result[9:].split(' ')[0]
+        
+        newURL = try_fetching_icon(gameName, steamGridAppID)
+        
+        if newURL == "":
+            return None
+        
         with open(f'icons.txt', 'a') as icons:
-            icons.write(f"{gameName}={newURL}\n")
+            icons.write(f"\n{gameName}={newURL}")
             icons.close()
+
         return newURL
+    
     except Exception as e:
         print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while fetching icon, this is likely because no icons exist as it's a niece game or something - error: {e}\n(can probably just be ignored lmao)\n")
         return None
@@ -118,7 +135,7 @@ def set_game(game_title, game_icon, start_time):
     if coverImage is None:
         RPC.update(state=game_title, start=start_time)
     else:
-        RPC.update(state=game_title, large_image=f"{game_icon[:-1]}", large_text=f"{game_title}", start=start_time)
+        RPC.update(state=game_title, large_image=f"{game_icon}", large_text=f"{game_title}", start=start_time)
 
 if __name__ == "__main__":
     if GRID_ENABLED:
@@ -130,7 +147,16 @@ if __name__ == "__main__":
     coverImage = None
     
     while True:
-        game_title = get_steam_presence()
+        config = get_config()
+        do_custom_game = config["CUSTOM_GAME_OVERWRITE"]["ENABLED"]
+        custom_game_name = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
+
+        if not do_custom_game:
+            game_title = get_steam_presence()
+        
+        else:
+            game_title = custom_game_name
+            
         
         if game_title is None:
             # note, this completely hides your current rich presence
@@ -145,6 +171,7 @@ if __name__ == "__main__":
                 coverImage = get_steam_grid_icon(game_title)
 
             set_game(game_title, coverImage, startTime)
+            
             
         sleep(15)
 

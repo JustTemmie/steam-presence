@@ -7,5 +7,10 @@
     "COVER_ART": {
         "ENABLED": false,
         "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
+    },
+
+    "CUSTOM_GAME_OVERWRITE": {
+        "ENABLED": false,
+        "NAME": "NAME"
     }
 }

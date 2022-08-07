@@ -32,6 +32,11 @@ create a file named `config.json` in the same directory as this file and fill it
     "COVER_ART": {
         "ENABLED": false,
         "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
+    },
+
+    "CUSTOM_GAME_OVERWRITE": {
+        "ENABLED": false,
+        "NAME": "NAME"
     }
 }
 ```
@@ -61,7 +66,7 @@ the only thing you need to fill out on their site is the application name itself
 for example i named mine "a game on steam" as shown in the screenshot above.
 
 # Cover Art
-and then lastly we have the `COVER_ART` section.
+and then we have the `COVER_ART` section.
 
 this will download an icon from steamGridDB and use it as the cover art for the discord presence.
 
@@ -73,6 +78,12 @@ you can get your API key here https://www.steamgriddb.com/profile/preferences/ap
 
 additionally, this caches the url to a file named icons.txt, so if you don't like an icon it found you can replace the url in that file for whatever game.
 
+# Custom Game Overwrite
+if you want to display a game that isn't on steam, you can use the `CUSTOM_GAME_OVERWRITE` section.
+
+set enabled to true and fill in the name of the game you want to display.
+
+this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving it one yourself.
 # Python
 python3.8 or higher is required.
 
