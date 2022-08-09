@@ -99,9 +99,7 @@ this will still try to grab an icon from steamGridDB, but if it can't find one y
 # Custom Status State
 if you want to display a custom status alongside the game, you can use the `CUSTOM_STATUS_STATE` section.
 
-set enabled to true and ifll in the status you want to display.
-
-pretty simple
+set enabled to true and fill in the status you want to display.
 # Python
 python3.8 or higher is required.
 
