@@ -2,7 +2,13 @@
 
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
 
-![ExampleImage](readmeimages/exmaple.png)
+![ExampleImage1](readmeimages/exmaple1.png)
+
+playing "BTD6" with the script running 
+
+![ExampleImage2](readmeimages/exmaple2.png)
+
+playing "Everything" with the script running (more niece game so Discord doesn't have it saved)
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??

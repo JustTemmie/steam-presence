@@ -4,3 +4,4 @@ Terraria=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon_thumb/5830bc2bbfda076fd
 The Legend of Zelda: Ocarina of Time=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/a896144046a1b5bd6e3e034d00b4f73a.png
 Persona 5=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/5b4a2146246bc3a3a941f32225bbb792/32/256x256.png
 bloons td 6=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/19e321d9f307ccfc1c37106191cbbc74/32/256x256.png
+everything=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/56f9f88906aebf4ad985aaec7fa01313/32/32x32.png
