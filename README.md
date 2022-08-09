@@ -24,8 +24,8 @@ create a file named `config.json` in the same directory as this file and fill it
  
 ```json
 {
-    "KEY":  "KEY",
-    "USERID": "USERID",
+    "STEAM_API_KEY": "STEAM_API_KEY",
+    "USER_ID": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "DISCORD_APPLICATION_ID",
 
@@ -37,6 +37,11 @@ create a file named `config.json` in the same directory as this file and fill it
     "CUSTOM_GAME_OVERWRITE": {
         "ENABLED": false,
         "NAME": "NAME"
+    },
+
+    "CUSTOM_STATUS_STATE": {
+        "ENABLED": false,
+        "STATUS": "https://github.com/JustTemmie/steam-presence-on-discord"
     }
 }
 ```
@@ -59,7 +64,7 @@ and then taking the ID from that url
 # Discord Application ID
 the `DISCORD_APPLICATION_ID` is the discord application ID of the app you want to use.
 
-please generate one here https://discordapp.com/developers/applications/
+please generate one here https://discordapp.com/developers/applications/ or use mine "869994714093465680"
 
 the only thing you need to fill out on their site is the application name itself.
 
@@ -84,6 +89,13 @@ if you want to display a game that isn't on steam, you can use the `CUSTOM_GAME_
 set enabled to true and fill in the name of the game you want to display.
 
 this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving it one yourself.
+
+# Custom Status State
+if you want to display a custom status alongside the game, you can use the `CUSTOM_STATUS_STATE` section.
+
+set enabled to true and ifll in the status you want to display.
+
+pretty simple
 # Python
 python3.8 or higher is required.
 

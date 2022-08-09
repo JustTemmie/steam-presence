@@ -152,6 +152,7 @@ def set_game(game_title = None, game_icon = None, start_time = None, do_custom_s
         if not do_custom_state:
             state = None
             
+        RPC.update(details = game_title, state = state, start = start_time, large_image = game_icon[:-1], large_text = large_text)
             
         # code used in testing
         # if game_title is not None:
@@ -168,7 +169,6 @@ def set_game(game_title = None, game_icon = None, start_time = None, do_custom_s
         # if game_icon is None:
         #     large_text = None
         
-        RPC.update(details = game_title, state = state, start = start_time, large_image = game_icon[:-1], large_text = large_text)
                 
     except Exception as e:
         print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while setting game, error: {e}")
