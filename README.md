@@ -2,11 +2,11 @@
 
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
 
-![ExampleImage1](readmeimages/exmaple1.png)
+![ExampleImage1](readmeimages/example1.png)
 
 playing "BTD6" with the script running 
 
-![ExampleImage2](readmeimages/exmaple2.png)
+![ExampleImage2](readmeimages/example2.png)
 
 playing "Everything" with the script running (more niece game so Discord doesn't have it saved)
 
