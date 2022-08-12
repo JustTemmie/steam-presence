@@ -265,16 +265,19 @@ if __name__ == "__main__":
             
             else:
                 set_game(None, coverImage, startTime, do_custom_state, custom_state)
-                
-        sleep(20)
         
+        # if the game has changed, restart the rich presence client with that new app ID
         if oldGameName != gameName and gameName != None:
             startTime = round(time())
             print(f"game changed to \"{gameName}\"")
             
             app_id = get_game_id(gameName)
+            startTime = round(time())
 
-            # if the game has changed, restart the rich presence client with that new app ID
             RPC.close()
             RPC = Presence(client_id=app_id)
             RPC.connect()
+            sleep(1)
+
+        else:
+            sleep(20)
