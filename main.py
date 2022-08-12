@@ -277,6 +277,7 @@ if __name__ == "__main__":
             RPC.close()
             RPC = Presence(client_id=app_id)
             RPC.connect()
+            # repeat the while loop to refresh it's metadata
             sleep(1)
 
         else:
