@@ -48,6 +48,12 @@ create a file named `config.json` in the same directory as this file and fill it
     "CUSTOM_STATUS_STATE": {
         "ENABLED": false,
         "STATUS": "https://github.com/JustTemmie/steam-presence-on-discord"
+    },
+
+    "CUSTOM_ICON": {
+        "ENABLED": false,
+        "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence-on-discord/main/readmeimages/defaulticon.png",
+        "TEXT": "Steam Presence on Discord"
     }
 }
 ```
@@ -100,6 +106,11 @@ this will still try to grab an icon from steamGridDB, but if it can't find one y
 if you want to display a custom status alongside the game, you can use the `CUSTOM_STATUS_STATE` section.
 
 set enabled to true and fill in the status you want to display.
+
+# Custom Icon
+this is a small icon that appears in the bottom right, enable it or disable it.
+
+set an URL to the image you want to use, and a text that will appear when hovering over the icon.
 # Python
 python3.8 or higher is required.
 
