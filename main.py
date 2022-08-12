@@ -1,10 +1,5 @@
 # creating rich presences for discord
-from pypresence import Presence
 from time import sleep, time
-
-# used to get the game's cover art
-# the original library is currently broken at the time of writing this, so i'm using a self made fork
-from steamgrid import SteamGridDB
 
 # requesting data from steam's API
 import requests
@@ -15,6 +10,27 @@ from datetime import datetime
 # for loading the config file
 import json
 from os.path import exists
+
+
+try:
+    # creating rich presences for discord
+    from pypresence import Presence
+
+    # used to get the game's cover art
+    # the original library is currently broken at the time of writing this, so i'm using a self made fork
+    from steamgrid import SteamGridDB
+
+except ImportError:
+    answer = input("pypresence or steamgrid is not installed, do you want to install it? (y/n) ")
+    if answer.lower() == "y":
+        from os import system
+        print("installing req packages...")
+        system("pip install -r requirements.txt")
+        
+        from pypresence import Presence
+        from steamgrid import SteamGridDB
+        
+        print("\npackages installed and imported successfully!")
 
 # opens the config file and loads the data
 def get_config():
@@ -252,7 +268,7 @@ if __name__ == "__main__":
     RPC.connect()
 
     # everything ready! 
-    print("everything ready!")
+    print("everything is ready!")
     
     
     while True:
