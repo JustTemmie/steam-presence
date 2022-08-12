@@ -1,12 +1,2 @@
-Deep Rock Galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee78a0e58c68be06d8a2eb/32/256x256.png
-Bloons TD 6=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/19e321d9f307ccfc1c37106191cbbc74/32/256x256.png
-Terraria=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon_thumb/5830bc2bbfda076fdc00e649f2c82e1f.png
-The Legend of Zelda: Ocarina of Time=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/a896144046a1b5bd6e3e034d00b4f73a.png
-bloons td 6=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/19e321d9f307ccfc1c37106191cbbc74/32/256x256.png
-everything=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/56f9f88906aebf4ad985aaec7fa01313/32/32x32.png
-Persona 5=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/5b4a2146246bc3a3a941f32225bbb792/32/256x256.pngceleste=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/7f39f8317fbdb1988ef4c628eba02591/32/128x128.png
-deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/948f847055c6bf156997ce9fb59919be/32/32x32.png
-ghostrunner=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/980a875ff6ef9c2d75e74307cbf5d205/32/256x256.png
-deltarune (chapter 1 & 2 demo)=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/6e2d5d50a943a0e0d738377f51011685/32/256x256.png
-the legend of zelda: ocerina of time=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/4c2d760f60a6ea70b0a10ef9ff2351f5/32/256x256.png
-rain world=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/e53ba686b7ad2ec7825f0f4afff80a1b/32/256x256.png
+splatoon 3 (early access)=https://i.imgur.com/ITMb984.png
+deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee78a0e58c68be06d8a2eb/32/256x256.png
