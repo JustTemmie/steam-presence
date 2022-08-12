@@ -1,6 +1,6 @@
 {
     "name": "steam-presence-on-discord",
-    "version": "1.2",
+    "version": "1.3",
     "description": "A script which takes the game you're playing on steam and displays it on discord",
     "author": "JustTemmie",
     "repository": "JustTemmie/steam-presence-on-discord",
