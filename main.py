@@ -90,8 +90,12 @@ def try_fetching_icon(gameName, steamGridAppID):
     # what this does is basically brute force test a bunch of resolutions and pick the first one that works
     # as steamgriddb actually hosts png versions of all the .ico files, they're just not returned by the API
     for icon in grids:
+        icon = str(icon)
+        
+        if icon[-4:] == ".png":
+            return icon
+        
         for res in resolutions:
-            icon = str(icon)
             newURL = icon[:-4] + f"/32/{res}x{res}.png"
             
             r = requests.get(newURL)
@@ -100,9 +104,6 @@ def try_fetching_icon(gameName, steamGridAppID):
 
     
     if res == 16:
-        with open(f'icons.txt', 'a') as icons:
-            icons.write(f"\n{gameName}=None")
-            icons.close()
         print(f"could not find icon for {gameName} either ignore this or manually add one to icons.txt")
             
 
@@ -118,6 +119,8 @@ def get_steam_grid_icon(gameName):
                     URL = i.split("=")[1]
                     return URL
 
+        print(f"fetching icon for {gameName}")
+        
         results = sgdb.search_game(gameName)
 
         # yes this is terrible code but i really couldn't figure out a better way to do this, sorry - pull request anyone?
@@ -247,6 +250,10 @@ if __name__ == "__main__":
     print("intializing the rich presence...")
     RPC = Presence(client_id=app_id)
     RPC.connect()
+
+    # everything ready! 
+    print("everything ready!")
+    
     
     while True:
         # refetches some data from the config file, so these can be changed without restarting the script
