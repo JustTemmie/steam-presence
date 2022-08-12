@@ -17,5 +17,11 @@
     "CUSTOM_STATUS_STATE": {
         "ENABLED": false,
         "STATUS": "https://github.com/JustTemmie/steam-presence-on-discord"
+    },
+
+    "CUSTOM_ICON": {
+        "ENABLED": false,
+        "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence-on-discord/main/readmeimages/defaulticon.png",
+        "TEXT": "Steam Presence on Discord"
     }
 }

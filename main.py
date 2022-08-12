@@ -141,7 +141,14 @@ def get_steam_grid_icon(gameName):
         return None
 
 
-def set_game(game_title = None, game_icon = None, start_time = None, do_custom_state = False, state = None):
+def set_game(
+    game_title = None, game_icon = None,
+    start_time = None,
+    do_custom_state = False, state = None,
+    # custom_icon and co are just the mini icons, not the main icon itself
+    do_custom_icon = None, custom_icon_url = None, custom_icon_text = None
+    ):
+    
     try:
         large_text = None
         
@@ -150,6 +157,10 @@ def set_game(game_title = None, game_icon = None, start_time = None, do_custom_s
         
         if not do_custom_state:
             state = None
+        
+        if not do_custom_icon:
+            custom_icon_url = None
+            custom_icon_text = None
             
         if game_icon != None:
             game_icon = game_icon[:-1]
@@ -170,7 +181,12 @@ def set_game(game_title = None, game_icon = None, start_time = None, do_custom_s
         # if game_icon is None:
         #     large_text = None
         
-        RPC.update(details = game_title, state = state, start = start_time, large_image = game_icon, large_text = large_text)
+        RPC.update(
+            details = game_title, state = state,
+            start = start_time,
+            large_image = game_icon, large_text = large_text,
+            small_image = custom_icon_url, small_text = custom_icon_text
+        )
                 
     except Exception as e:
         print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while setting game, error: {e}")
@@ -198,6 +214,10 @@ if __name__ == "__main__":
 
     do_custom_game = config["CUSTOM_GAME_OVERWRITE"]["ENABLED"]
     custom_game_name = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
+    
+    do_custom_icon = config["CUSTOM_ICON"]["ENABLED"]
+    custom_icon_url = config["CUSTOM_ICON"]["URL"]
+    custom_icon_text = config["CUSTOM_ICON"]["TEXT"]
 
 
     # initialize the steam grid database object
@@ -235,6 +255,9 @@ if __name__ == "__main__":
         custom_game_name = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
         do_custom_state = config["CUSTOM_STATUS_STATE"]["ENABLED"]
         custom_state = config["CUSTOM_STATUS_STATE"]["STATUS"]
+        do_custom_icon = config["CUSTOM_ICON"]["ENABLED"]
+        custom_icon_url = config["CUSTOM_ICON"]["URL"]
+        custom_icon_text = config["CUSTOM_ICON"]["TEXT"]
 
 
         oldGameName = gameName
@@ -260,10 +283,10 @@ if __name__ == "__main__":
                 coverImage = get_steam_grid_icon(gameName)
             
             if app_id == DEFAULT_APP_ID:
-                set_game(gameName, coverImage, startTime, do_custom_state, custom_state)
+                set_game(gameName, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
             
             else:
-                set_game(None, coverImage, startTime, do_custom_state, custom_state)
+                set_game(None, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
         
         # if the game has changed, restart the rich presence client with that new app ID
         if oldGameName != gameName and gameName != None:
