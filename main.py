@@ -1,5 +1,4 @@
 # creating rich presences for discord
-from tkinter import W
 from pypresence import Presence
 from time import sleep, time
 
