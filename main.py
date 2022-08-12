@@ -209,7 +209,22 @@ def set_game(
                 
     except Exception as e:
         print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] problem while setting game, error: {e}")
-        return None
+        try:
+            if "client id is invalid" in e.lower():
+                RPC.close()
+                sleep(5)
+                RPC.connect()
+                RPC.update(
+                    details = game_title, state = state,
+                    start = start_time,
+                    large_image = game_icon, large_text = large_text,
+                    small_image = custom_icon_url, small_text = custom_icon_text
+                )
+                
+                print("reconnected to discord")
+        
+        except:
+            return None
 
 if __name__ == "__main__":
     
