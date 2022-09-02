@@ -9,7 +9,7 @@ from datetime import datetime
 
 # for loading the config file
 import json
-from os.path import exists
+from os.path import exists, dirname
 
 
 try:
@@ -34,12 +34,12 @@ except ImportError:
 
 # opens the config file and loads the data
 def get_config():
-    if exists("config.json"):
-        with open("config.json", "r") as f:
+    if exists(f"{dirname(__file__)}/config.json"):
+        with open(f"{dirname(__file__)}/config.json", "r") as f:
             return json.load(f)
     
-    if exists("exampleconfig.json"):
-        with open("exampleconfig.json", "r") as f:
+    if exists(f"{dirname(__file__)}/exampleconfig.json"):
+        with open(f"{dirname(__file__)}/exampleconfig.json", "r") as f:
             return json.load(f)
     
     else:
