@@ -128,7 +128,7 @@ def get_steam_grid_icon(gameName):
     try:
         gameName = gameName.lower()
 
-        with open(f'icons.txt', 'r') as icons:
+        with open(f'{dirname(__file__)}/icons.txt', 'r') as icons:
             for i in icons:
                 game = i.split("=")[0]
                 if gameName == game:
@@ -149,7 +149,7 @@ def get_steam_grid_icon(gameName):
         if newURL == "":
             return None
         
-        with open(f'icons.txt', 'a') as icons:
+        with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
             icons.write(f"{gameName}={newURL}\n")
             icons.close()
 
