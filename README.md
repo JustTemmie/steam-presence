@@ -58,12 +58,12 @@ create a file named `config.json` in the same directory as this file and fill it
 }
 ```
 # Steam web API
-the `KEY` in this case is regarding to the Steam web API.
+the `STEAM_API_KEY` in this case is regarding to the Steam web API.
 
 this you can obtain by registering here https://steamcommunity.com/dev/apikey while logged in
 
 # User ID
-the `USERID` is the steam user id of the user you want to track.
+the `USER_ID` is the steam user id of the user you want to track.
 
 **NOTE** this is not the same as the display URL of the user.
 
