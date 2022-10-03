@@ -42,6 +42,10 @@ create a file named `config.json` in the same directory as this file and fill it
         "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
     },
 
+    "NON_STEAM_GAMES": {
+        "ENABLED": false
+    },
+
     "CUSTOM_GAME_OVERWRITE": {
         "ENABLED": false,
         "NAME": "NAME"
