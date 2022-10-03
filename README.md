@@ -49,12 +49,12 @@ create a file named `config.json` in the same directory as this file and fill it
 
     "CUSTOM_STATUS_STATE": {
         "ENABLED": false,
-        "STATUS": "https://github.com/JustTemmie/steam-presence-on-discord"
+        "STATUS": "https://github.com/JustTemmie/steam-presence"
     },
 
     "CUSTOM_ICON": {
         "ENABLED": false,
-        "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence-on-discord/main/readmeimages/defaulticon.png",
+        "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence/main/readmeimages/defaulticon.png",
         "TEXT": "Steam Presence on Discord"
     }
 }
