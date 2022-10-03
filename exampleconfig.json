@@ -9,6 +9,10 @@
         "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
     },
 
+    "NON_STEAM_GAMES": {
+        "ENABLED": false
+    },
+
     "CUSTOM_GAME_OVERWRITE": {
         "ENABLED": false,
         "NAME": "NAME"

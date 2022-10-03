@@ -19,9 +19,13 @@ try:
     # used to get the game's cover art
     # the original library is currently broken at the time of writing this, so i'm using a self made fork
     from steamgrid import SteamGridDB
+    
+    # used for non-steam games
+    from bs4 import BeautifulSoup
+    import http.cookiejar as cookielib
 
 except ImportError:
-    answer = input("pypresence or steamgrid is not installed, do you want to install it? (y/n) ")
+    answer = input("pypresence, steamgrid, or beautifulSoup is not installed, do you want to install them? (y/n) ")
     if answer.lower() == "y":
         from os import system
         print("installing req packages...")
@@ -29,8 +33,11 @@ except ImportError:
         
         from pypresence import Presence
         from steamgrid import SteamGridDB
+        from bs4 import BeautifulSoup
+        import http.cookiejar as cookielib
         
         print("\npackages installed and imported successfully!")
+
 
 # opens the config file and loads the data
 def get_config():
@@ -57,15 +64,27 @@ def get_steam_presence(STEAM_API_KEY, USER_ID):
     try:
         game_title = None
         for i in r["response"]["players"][0]:
-            if i == "gameextrainfo":
-                game_title = r["response"]["players"][0][i]
+            game_title = r["response"]["players"][0]["gameextrainfo"]
 
-        if game_title is not None:
-            return game_title
+        return game_title
 
     except:
         pass
 
+# web scrapes the user's web page, sending the needed cookies along with the request
+def web_scrape_steam_presence(USER_URL):
+    cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
+    cj.load()
+
+    URL = f"https://steamcommunity.com/profiles/{USER_URL}/"
+    page = requests.post(URL, cookies=cj)
+    
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    for element in soup.find_all("div", class_="profile_in_game_name"):
+        result = element.text.strip()
+    
+        return result
 
 # looks into the discord api and steals the app IDs from it
 def get_game_id(gameName):
@@ -161,7 +180,7 @@ def get_steam_grid_icon(gameName):
 
 
 def set_game(
-    game_title = None, game_icon = None,
+    do_game_title = None, game_title = None, game_icon = None,
     start_time = None,
     do_custom_state = False, state = None,
     # custom_icon and co are just the mini icons, not the main icon itself
@@ -183,6 +202,11 @@ def set_game(
             
         if game_icon != None:
             game_icon = game_icon[:-1]
+           
+        
+        if not do_game_title:
+            game_title = None
+   		
             
             
         # code used in testing
@@ -226,7 +250,11 @@ def set_game(
         except:
             return None
 
-if __name__ == "__main__":
+
+def program():
+    global RPC
+    global sgdb
+    global DEFAULT_APP_ID
     
     # get data from the config file
     print("fetching config data...")
@@ -245,6 +273,8 @@ if __name__ == "__main__":
 
     GRID_ENABLED = config["COVER_ART"]["ENABLED"]
     GRID_KEY = config["COVER_ART"]["STEAM_GRID_API_KEY"]
+    
+    do_web_scraping = config["NON_STEAM_GAMES"]["ENABLED"]
 
     do_custom_game = config["CUSTOM_GAME_OVERWRITE"]["ENABLED"]
     custom_game_name = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
@@ -253,13 +283,18 @@ if __name__ == "__main__":
     custom_icon_url = config["CUSTOM_ICON"]["URL"]
     custom_icon_text = config["CUSTOM_ICON"]["TEXT"]
 
-
+    # try fetching the cookies
+    if not exists(f"{dirname(__file__)}/cookies.txt") and do_web_scraping == True:
+        print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] Cookie file not found. Please read the readme and create a cookie file.")
+        exit()
+        
     # initialize the steam grid database object
     if GRID_ENABLED:
         print("intializing the SteamGrid database...")
         sgdb = SteamGridDB(GRID_KEY)
     
     
+    scraped = False
     startTime = 0
     coverImage = None
     app_id = DEFAULT_APP_ID
@@ -268,9 +303,13 @@ if __name__ == "__main__":
     # the old game name early to avoid it thinking the game changed even if it didn't on first loop
     if do_custom_game:
         gameName = custom_game_name
-
+    
     else:
         gameName = get_steam_presence(STEAM_API_KEY, USER_ID)
+    
+    if do_web_scraping:
+        gameName = web_scrape_steam_presence(USER_ID)
+        
         
     oldGameName = gameName
     
@@ -296,6 +335,8 @@ if __name__ == "__main__":
         do_custom_icon = config["CUSTOM_ICON"]["ENABLED"]
         custom_icon_url = config["CUSTOM_ICON"]["URL"]
         custom_icon_text = config["CUSTOM_ICON"]["TEXT"]
+        do_game_title = config["DO_GAME_TITLE_AS_DESCRIPTION"]
+        do_web_scraping = config["NON_STEAM_GAMES"]["ENABLED"]
 
 
         oldGameName = gameName
@@ -305,6 +346,11 @@ if __name__ == "__main__":
 
         else:
             gameName = get_steam_presence(STEAM_API_KEY, USER_ID)
+            scraped = False
+        
+        if gameName == None and do_web_scraping:
+            gameName = web_scrape_steam_presence(USER_ID)
+            scraped = True
             
             
         
@@ -321,10 +367,10 @@ if __name__ == "__main__":
                 coverImage = get_steam_grid_icon(gameName)
             
             if app_id == DEFAULT_APP_ID:
-                set_game(gameName, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
+                set_game(do_game_title, gameName, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
             
             else:
-                set_game(None, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
+                set_game(do_game_title, None, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
         
         # if the game has changed, restart the rich presence client with that new app ID
         if oldGameName != gameName and gameName != None:
@@ -342,3 +388,19 @@ if __name__ == "__main__":
 
         else:
             sleep(20)
+            
+            # just to make sure we don't get rate limited by steam or anything, only check once per 65 seconds
+            if scraped:
+                sleep(45)
+
+
+def try_running():
+    try:
+        program()
+    except Exception as e:
+        print(f"could not connect to discord: {e}")
+        sleep(15)
+        try_running()
+
+if __name__ == "__main__":
+    try_running()

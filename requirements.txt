@@ -1,2 +1,3 @@
 python-steamgriddb
 pypresence
+beautifulsoup4

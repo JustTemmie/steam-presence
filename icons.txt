@@ -1,2 +1,5 @@
-splatoon 3 (early access)=https://i.imgur.com/ITMb984.png
 deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee78a0e58c68be06d8a2eb/32/256x256.png
+bloons td 6=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/19e321d9f307ccfc1c37106191cbbc74/32/256x256.png
+beaver clicker=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/8182365d5e93072ee1f23dcfc29776ad.png
+celeste=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/36bedb6eb7152f39b16328448942822b.png
+overwatch 2=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/f812eab186eb17d72275bb38b918913d.png
