@@ -144,8 +144,8 @@ set an URL to the image you want to use, and a text that will appear when hoveri
 # Python
 python3.8 or higher is required.
 
-run `pip install -r requirements.txt` to install all the dependencies
+run `python3 -m pip install -r requirements.txt` to install all the dependencies
 
 then run `python3 main.py`
 
-(these are linux commands, if you're on windows you might need to change them into something, idk search it up)
+(these commands should be platform independent, if they're not PLEASE create an issue and inform me)
