@@ -118,7 +118,7 @@ download the addon that matches your browser
 
 https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/
 
-https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid?hl=en (COMPLETELY UNTESTED, might not work, create an issue if needed)
+https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid?hl=en
 
 navigate to your profile on steam, and download the cookie file, naming it "cookies.txt" and save it in the same folder as main.py
 
