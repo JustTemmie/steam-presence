@@ -73,9 +73,9 @@ the `USER_ID` is the steam user id of the user you want to track.
 
 **NOTE** this is not the same as the display URL of the user.
 
-the easiest way i've found to get the ID is by throwing your url into the steamDB calculator https://steamdb.info/calculator/
+the easiest way i've found to get the ID is by throwing your profile url into the steamDB calculator https://steamdb.info/calculator/
 
-and then taking the ID from that url
+and then taking the ID from that page
 
 ![ExampleImage](readmeimages/steamDB.png)
 
