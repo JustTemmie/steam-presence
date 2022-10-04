@@ -10,7 +10,8 @@
     },
 
     "NON_STEAM_GAMES": {
-        "ENABLED": false
+        "ENABLED": false,
+        "NON_STEAM_DISCORD_APP_ID": "939292559765803018"        
     },
 
     "CUSTOM_GAME_OVERWRITE": {

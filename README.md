@@ -35,7 +35,7 @@ create a file named `config.json` in the same directory as this file and fill it
     "STEAM_API_KEY": "STEAM_API_KEY",
     "USER_ID": "USER_ID",
 
-    "DISCORD_APPLICATION_ID": "DISCORD_APPLICATION_ID",
+    "DISCORD_APPLICATION_ID": "869994714093465680",
 
     "COVER_ART": {
         "ENABLED": false,
@@ -43,7 +43,8 @@ create a file named `config.json` in the same directory as this file and fill it
     },
 
     "NON_STEAM_GAMES": {
-        "ENABLED": false
+        "ENABLED": false,
+        "NON_STEAM_DISCORD_APP_ID": "939292559765803018"
     },
 
     "CUSTOM_GAME_OVERWRITE": {
@@ -73,9 +74,9 @@ the `USER_ID` is the steam user id of the user you want to track.
 
 **NOTE** this is not the same as the display URL of the user.
 
-the easiest way i've found to get the ID is by throwing your profile url into the steamDB calculator https://steamdb.info/calculator/
+the easiest way i've found to get the ID is by throwing your url into the steamDB calculator https://steamdb.info/calculator/
 
-and then taking the ID from that page
+and then taking the ID from that url
 
 ![ExampleImage](readmeimages/steamDB.png)
 
@@ -122,6 +123,10 @@ https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfl
 
 navigate to your profile on steam, and download the cookie file, naming it "cookies.txt" and save it in the same folder as main.py
 
+the NON_STEAM_DISCORD_APP_ID field is a seprate discord app ID which displays when the game isn't found in discord's cached game list, but is being played as a non steam game. The default app id "939292559765803018" is simply called "a game not on steam"
+
+**NOTE** the NON_STEAM_DISCORD_APP_ID and the DISCORD_APPLICATION_ID from earlier in the config file **CANNOT** be the same, because of how this script is coded, they can have the same name but if you want both to be called the same you must create two applications, with the same name
+
 Note: due to the names of non steam games being set by yourself, steam grid DB might have problems finding icons for the game, but if it's in their database, this script will fetch it
 
 # Custom Game Overwrite
@@ -144,8 +149,8 @@ set an URL to the image you want to use, and a text that will appear when hoveri
 # Python
 python3.8 or higher is required.
 
-run `python3 -m pip install -r requirements.txt` to install all the dependencies
+run `pip install -r requirements.txt` to install all the dependencies
 
 then run `python3 main.py`
 
-(these commands should be platform independent, if they're not PLEASE create an issue and inform me)
+(these are linux commands, if you're on windows you might need to change them into something, idk search it up)

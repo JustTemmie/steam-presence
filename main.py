@@ -83,8 +83,10 @@ def web_scrape_steam_presence(USER_URL):
 
     for element in soup.find_all("div", class_="profile_in_game_name"):
         result = element.text.strip()
-    
-        return result
+
+        # the "last online x min ago" field is the same div as the game name
+        if "Last Online" not  in result:
+            return result
 
 # looks into the discord api and steals the app IDs from it
 def get_game_id(gameName):
@@ -275,6 +277,7 @@ def program():
     GRID_KEY = config["COVER_ART"]["STEAM_GRID_API_KEY"]
     
     do_web_scraping = config["NON_STEAM_GAMES"]["ENABLED"]
+    SECONDARY_APP_ID = config["NON_STEAM_GAMES"]["NON_STEAM_DISCORD_APP_ID"]
 
     do_custom_game = config["CUSTOM_GAME_OVERWRITE"]["ENABLED"]
     custom_game_name = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
@@ -366,18 +369,21 @@ def program():
             if GRID_ENABLED:
                 coverImage = get_steam_grid_icon(gameName)
             
-            if app_id == DEFAULT_APP_ID:
+            if app_id == DEFAULT_APP_ID or app_id == SECONDARY_APP_ID:
                 set_game(do_game_title, gameName, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
             
             else:
                 set_game(do_game_title, None, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
         
         # if the game has changed, restart the rich presence client with that new app ID
-        if oldGameName != gameName and gameName != None:
+        if (oldGameName != gameName and gameName != None) or (app_id == DEFAULT_APP_ID and scraped == True):
             startTime = round(time())
             print(f"game changed to \"{gameName}\"")
             
             app_id = get_game_id(gameName)
+            if app_id == DEFAULT_APP_ID and scraped == True:
+                app_id = SECONDARY_APP_ID
+
             startTime = round(time())
 
             RPC.close()
