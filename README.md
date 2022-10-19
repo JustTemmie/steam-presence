@@ -23,7 +23,9 @@ having discord constantly run in the background is a terrible idea considering h
 
 so this script is a way of circumventing these issues by instead having this run on something like a server 24/7.
 
-also yes this is very dumb you're right lmao
+DO NOTE that if you do intend to run this on a steam deck itself, discord will have to be open in the background
+
+but what this script CAN do is run on as mentioned, a server, or another form of desktop computer (with discord open in the background on that device)
 
 if you're interested in something similar for nintendo switch, check out <a href="https://github.com/MCMi460/NSO-RPC">this repo</a>
 
@@ -36,6 +38,8 @@ create a file named `config.json` in the same directory as this file and fill it
     "USER_ID": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
+
+    "DO_GAME_TITLE_AS_DESCRIPTION": true,
 
     "COVER_ART": {
         "ENABLED": false,
@@ -89,6 +93,21 @@ the only thing you need to fill out on their site is the application name itself
 
 for example i named mine "a game on steam" as shown in the screenshot above.
 
+# Do Game Title As Description
+the `DO_GAME_TITLE_AS_DESCRIPTION` field is used for games that aren't found to be cached on discord's end,
+
+thus they will appear as the Discord Application ID.
+
+with this field set to true, it will display the current game as a description.
+
+![WithItEnabled](readmeimages/doGameTitleAsDescription-true.png)
+
+setting it to false will lead to it not showing up at all.
+
+![WithItEnabled](readmeimages/doGameTitleAsDescription-false.png)
+
+this setting will not have any effect on more popular games in any capacity.
+
 # Cover Art
 and then we have the `COVER_ART` section.
 
@@ -105,17 +124,17 @@ additionally, this caches the url to a file named icons.txt, so if you don't lik
 # Non Steam Games
 ahh... the non steam games
 
-so for a bit of background of why this might seem a bit weird at first Steam's actual API does not report non steam games in ANY capacity
+so for a bit of background of why this might seem a bit weird at first Steam's actual API does not report non steam games in ANY capacity.
 
-so the solution for this, web scraping - loading a website in the background, reading the data off it, and closing it - redoing this every minute
+so the solution for this, web scraping - loading a website in the background, reading the data off it, and closing it - redoing this every minute.
 
-performance wise it's actually fine, being reasonably light weight and on anything reasonably modern this should be fine, due note though - on battery powered devices this will shorten the battery life by i would GUESS around 5-30 minutes, depending on it's configuration
+performance wise it's actually fine, being reasonably light weight and on anything reasonably modern this should be fine, due note though - on battery powered devices this will shorten the battery life by i would GUESS around 5-30 minutes, depending on it's configuration.
 
 change the enabled field to true
 
-download your cookies for steam, i'm unsure how long these stay valid for as i'm writing this so this might be a non issue or this might be pain - not sure
+download your cookies for steam, i'm unsure how long these stay valid for as i'm writing this so this might be a non issue or this might be pain - not sure.
 
-download the addon that matches your browser
+download the addon that matches your browser.
 
 https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/
 
@@ -127,7 +146,7 @@ the NON_STEAM_DISCORD_APP_ID field is a seprate discord app ID which displays wh
 
 **NOTE** the NON_STEAM_DISCORD_APP_ID and the DISCORD_APPLICATION_ID from earlier in the config file **CANNOT** be the same, because of how this script is coded, they can have the same name but if you want both to be called the same you must create two applications, with the same name
 
-Note: due to the names of non steam games being set by yourself, steam grid DB might have problems finding icons for the game, but if it's in their database, this script will fetch it
+**Note2**: due to the names of non steam games being set by yourself, steam grid DB might have problems finding icons for the game, but if it's in their database, this script will fetch it
 
 # Custom Game Overwrite
 if you want to display a game that isn't on steam, you can use the `CUSTOM_GAME_OVERWRITE` section.
@@ -149,8 +168,32 @@ set an URL to the image you want to use, and a text that will appear when hoveri
 # Python
 python3.8 or higher is required.
 
-run `pip install -r requirements.txt` to install all the dependencies
+run `python3 -m pip install -r requirements.txt` to install all the dependencies
 
 then run `python3 main.py`
 
-(these are linux commands, if you're on windows you might need to change them into something, idk search it up)
+(these should hopefully be platform independent, if they're not please open an issue or pull request)
+
+# Run On Startup
+this script doesn't have any inherent way to run when your device starts up.
+
+if you're running either Windows or MacOS i cannot really give you any help with this.
+
+(if you do know a way to run this on startup on any of the mentioned systems, please create a pull request with an updated readme)
+
+however if you're running linux i do have a way to start the script on bootup.
+
+create a file named `startup.sh` and paste in the code below, changing the path so it finds the main.py file.
+
+```
+sleep 120
+screen -dmS steamPresence bash -c 'python3 /home/USER/steam-presence/main.py'
+```
+
+make this script executable using `chmod +x startup.sh`
+
+then run `crontab -e` and add `@reboot  /home/USER/startup.sh` to the end of the crontab file.
+
+if you've done these steps the script should launch itself 120 seconds after your computer turns on, giving time enough to open discord.
+
+(this ends up using about 30MB of ram)

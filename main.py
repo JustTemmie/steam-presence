@@ -29,7 +29,7 @@ except ImportError:
     if answer.lower() == "y":
         from os import system
         print("installing req packages...")
-        system("pip install -r requirements.txt")
+        system(f"python3 -m pip install -r {dirname(__file__)}/requirements.txt")
         
         from pypresence import Presence
         from steamgrid import SteamGridDB
@@ -56,6 +56,7 @@ def get_config():
 
 # gets the current game the user is playing
 def get_steam_presence(STEAM_API_KEY, USER_ID):
+    print("Requesting current game")
     r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={STEAM_API_KEY}&format=json&steamids={str(USER_ID)}").json()
 
     if len(r["response"]["players"]) == 0:
@@ -73,6 +74,7 @@ def get_steam_presence(STEAM_API_KEY, USER_ID):
 
 # web scrapes the user's web page, sending the needed cookies along with the request
 def web_scrape_steam_presence(USER_URL):
+    print("Web scraping for current game")
     cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
     cj.load()
 
@@ -85,7 +87,7 @@ def web_scrape_steam_presence(USER_URL):
         result = element.text.strip()
 
         # the "last online x min ago" field is the same div as the game name
-        if "Last Online" not  in result:
+        if "Last Online" not in result:
             return result
 
 # looks into the discord api and steals the app IDs from it
@@ -299,6 +301,7 @@ def program():
     
     scraped = False
     startTime = 0
+    loops = 0
     coverImage = None
     app_id = DEFAULT_APP_ID
     
@@ -351,9 +354,10 @@ def program():
             gameName = get_steam_presence(STEAM_API_KEY, USER_ID)
             scraped = False
         
-        if gameName == None and do_web_scraping:
+        if gameName == None and do_web_scraping and loops >= 3:
             gameName = web_scrape_steam_presence(USER_ID)
             scraped = True
+            loops = 0
             
             
         
@@ -390,14 +394,17 @@ def program():
             RPC = Presence(client_id=app_id)
             RPC.connect()
             # repeat the while loop to refresh it's metadata
-            sleep(1)
+            sleep(3)
 
         else:
             sleep(20)
             
+            
             # just to make sure we don't get rate limited by steam or anything, only check once per 65 seconds
             if scraped:
-                sleep(45)
+                loops += 1
+                if loops >= 3:
+                    sleep(45)
 
 
 def try_running():
