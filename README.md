@@ -27,6 +27,18 @@ DO NOTE that if you do intend to run this on a steam deck itself, discord will h
 
 but what this script CAN do is run on as mentioned, a server, or another form of desktop computer (with discord open in the background on that device)
 
+I.E with this setup, Discord is able to be updated. Let's say I launch Deep Rock Galactic (rock & stone) on my Steam Deck. Here's what happens:
+
+1) Steam (on my Steam Deck) lets Steam HQ know that I'm running DRG.
+
+2) Steam HQ updates, so my Steam Friends can see that I'm playing DRG.
+
+3) Within a minute, steam-presence (running on my Mac) queries Steam HQ and sees that I'm playing DRG.
+
+4) steam-presence (still on my Mac) pushes the rich presence information to the Discord client (also running on my Mac).
+
+5) The Discord client will now display your current game to your friends (and others)
+
 if you're interested in something similar for nintendo switch, check out <a href="https://github.com/MCMi460/NSO-RPC">this repo</a>
 
 ## Setup
@@ -166,7 +178,7 @@ this is a small icon that appears in the bottom right, enable it or disable it.
 set an URL to the image you want to use, and a text that will appear when hovering over the icon.
 
 # Python
-python3.8 or higher is required.
+only tested on python3.8 and higher.
 
 run `python3 -m pip install -r requirements.txt` to install all the dependencies
 
