@@ -56,7 +56,6 @@ def get_config():
 
 # gets the current game the user is playing
 def get_steam_presence(STEAM_API_KEY, USER_ID):
-    print("Requesting current game")
     r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={STEAM_API_KEY}&format=json&steamids={str(USER_ID)}").json()
 
     if len(r["response"]["players"]) == 0:
@@ -74,7 +73,6 @@ def get_steam_presence(STEAM_API_KEY, USER_ID):
 
 # web scrapes the user's web page, sending the needed cookies along with the request
 def web_scrape_steam_presence(USER_URL):
-    print("Web scraping for current game")
     cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
     cj.load()
 
@@ -301,7 +299,6 @@ def program():
     
     scraped = False
     startTime = 0
-    loops = 0
     coverImage = None
     app_id = DEFAULT_APP_ID
     
@@ -354,10 +351,9 @@ def program():
             gameName = get_steam_presence(STEAM_API_KEY, USER_ID)
             scraped = False
         
-        if gameName == None and do_web_scraping and loops >= 3:
+        if gameName == None and do_web_scraping:
             gameName = web_scrape_steam_presence(USER_ID)
             scraped = True
-            loops = 0
             
             
         
@@ -399,12 +395,9 @@ def program():
         else:
             sleep(20)
             
-            
             # just to make sure we don't get rate limited by steam or anything, only check once per 65 seconds
             if scraped:
-                loops += 1
-                if loops >= 3:
-                    sleep(45)
+                sleep(45)
 
 
 def try_running():
