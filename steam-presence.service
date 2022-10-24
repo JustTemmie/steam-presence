@@ -34,6 +34,8 @@
 # * Launch the Konsole app to get a terminal.
 # * You'll be in your home directory.  Clone steam-presence from GitHub:
 #   > git clone https://github.com/JustTemmie/steam-presence.git
+# * Go into the recently downloaded directory
+#   > cd steam-presence
 # * Turn this Git clone into a Python venv:
 #   > python3.10 -m venv .
 # * Update the venv and install steam-presence required software
