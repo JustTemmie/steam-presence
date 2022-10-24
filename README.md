@@ -193,7 +193,15 @@ if you're running either Windows or MacOS i cannot really give you any help with
 
 (if you do know a way to run this on startup on any of the mentioned systems, please create a pull request with an updated readme)
 
-however if you're running linux i do have a way to start the script on bootup.
+## Steam Deck / Linux with Systemd
+
+If you have a Steam Deck, it is possible to have steam-presence start automatically when your Steam Deck boots.  This method may also work on other Linux distributions that use per-used Systemd instances.  If you (as a regular user) can run the command `systemctl --user status` successfully, then this should work.
+
+The file `steam-presence.service` has more information and instructions.
+
+## Linux (not using Systemd)
+
+If you're running linux i do have a way to start the script on bootup.
 
 create a file named `startup.sh` and paste in the code below, changing the path so it finds the main.py file.
 
