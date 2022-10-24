@@ -141,7 +141,11 @@ def try_fetching_icon(gameName, steamGridAppID):
 
     
     if res == 16:
-        print(f"could not find icon for {gameName} either ignore this or manually add one to icons.txt")
+        with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+            if gameName not in icons:
+                icons.write(f"{gameName}=\"\"\n")
+                print(f"could not find icon for {gameName} either ignore this or manually add one to icons.txt")
+            icons.close()
             
 
 # fetches the icon from steamgrid
@@ -155,7 +159,7 @@ def get_steam_grid_icon(gameName):
                 if gameName == game:
                     URL = i.split("=")[1]
                     return URL
-
+        
         print(f"fetching icon for {gameName}")
         
         results = sgdb.search_game(gameName)
@@ -246,20 +250,20 @@ def set_game(
                     large_image = game_icon, large_text = large_text,
                     small_image = custom_icon_url, small_text = custom_icon_text
                 )
-                
                 print("reconnected to discord")
         
         except:
             return None
 
 
-def program():
+def program(cycles):
     global RPC
     global sgdb
     global DEFAULT_APP_ID
     
     # get data from the config file
-    print("fetching config data...")
+    if cycles <= 20:
+        print("fetching config data...")
     config = get_config()
     if config["STEAM_API_KEY"] == "KEY":
         print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] Please set your Steam API key in the config file.")
@@ -293,7 +297,8 @@ def program():
         
     # initialize the steam grid database object
     if GRID_ENABLED:
-        print("intializing the SteamGrid database...")
+        if cycles <= 20:
+            print("intializing the SteamGrid database...")
         sgdb = SteamGridDB(GRID_KEY)
     
     
@@ -320,12 +325,14 @@ def program():
         app_id = get_game_id(gameName)
     
     # initialize the discord rich presence object
-    print("intializing the rich presence...")
+    if cycles <= 20:
+        print("intializing the rich presence...")
     RPC = Presence(client_id=app_id)
     RPC.connect()
 
     # everything ready! 
-    print("everything is ready!")
+    if cycles <= 20:
+        print("everything is ready!")
     
     
     while True:
@@ -355,7 +362,6 @@ def program():
             gameName = web_scrape_steam_presence(USER_ID)
             scraped = True
             
-            
         
         if gameName is None:
             # note, this completely hides your current rich presence
@@ -375,10 +381,12 @@ def program():
             else:
                 set_game(do_game_title, None, coverImage, startTime, do_custom_state, custom_state, do_custom_icon, custom_icon_url, custom_icon_text)
         
+        
         # if the game has changed, restart the rich presence client with that new app ID
         if (oldGameName != gameName and gameName != None) or (app_id == DEFAULT_APP_ID and scraped == True):
             startTime = round(time())
-            print(f"game changed to \"{gameName}\"")
+            if cycles <= 20:
+                print(f"game changed to \"{gameName}\"")
             
             app_id = get_game_id(gameName)
             if app_id == DEFAULT_APP_ID and scraped == True:
@@ -400,13 +408,16 @@ def program():
                 sleep(45)
 
 
-def try_running():
+def try_running(cycles = 0):
     try:
-        program()
+        program(cycles)
     except Exception as e:
-        print(f"could not connect to discord: {e}")
+        if cycles <= 20:
+            print(f"could not connect to discord: {e}")
+            if cycles == 20:
+                print("failed to connect 20 times, the script will now stop logging errors - as if it continues to do so this script will end up taking gigabytes worth of memory in a couple hours")
         sleep(15)
-        try_running()
+        try_running(cycles+1)
 
 if __name__ == "__main__":
     try_running()
