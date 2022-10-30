@@ -17,10 +17,9 @@ try:
     from pypresence import Presence
 
     # used to get the game's cover art
-    # the original library is currently broken at the time of writing this, so i'm using a self made fork
     from steamgrid import SteamGridDB
     
-    # used for non-steam games
+    # used for non-s    team games
     from bs4 import BeautifulSoup
     import http.cookiejar as cookielib
 
@@ -416,7 +415,7 @@ def try_running(cycles = 0):
             print(f"could not connect to discord: {e}")
             if cycles == 20:
                 print("failed to connect 20 times, the script will now stop logging errors - as if it continues to do so this script will end up taking gigabytes worth of memory in a couple hours")
-        sleep(15)
+        sleep((cycles+1) * 20)
         try_running(cycles+1)
 
 if __name__ == "__main__":
