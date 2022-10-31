@@ -11,6 +11,9 @@ from datetime import datetime
 import json
 from os.path import exists, dirname
 
+# for restarting the script on a failed run
+import sys 
+import os
 
 try:
     # creating rich presences for discord
@@ -255,14 +258,12 @@ def set_game(
             return None
 
 
-def program(cycles):
+def program():
     global RPC
     global sgdb
     global DEFAULT_APP_ID
     
     # get data from the config file
-    if cycles <= 20:
-        print("fetching config data...")
     config = get_config()
     if config["STEAM_API_KEY"] == "KEY":
         print(f"ERROR: [{datetime.now().strftime('%d-%b-%Y %H:%M:%S')}] Please set your Steam API key in the config file.")
@@ -296,8 +297,7 @@ def program(cycles):
         
     # initialize the steam grid database object
     if GRID_ENABLED:
-        if cycles <= 20:
-            print("intializing the SteamGrid database...")
+        print("intializing the SteamGrid database...")
         sgdb = SteamGridDB(GRID_KEY)
     
     
@@ -324,14 +324,12 @@ def program(cycles):
         app_id = get_game_id(gameName)
     
     # initialize the discord rich presence object
-    if cycles <= 20:
-        print("intializing the rich presence...")
+    print("intializing the rich presence...")
     RPC = Presence(client_id=app_id)
     RPC.connect()
 
     # everything ready! 
-    if cycles <= 20:
-        print("everything is ready!")
+    print("everything is ready!")
     
     
     while True:
@@ -384,8 +382,7 @@ def program(cycles):
         # if the game has changed, restart the rich presence client with that new app ID
         if (oldGameName != gameName and gameName != None) or (app_id == DEFAULT_APP_ID and scraped == True):
             startTime = round(time())
-            if cycles <= 20:
-                print(f"game changed to \"{gameName}\"")
+            print(f"game changed to \"{gameName}\"")
             
             app_id = get_game_id(gameName)
             if app_id == DEFAULT_APP_ID and scraped == True:
@@ -407,16 +404,15 @@ def program(cycles):
                 sleep(45)
 
 
-def try_running(cycles = 0):
+def try_running():
     try:
-        program(cycles)
+        program()
     except Exception as e:
-        if cycles <= 20:
-            print(f"could not connect to discord: {e}")
-            if cycles == 20:
-                print("failed to connect 20 times, the script will now stop logging errors - as if it continues to do so this script will end up taking gigabytes worth of memory in a couple hours")
-        sleep((cycles+1) * 20)
-        try_running(cycles+1)
+        print(f"could not connect to discord: {e}\nretrying in 30 seconds")
+        sleep(25)
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
 
 if __name__ == "__main__":
     try_running()
