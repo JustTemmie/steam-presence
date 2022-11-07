@@ -8,7 +8,7 @@ playing "BTD6" with the script running
 
 ![ExampleImage2](readmeimages/example2.png)
 
-playing "Everything" with the script running (more niece game so Discord doesn't have it saved)
+playing "Everything" with the script running (more niche game so Discord doesn't have it saved)
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
