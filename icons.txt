@@ -1,5 +1,6 @@
-deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee78a0e58c68be06d8a2eb/32/256x256.png
-bloons td 6=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/19e321d9f307ccfc1c37106191cbbc74/32/256x256.png
-beaver clicker=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/8182365d5e93072ee1f23dcfc29776ad.png
-celeste=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/36bedb6eb7152f39b16328448942822b.png
-overwatch 2=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/f812eab186eb17d72275bb38b918913d.png
+beaver clicker=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/8182365d5e93072ee1f23dcfc29776ad.png||Art by JustTemmie on SteamGrid DB
+hades=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fe50ae64d08d4f8245aaabc55d1baf79/32/80x80.png||Art by DIGGRID on SteamGrid DB
+deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee78a0e58c68be06d8a2eb/32/256x256.png||Art by darklinkpower on SteamGrid DB
+a short hike=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/6a30e32e56fce5cf381895dfe6ca7b6f.png||Art by Julia on SteamGrid DB
+risk of rain 2=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/c4492cbe90fbdbf88a5aec486aa81ed5/32/256x256.png||Art by darklinkpower on SteamGrid DB
+omori=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/1c80289707dba7161733a9a248855ce8.png||Art by Pixelguin on SteamGrid DB

@@ -1,29 +1,20 @@
 {
     "STEAM_API_KEY": "STEAM_API_KEY",
-    "USER_ID": "USER_ID",
+    "USER_IDS": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
-
-    "DO_GAME_TITLE_AS_DESCRIPTION": true,
     
     "COVER_ART": {
-        "ENABLED": false,
-        "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
-    },
-
-    "NON_STEAM_GAMES": {
-        "ENABLED": false,
-        "NON_STEAM_DISCORD_APP_ID": "939292559765803018"        
+        "STEAM_GRID_DB": {
+            "ENABLED": false,
+            "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
+        },
+        "USE_STEAM_STORE_FALLBACK": true
     },
 
     "CUSTOM_GAME_OVERWRITE": {
         "ENABLED": false,
         "NAME": "NAME"
-    },
-
-    "CUSTOM_STATUS_STATE": {
-        "ENABLED": false,
-        "STATUS": "https://github.com/JustTemmie/steam-presence"
     },
 
     "CUSTOM_ICON": {
