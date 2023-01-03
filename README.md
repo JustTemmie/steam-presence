@@ -111,11 +111,11 @@ change the ENABLED field to true and fill in the api key enable this.
 
 you can get your API key here https://www.steamgriddb.com/profile/preferences/api
 
-additionally, this caches the url to a file named icons.txt, so if you don't like an icon it found you can replace the url in that file for whatever game.
+additionally, this caches the url to a file named icons.txt, so if you don't like an icon it found you can open the file, find the game, and replace it with any image you want.
 
 ## Use Steam Store Fallback 
 
-this will only take an effct if 1) the script fails to fetch an icon from SGDB, or 2) SGDB is simply disabled
+this will only have an effct if 1) the script fails to fetch an icon from SGDB, or 2) SGDB is simply disabled
 
 what this does is navigate to the store page of your game, and simply uses the 32x32 pixel icon on there, this is fairly low res but it works and is a nice fallback
 
