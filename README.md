@@ -101,7 +101,7 @@ for example i named mine "a game on steam" as shown in the screenshot above.
 and then we have the `COVER_ART` section.
 
 first is the STEAM_GRID_DB subsection
-## Steam Grid DB (SGBD)
+## Steam Grid DB (SGDB)
 
 this will download an icon from steamGridDB and use it as the cover art for the discord presence.
 
@@ -167,6 +167,6 @@ make this script executable using `chmod +x startup.sh`
 
 then run `crontab -e` and add `@reboot  /home/USER/startup.sh` to the end of the crontab file.
 
-if you've done these steps the script should launch itself 120 seconds after your computer turns on, giving time enough to open discord.
+if you've done these steps the script should launch itself after your computer turns on.
 
 (this ends up using about 30MB of ram)
