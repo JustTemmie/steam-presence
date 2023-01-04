@@ -39,6 +39,16 @@ here's a step by step explanation of what happens. Let's say I launch Deep Rock 
 
 5) The Discord client will now display your current game on your profile, for your friends to see
 
+## Installation
+
+clone the repo:
+
+```sh
+git clone https://github.com/JustTemmie/steam-presence
+```sh
+
+and follow the **setup** guide
+
 ## Setup
 create a file named `config.json` in the same directory as this file and fill it in accordingly.
  
