@@ -45,7 +45,7 @@ clone the repo:
 
 ```sh
 git clone https://github.com/JustTemmie/steam-presence
-```sh
+```
 
 and follow the **setup** guide
 
