@@ -1,5 +1,22 @@
 # steam presence
 
+## Table of Contents
+- [Steam presence](#steam-presence)
+  - [Why](#why)
+- [Installation](#installation)
+- [Setup](#setup)
+  - [Steam Web API](#steam-web-api)
+  - [Steam User IDs](#user-ids)
+  - [Discord Application ID](#discord-application-id)
+  - [Cover Art](#cover-art)
+    - [Steam Grid DB](#steam-grid-db-sgdb)
+    - [Use Steam Store Fallback](#use-steam-store-fallback)
+  - [Custom Game Overwrite](#custom-game-overwrite)
+  - [Custom Icon](#custom-icon)
+- [Run On Startup](#run-on-startup)
+  - [Steam Deck / Linux with Systemd](#steam-deck--linux-with-systemd)
+  - [Linux (not using Systemd)](#linux-not-using-systemd) 
+
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
 
 ![ExampleImage1](readmeimages/example1.png)
