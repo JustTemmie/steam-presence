@@ -44,7 +44,7 @@ def log(log):
     print(f"[{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {log}")
 
 def error(error):
-    print(f"ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {error}")
+    print(f"    ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {error}")
 
 
 # opens the config file and loads the data
@@ -58,7 +58,7 @@ def getConfigFile():
             return json.load(f)
     
     else:
-        print(f"ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] Config file not found. Please read the readme and create a config file.")
+        error("Config file not found. Please read the readme and create a config file.")
         exit()
 
 
@@ -77,12 +77,14 @@ def getGameImage():
                 coverData = game[1].split("||")
                 coverImage = coverData[0]
                 
-                # if the script doesn't find text saved for the image, it won't set any         
+                # if the script doesn't find text saved for the image, it won't set any  
                 if len(coverData) >= 2:
                     coverImageText = coverData[1]
                 # write over it and set it to None, just in case
                 else:
                     coverImageText = None
+                    # if there's no text the coverImage will have a newline at the end of it, making discord break, so simply remove the newline
+                    coverImage = coverImage[:-1]
 
                 log(f"found icon for {gameName} in cache")
                 return
@@ -260,7 +262,7 @@ def setPresenceDetails():
         # state field currently unused
         details = details, state = None,
         start = startTime,
-        large_image=coverImage, large_text=coverImageText,
+        large_image = coverImage, large_text = coverImageText,
         small_image = customIconURL, small_text = customIconText
     )
 
@@ -399,10 +401,10 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
         main()
-    except Exception as e:
-        print(f"error: {e}\nautomatically retrying in 60 seconds")
-        sleep(60)
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
+    # try:
+    # except Exception as e:
+    #     error(f"{e}\nautomatically restarting script in 60 seconds\n")
+    #     sleep(60)
+    #     python = sys.executable
+    #     os.execl(python, python, *sys.argv)
