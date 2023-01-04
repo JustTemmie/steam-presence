@@ -67,7 +67,7 @@ git clone https://github.com/JustTemmie/steam-presence
 and follow the **setup** guide
 
 ## Setup
-create a file named `config.json` in the same directory as this file and fill it in accordingly.
+create a file named `config.json` in the same directory as main.py and fill it in accordingly.
  
 ```json
 {
