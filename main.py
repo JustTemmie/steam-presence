@@ -401,10 +401,10 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
         main()
-    # try:
-    # except Exception as e:
-    #     error(f"{e}\nautomatically restarting script in 60 seconds\n")
-    #     sleep(60)
-    #     python = sys.executable
-    #     os.execl(python, python, *sys.argv)
+    except Exception as e:
+        error(f"{e}\nautomatically restarting script in 60 seconds\n")
+        sleep(60)
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
