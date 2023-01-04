@@ -82,7 +82,7 @@
 
 # Hopefully all of that worked!  Just remember:
 # * steam-presence will run in the background any time the Deck starts.
-#   If you want to reduce battery, you can disable it by going to Desktop mode,
+#   If you want to reduce battery consumption, you can disable it by going to Desktop mode,
 #   launching the Konsole app, and running these two commands:
 #   > systemctl --user stop steam-presence
 #   > systemctl --user disable steam-presence
