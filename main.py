@@ -38,6 +38,7 @@ except:
         
         print("\npackages installed and imported successfully!")
 
+print(os.getlogin())
 
 # just shorthand for logs and errors - easier to write in script
 def log(log):
@@ -91,6 +92,7 @@ def getGameImage():
     
     
     if gridEnabled:
+        log("searching for an icon using the SGDB")
         # searches SGDB for the game you're playing
         results = sgdb.search_game(gameName)
         gridAppID = results[0].id
@@ -98,58 +100,67 @@ def getGameImage():
         # searches for icons
         gridIcons = sgdb.get_icons_by_gameid(game_ids=[gridAppID])
         
-        # throws the icons into a dictionary with the required information, then sorts them using the icon height
-        gridIconsDict = {}
-        for i, gridIcon in enumerate(gridIcons):
-            gridIconsDict[i] = [gridIcon.height, gridIcon._nsfw, gridIcon.url, gridIcon.mime, gridIcon.author.name, gridIcon.id]
+        # makes sure anything was returned at all
+        if gridIcons != None:
         
-        gridIconsDict = (sorted(gridIconsDict.items(), key=lambda x:x[1], reverse=True))
-        
-        # does a couple checks before making it the cover image
-        for i in range(0, len(gridIconsDict)):
-            entry = gridIconsDict[i][1]
-            # makes sure image is not NSFW
-            if entry[1] == False:
-                # makes sure it's not an .ico file - discord cannot display these
-                if entry[3] == "image/png":
-                    # sets the link, and gives credit to the artist if anyone hovers over the icon
-                    coverImage = entry[2]
+            # throws the icons into a dictionary with the required information, then sorts them using the icon height
+            gridIconsDict = {}
+            for i, gridIcon in enumerate(gridIcons):
+                gridIconsDict[i] = [gridIcon.height, gridIcon._nsfw, gridIcon.url, gridIcon.mime, gridIcon.author.name, gridIcon.id]
+            
+            gridIconsDict = (sorted(gridIconsDict.items(), key=lambda x:x[1], reverse=True))
+            
+            
+            # does a couple checks before making it the cover image
+            for i in range(0, len(gridIconsDict)):
+                entry = gridIconsDict[i][1]
+                # makes sure image is not NSFW
+                if entry[1] == False:
+                    # makes sure it's not an .ico file - discord cannot display these
+                    if entry[3] == "image/png":
+                        # sets the link, and gives credit to the artist if anyone hovers over the icon
+                        coverImage = entry[2]
+                        coverImageText = f"Art by {entry[4]} on SteamGrid DB"
+                        log("successfully retrived icon from SGDB")
+                        # saves this data to disk
+                        with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+                            icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
+                            icons.close()
+                        return
+            
+            log("failed, trying to load from the website directly")
+            # if the game doesn't have any .png files for the game, try to web scrape them from the site
+            for i in range(0, len(gridIconsDict)):
+                entry = gridIconsDict[i][1]
+                # makes sure image is not NSFW
+                if entry[1] == False:
+                    URL = f"https://www.steamgriddb.com/icon/{entry[5]}"
+                    page = requests.get(URL)
+                    
+                    if page.status_code != 200:
+                        error(f"status code {page.status_code} recieved when trying to web scrape SGDB, ignoring")
+                        return
+
+                    soup = BeautifulSoup(page.content, "html.parser")
+                    img = soup.find("meta", property="og:image")
+                    
+                    coverImage = img["content"]
                     coverImageText = f"Art by {entry[4]} on SteamGrid DB"
                     log("successfully retrived icon from SGDB")
-                    # saves this data to disk
+                    # saves data to disk
                     with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
                         icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                         icons.close()
                     return
+            
+            log("failed to fetch icon from SGDB")
         
-        # if the game doesn't have any .png files for the game, try to web scrape them from the site
-        for i in range(0, len(gridIconsDict)):
-            entry = gridIconsDict[i][1]
-            # makes sure image is not NSFW
-            if entry[1] == False:
-                URL = f"https://www.steamgriddb.com/icon/{entry[5]}"
-                page = requests.get(URL)
-                
-                if page.status_code != 200:
-                    error(f"status code {page.status_code} recieved when trying to web scrape SGDB, ignoring")
-                    return
-
-                soup = BeautifulSoup(page.content, "html.parser")
-                img = soup.find("meta", property="og:image")
-                
-                coverImage = img["content"]
-                coverImageText = f"Art by {entry[4]} on SteamGrid DB"
-                log("successfully retrived icon from SGDB")
-                # saves data to disk
-                with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
-                    icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
-                    icons.close()
-                return
-        
-        log("failed to fetch icon from SGDB")
+        else:
+            log(f"SGDB doesn't seem to have any entries for {gameName}")
 
 
     if steamStoreCoverartBackup:
+        log("getting icon from the steam store")
         try:
             # fetches a list of ALL games on steam
             r = requests.get(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
@@ -180,7 +191,7 @@ def getGameImage():
                 return
             
             soup = BeautifulSoup(page.content, "html.parser")
-            img = soup.find("div", {"class": "apphub_AppIcon"}).find("img")
+            img = soup.find("div", {"class": "game_header_image_ctn"}).find("img")
             # save it to variable
             coverImage = img["src"]
             coverImageText = f"{gameName} on steam"
@@ -348,8 +359,8 @@ def main():
             gameName = getSteamPresence(userIDs)
             
             
-        # if the game has changed or has been closed
-        if previousGameName != gameName:
+        # if the game has changed
+        if previousGameName != gameName :
             # if the game has been closed
             if gameName == "":
                 # only close once
@@ -367,8 +378,6 @@ def main():
     
                 log(f"game changed, updating to '{gameName}' from '{previousGameName}'")
                 
-                isPlaying = True
-                
                 if startTime == 0:
                     startTime = round(time())
 
@@ -379,13 +388,11 @@ def main():
                 # get cover image
                 getGameImage()
                 
-                # make sure the RPC has ben closed
-                # first line makes sure this is never done on the first loop thru the program, before RPC has been defined
-                if previousGameName != "":
-                    if RPC.client_id != appID:
-                        log(f"RPC for {previousGameName} still open, closing it")
-                        RPC.close()
-                        startTime = round(time())
+                # checks to make sure the old RPC has been closed
+                if isPlaying:
+                    log(f"RPC for {previousGameName} still open, closing it")
+                    RPC.close()
+                    startTime = round(time())
                 # redefine and reconnect to the RPC object
                 log(f"creating new rich presence object for {gameName}")
                 RPC = Presence(client_id=appID)
@@ -393,18 +400,22 @@ def main():
 
                 # push info to RPC
                 setPresenceDetails()
-                print("----------------------------------------------------------")
+                
+                isPlaying = True
                 previousGameName = gameName
+                
+                print("----------------------------------------------------------")
 
         # wait for a bit in order to not get limited by the steam API
         sleep(20)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        error(f"{e}\nautomatically restarting script in 60 seconds\n")
-        sleep(60)
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
+    main()
+    # try:
+    # except Exception as e:
+    #     error(f"{e}\nautomatically restarting script in 60 seconds\n")
+    #     sleep(60)
+    #     python = sys.executable
+    #     log("restarting...")
+    #     os.execl(python, python, *sys.argv)
