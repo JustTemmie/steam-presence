@@ -281,9 +281,6 @@ def getGameDiscordID():
     return
 
 def getLocalPresence():
-    if not isPlaying:
-        log("checking for locally running game")
-    
     # load the custom games, all lower case
     config = getConfigFile()
     templist = config["LOCAL_GAMES"]["GAMES"]
