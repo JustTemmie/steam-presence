@@ -162,12 +162,21 @@ this will make the script scan for games running locally
 ## Games
 please fill in the games field according to the names of the tasks, these are not case sensitive
 
-for example:
+example for unix users:
 
 ```
 "GAMES": [
     "minesweeper",
     "firefox-bin"
+]
+```
+
+whilst on windows you need to write something similar to this:
+
+```
+"GAMES": [
+    "osu!.exe",
+    "firefox.exe"
 ]
 ```
 
