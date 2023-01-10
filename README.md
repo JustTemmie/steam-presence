@@ -223,7 +223,7 @@ if you're running either Windows or MacOS i cannot really give you any help with
 
 ## Steam Deck / Linux with Systemd
 
-If you have a Steam Deck, it is possible to have steam-presence start automatically when your Steam Deck boots.  This method may also work on other Linux distributions that use per-used Systemd instances.  If you (as a regular user) can run the command `systemctl --user status` successfully, then this should work.
+If you have a Steam Deck, it is possible to have steam-presence start automatically when your Steam Deck boots.  This method may also work on other Linux distributions that use per-user Systemd instances.  If you (as a regular user) can run the command `systemctl --user status` successfully, then this should work.
 
 The file `steam-presence.service` has more information and instructions.
 
