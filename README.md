@@ -86,7 +86,7 @@ create a file named `config.json` in the same directory as main.py and fill it i
         "USE_STEAM_STORE_FALLBACK": true
     },
 
-    "CUSTOM_GAMES": {
+    "LOCAL_GAMES": {
         "ENABLED": false,
         "GAMES": [
             "processName1",

@@ -286,17 +286,17 @@ def getLocalPresence():
     
     # load the custom games, all lower case
     config = getConfigFile()
-    templist = config["CUSTOM_GAMES"]["GAMES"]
-    customGames = []
+    templist = config["LOCAL_GAMES"]["GAMES"]
+    localGames = []
     for i in templist:
-        customGames.append(i.lower())
+        localGames.append(i.lower())
 
     
     gameFound = False
     # loop thru all open applications
     for process in psutil.process_iter():
         # if the name is in the list, set it to the gamename and stop the loop
-        if process.name().lower() in customGames:
+        if process.name().lower() in localGames:
             if not isPlaying:
                 log(f"found {process.name()} running locally")
             gameFound = True
@@ -330,12 +330,17 @@ def getLocalPresence():
             gamesFile.write(f"{process.name().lower()}={process.name().title()}\n")
             gamesFile.close()
             
+            gameName = process.name().title()
+            startTime = process.create_time()
                     
     else:
         log("games.txt does not exist, creating one")
         with open(f'{dirname(__file__)}/games.txt', 'a') as gamesFile:
             gamesFile.write(f"{process.name()}={process.name().title()}\n")
             gamesFile.close()
+            
+            gameName = process.name().title()
+            startTime = process.create_time()
 
     
 
@@ -359,7 +364,7 @@ def setPresenceDetails():
 def main():
     global steamAPIKey
     global defaultAppID
-    global customGames
+    global localGames
     
     global appID
     global startTime
@@ -382,8 +387,8 @@ def main():
     
     steamAPIKey = config["STEAM_API_KEY"]
     defaultAppID = config["DISCORD_APPLICATION_ID"]
-    doLocalGames = config["CUSTOM_GAMES"]["ENABLED"]
-    customGames = config["CUSTOM_GAMES"]["GAMES"]
+    doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
+    localGames = config["LOCAL_GAMES"]["GAMES"]
     
     steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
     gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
