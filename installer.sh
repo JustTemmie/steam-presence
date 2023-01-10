@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "This script is still in it's testing phases, if you encounter any bugs please open an issue"
+echo "This script is LINUX ONLY, and it's still in testing phases, if you encounter any bugs please open an issue"
 read -p "Press the enter key to continue..."
 echo ""
 
