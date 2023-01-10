@@ -1,9 +1,6 @@
 # creating rich presences for discord
 from time import sleep, time
 
-# requesting data from steam's API
-import requests
-
 # for errors
 from datetime import datetime
 
@@ -16,6 +13,9 @@ import sys
 import os
 
 try:
+    # requesting data from steam's API
+    import requests
+
     # creating rich presences for discord
     from pypresence import Presence
 
@@ -29,7 +29,7 @@ try:
     import psutil
 
 except:
-    answer = input("looks like either pypresence, steamgrid, psutil, or beautifulSoup is not installed, do you want to install them? (y/n) ")
+    answer = input("looks like either requests, pypresence, steamgrid, psutil, or beautifulSoup is not installed, do you want to install them? (y/n) ")
     if answer.lower() == "y":
         from os import system
         print("installing req packages...")
@@ -39,6 +39,7 @@ except:
         from steamgrid import SteamGridDB
         from bs4 import BeautifulSoup
         import psutil
+        import requests
         
         print("\npackages installed and imported successfully!")
 
