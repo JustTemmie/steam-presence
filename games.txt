@@ -1,0 +1,2 @@
+firefox-bin=Firefox Web Browser
+steam=Steam Store

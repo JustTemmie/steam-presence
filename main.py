@@ -24,9 +24,12 @@ try:
     
     # used as a backup when cover art
     from bs4 import BeautifulSoup
+    
+    # used to check applications that are open locally
+    import psutil
 
 except:
-    answer = input("looks like either pypresence, steamgrid, or beautifulSoup is not installed, do you want to install them? (y/n) ")
+    answer = input("looks like either pypresence, steamgrid, psutil, or beautifulSoup is not installed, do you want to install them? (y/n) ")
     if answer.lower() == "y":
         from os import system
         print("installing req packages...")
@@ -35,6 +38,7 @@ except:
         from pypresence import Presence
         from steamgrid import SteamGridDB
         from bs4 import BeautifulSoup
+        import psutil
         
         print("\npackages installed and imported successfully!")
 
@@ -71,7 +75,9 @@ def getGameImage():
     # checks if there's already an existing icon saved to disk for the game 
     with open(f'{dirname(__file__)}/icons.txt', 'r') as icons:
         for i in icons:
-            game = i.split("=")
+            # cut off the new line character
+            game = i.split("\n")
+            game = game[0].split("=")
             if gameName.lower() == game[0]:
                 coverData = game[1].split("||")
                 coverImage = coverData[0]
@@ -82,8 +88,6 @@ def getGameImage():
                 # write over it and set it to None, just in case
                 else:
                     coverImageText = None
-                    # if there's no text the coverImage will have a newline at the end of it, making discord break, so simply remove the newline
-                    coverImage = coverImage[:-1]
 
                 log(f"found icon for {gameName} in cache")
                 return
@@ -142,6 +146,7 @@ def getGameImage():
 
                     # web scraping, this code is messy
                     soup = BeautifulSoup(page.content, "html.parser")
+
                     img = soup.find("meta", property="og:image")
                     
                     coverImage = img["content"]
@@ -185,10 +190,20 @@ def getGameImage():
                     
                     log(f"steam app ID {steamAppID} found for {gameName}")
                     break
+            
+            # if we didn't find the game at all on steam, 
+            if steamAppID == 0:
+                log(f"could not find the steam app ID for {gameName}")
+                return
 
             # then load the store page, and find the icon thru it
             URL = f"https://store.steampowered.com/app/{steamAppID}/"
-            page = requests.get(URL)
+            page = requests.get(URL, allow_redirects=True)
+            
+            # if it was redirected to the main page (steam does this whenever it recieves an invalid URL), exit
+            if page.url == "https://store.steampowered.com/":
+                log(f"the app ID found for {gameName} ({steamAppID}) does not seem to be valid, exiting")
+                return
             
             if r.status_code != 200:
                 error(f"error code {r.status_code} met when trying to load store page for {gameName}, ignoring")
@@ -265,6 +280,64 @@ def getGameDiscordID():
     appID = defaultAppID
     return
 
+def getLocalPresence():
+    if not isPlaying:
+        log("checking for locally running game")
+    
+    # load the custom games, all lower case
+    config = getConfigFile()
+    templist = config["CUSTOM_GAMES"]["GAMES"]
+    customGames = []
+    for i in templist:
+        customGames.append(i.lower())
+
+    
+    gameFound = False
+    # loop thru all open applications
+    for process in psutil.process_iter():
+        # if the name is in the list, set it to the gamename and stop the loop
+        if process.name().lower() in customGames:
+            if not isPlaying:
+                log(f"found {process.name()} running locally")
+            gameFound = True
+            break
+    
+    # don't continue if it didn't find a game
+    if not gameFound:
+        return
+    
+    global gameName
+    global startTime
+    
+    
+    if exists(f"{dirname(__file__)}/games.txt"):
+        with open(f'{dirname(__file__)}/games.txt', 'r+') as gamesFile:
+            for i in gamesFile:
+                game = i.split("\n")
+                game = game[0].split("=")
+                if game[0].lower() == process.name().lower():
+                    gameName = game[1]
+                    startTime = process.create_time()
+                    
+                    if not isPlaying:
+                        log(f"found name for {gameName} on disk")
+                        
+                    gamesFile.close()
+                    return
+            
+            log(f"could not find a name for {process.name()}, adding an entry to games.txt")
+            
+            gamesFile.write(f"{process.name().lower()}={process.name().title()}\n")
+            gamesFile.close()
+            
+                    
+    else:
+        log("games.txt does not exist, creating one")
+        with open(f'{dirname(__file__)}/games.txt', 'a') as gamesFile:
+            gamesFile.write(f"{process.name()}={process.name().title()}\n")
+            gamesFile.close()
+
+    
 
 def setPresenceDetails():
     log("pushing presence to Discord")
@@ -285,11 +358,13 @@ def setPresenceDetails():
 
 def main():
     global steamAPIKey
-    
     global defaultAppID
+    global customGames
+    
     global appID
     global startTime
     global gameName
+    global isPlaying
     
     global coverImage
     global coverImageText
@@ -307,6 +382,8 @@ def main():
     
     steamAPIKey = config["STEAM_API_KEY"]
     defaultAppID = config["DISCORD_APPLICATION_ID"]
+    doLocalGames = config["CUSTOM_GAMES"]["ENABLED"]
+    customGames = config["CUSTOM_GAMES"]["GAMES"]
     
     steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
     gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
@@ -332,6 +409,7 @@ def main():
     isPlaying = False
     startTime = 0
     coverImage = None
+    coverImageText = None
     gameName = ""
     previousGameName = ""
 
@@ -353,8 +431,8 @@ def main():
         # these values are taken from the config file every cycle, so the user can change these whilst the script is running
         config = getConfigFile()
         
-        doCustomGame = config["CUSTOM_GAME_OVERWRITE"]["ENABLED"]
-        customGameName = config["CUSTOM_GAME_OVERWRITE"]["NAME"]
+        doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
+        customGameName = config["GAME_OVERWRITE"]["NAME"]
 
 
         # set the custom game
@@ -363,6 +441,9 @@ def main():
         
         else:
             gameName = getSteamPresence(userIDs)
+            
+            if gameName == "" and doLocalGames:
+                getLocalPresence()
             
             
         # if the game has changed

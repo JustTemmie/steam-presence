@@ -12,7 +12,17 @@
         "USE_STEAM_STORE_FALLBACK": true
     },
 
-    "CUSTOM_GAME_OVERWRITE": {
+    "CUSTOM_GAMES": {
+        "ENABLED": false,
+        "GAMES": [
+            "processName1",
+            "processName2",
+            "processName3",
+            "so on"
+        ]
+    },
+
+    "GAME_OVERWRITE": {
         "ENABLED": false,
         "NAME": "NAME"
     },

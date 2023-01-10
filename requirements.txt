@@ -1,3 +1,4 @@
 python-steamgriddb
 pypresence
 beautifulsoup4
+psutil

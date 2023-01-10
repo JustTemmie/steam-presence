@@ -11,7 +11,9 @@
   - [Cover Art](#cover-art)
     - [Steam Grid DB](#steam-grid-db-sgdb)
     - [Use Steam Store Fallback](#use-steam-store-fallback)
-  - [Custom Game Overwrite](#custom-game-overwrite)
+  - [Local Games](#local-games)
+    - [Games](#games)
+  - [Custom Game Overwrite](#game-overwrite)
   - [Custom Icon](#custom-icon)
 - [Run On Startup](#run-on-startup)
   - [Steam Deck / Linux with Systemd](#steam-deck--linux-with-systemd)
@@ -84,7 +86,17 @@ create a file named `config.json` in the same directory as main.py and fill it i
         "USE_STEAM_STORE_FALLBACK": true
     },
 
-    "CUSTOM_GAME_OVERWRITE": {
+    "CUSTOM_GAMES": {
+        "ENABLED": false,
+        "GAMES": [
+            "processName1",
+            "processName2",
+            "processName3",
+            "so on"
+        ]
+    },
+
+    "GAME_OVERWRITE": {
         "ENABLED": false,
         "NAME": "NAME"
     },
@@ -95,7 +107,6 @@ create a file named `config.json` in the same directory as main.py and fill it i
         "TEXT": "Steam Presence on Discord"
     }
 }
-
 ```
 # Steam web API
 the `STEAM_API_KEY` in this case is regarding to the Steam web API.
@@ -141,13 +152,38 @@ you can get your API key here https://www.steamgriddb.com/profile/preferences/ap
 additionally, this caches the url to a file named icons.txt, so if you don't like an icon it found you can open the file, find the game, and replace it with any image you want.
 
 ## Use Steam Store Fallback 
-
 this will only have an effct if 1) the script fails to fetch an icon from SGDB, or 2) SGDB is simply disabled
 
 what this does is navigate to the store page of your game, and simply uses the 32x32 pixel icon on there, this is fairly low res but it works and is a nice fallback
 
-# Custom Game Overwrite
-if you want to display a game that isn't on steam, you can use the `CUSTOM_GAME_OVERWRITE` section.
+# Local Games
+this will make the script scan for games running locally
+
+## Games
+please fill in the games field according to the names of the tasks, these are not case sensitive
+
+for example:
+
+```
+"GAMES": [
+    "minesweeper",
+    "firefox-bin"
+]
+```
+
+to find the task names, you can check all your local apps by running `runningApps.py`
+
+you may also set a proper display name inside games.txt
+
+example:
+
+```
+firefox-bin=Firefox Web Browser
+steam=Steam Store
+```
+
+# Game Overwrite
+if you want to display a game that isn't on steam, you can use the `GAME_OVERWRITE` section.
 
 set enabled to true and fill in the name of the game you want to display.
 
