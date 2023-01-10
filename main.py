@@ -38,8 +38,6 @@ except:
         
         print("\npackages installed and imported successfully!")
 
-print(os.getlogin())
-
 # just shorthand for logs and errors - easier to write in script
 def log(log):
     print(f"[{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {log}")
@@ -95,6 +93,7 @@ def getGameImage():
         log("searching for an icon using the SGDB")
         # searches SGDB for the game you're playing
         results = sgdb.search_game(gameName)
+        log(f"found the game {results[0]} on SGDB")
         gridAppID = results[0].id
         
         # searches for icons
@@ -141,12 +140,15 @@ def getGameImage():
                         error(f"status code {page.status_code} recieved when trying to web scrape SGDB, ignoring")
                         return
 
+                    # web scraping, this code is messy
                     soup = BeautifulSoup(page.content, "html.parser")
                     img = soup.find("meta", property="og:image")
                     
                     coverImage = img["content"]
                     coverImageText = f"Art by {entry[4]} on SteamGrid DB"
+
                     log("successfully retrived icon from SGDB")
+
                     # saves data to disk
                     with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
                         icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
@@ -175,13 +177,15 @@ def getGameImage():
 
             respone = r.json()
             
+            steamAppID = 0
             # loops thru every game until it finds one matching your game's name
             for i in respone["applist"]["apps"]:
                 if gameName.lower() == i["name"].lower():
                     steamAppID = i["appid"]
+                    
                     log(f"steam app ID {steamAppID} found for {gameName}")
                     break
-            
+
             # then load the store page, and find the icon thru it
             URL = f"https://store.steampowered.com/app/{steamAppID}/"
             page = requests.get(URL)
@@ -201,6 +205,8 @@ def getGameImage():
   
         except Exception as e:
             error(f"Exception {e} raised when trying to fetch {gameName}'s icon thru steam, ignoring")
+            coverImage = None
+            coverImageText = None
 
 # checks what game the user is currently playing
 def getSteamPresence(userIDs):
@@ -411,11 +417,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    # try:
-    # except Exception as e:
-    #     error(f"{e}\nautomatically restarting script in 60 seconds\n")
-    #     sleep(60)
-    #     python = sys.executable
-    #     log("restarting...")
-    #     os.execl(python, python, *sys.argv)
+    try:
+        main()
+    except Exception as e:
+        error(f"{e}\nautomatically restarting script in 60 seconds\n")
+        sleep(60)
+        python = sys.executable
+        log("restarting...")
+        os.execl(python, python, *sys.argv)
