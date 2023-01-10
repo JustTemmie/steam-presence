@@ -191,6 +191,8 @@ firefox-bin=Firefox Web Browser
 steam=Steam Store
 ```
 
+if you want to find out what's running locally, you can run the runningApps.py script, it will simply print out every single application it detects locally, ctrl + f is your best friend. This script is likely going to get improved in the future
+
 # Game Overwrite
 if you want to display a game that isn't on steam, you can use the `GAME_OVERWRITE` section.
 
