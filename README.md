@@ -34,7 +34,7 @@ well, why did i make this? Discord already detects the games you're playing so i
 
 see, no.
 
-Discord has severe limitations when it comes to Linux as most games running thru a compatability layer (like 90% of them) are displayed as pr-wrap or something similar.
+Discord has severe limitations when it comes to Linux as most games running thru a compatability layer, and most of these displayed as pr-wrap or something similar.
 
 in addition to this, there's the Steam Deck, a handheld linux game "console".
 
