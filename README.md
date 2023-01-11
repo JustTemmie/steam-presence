@@ -12,6 +12,7 @@
     - [Steam Grid DB](#steam-grid-db-sgdb)
     - [Use Steam Store Fallback](#use-steam-store-fallback)
   - [Local Games](#local-games)
+    - [Discord App Id](#local-discord-app-id)
     - [Games](#games)
   - [Custom Game Overwrite](#game-overwrite)
   - [Custom Icon](#custom-icon)
@@ -87,13 +88,14 @@ create a file named `config.json` in the same directory as main.py and fill it i
     },
 
     "LOCAL_GAMES": {
-        "ENABLED": false,
-        "GAMES": [
-            "processName1",
-            "processName2",
-            "processName3",
-            "so on"
-        ]
+      "ENABLED": false,
+      "LOCAL_DISCORD_APPLICATION_ID": "1062648118375616594",
+      "GAMES": [
+          "processName1",
+          "processName2",
+          "processName3",
+          "so on"
+      ]
     },
 
     "GAME_OVERWRITE": {
@@ -158,6 +160,16 @@ what this does is navigate to the store page of your game, and simply uses the 3
 
 # Local Games
 this will make the script scan for games running locally
+
+## Local Discord App ID
+
+this is the application ID of the app you want to show up whenever you're playing a game that was detected locally
+
+please generate one here https://discordapp.com/developers/applications/ or use mine "1062648118375616594"
+
+the only thing you need to fill out on their site is the application name itself.
+
+for example i simply named mine "a game", rather generic but you can call it whatever
 
 ## Games
 please fill in the games field according to the names of the tasks, these are not case sensitive

@@ -14,6 +14,7 @@
 
     "LOCAL_GAMES": {
         "ENABLED": false,
+        "LOCAL_DISCORD_APPLICATION_ID": "1062648118375616594",
         "GAMES": [
             "processName1",
             "processName2",

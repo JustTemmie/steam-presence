@@ -235,6 +235,8 @@ def getSteamPresence(userIDs):
         error(f"error code {r.status_code} met when trying to fetch game, ignoring")
         return ""
     
+    global isPlayingLocalGame
+    
     response = r.json()
     
     if len(response["response"]["players"]) == 0:
@@ -244,6 +246,7 @@ def getSteamPresence(userIDs):
     for i in range(0, len(response["response"]["players"])):
         if "gameextrainfo" in response["response"]["players"][0]:
             game_title = response["response"]["players"][0]["gameextrainfo"]
+            isPlayingLocalGame = False
             return game_title
 
     return ""
@@ -278,6 +281,12 @@ def getGameDiscordID():
             appID = i["id"]
             return
 
+    # if the game was fetched using the local checker, instead of thru steam
+    if isPlayingLocalGame:
+        log(f"could not find the discord game ID for {gameName}, defaulting to the secondary, local game ID")
+        appID = defaultLocalAppID
+        return
+
     log(f"could not find the discord game ID for {gameName}, defaulting to well, the default game ID")
     appID = defaultAppID
     return
@@ -308,6 +317,7 @@ def getLocalPresence():
     
     global gameName
     global startTime
+    global isPlayingLocalGame
     
     
     if exists(f"{dirname(__file__)}/games.txt"):
@@ -321,6 +331,7 @@ def getLocalPresence():
                 if game[0].lower() == process.name().lower():
                     gameName = game[1]
                     startTime = process.create_time()
+                    isPlayingLocalGame = True
                     
                     if not isPlaying:
                         log(f"found name for {gameName} on disk")
@@ -333,6 +344,7 @@ def getLocalPresence():
             gamesFile.write(f"{process.name().lower()}={process.name().title()}\n")
             gamesFile.close()
             
+            isPlayingLocalGame = True
             gameName = process.name().title()
             startTime = process.create_time()
                     
@@ -342,6 +354,7 @@ def getLocalPresence():
             gamesFile.write(f"{process.name()}={process.name().title()}\n")
             gamesFile.close()
             
+            isPlayingLocalGame = True
             gameName = process.name().title()
             startTime = process.create_time()
 
@@ -351,7 +364,7 @@ def setPresenceDetails():
     log("pushing presence to Discord")
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
-    if appID == defaultAppID:
+    if appID == defaultAppID or appID == defaultLocalAppID:
         details = gameName
     else:
         details = None
@@ -366,13 +379,15 @@ def setPresenceDetails():
 
 def main():
     global steamAPIKey
-    global defaultAppID
     global localGames
+    global defaultAppID
+    global defaultLocalAppID
     
     global appID
     global startTime
     global gameName
     global isPlaying
+    global isPlayingLocalGame
     
     global coverImage
     global coverImageText
@@ -390,6 +405,7 @@ def main():
     
     steamAPIKey = config["STEAM_API_KEY"]
     defaultAppID = config["DISCORD_APPLICATION_ID"]
+    defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
     doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
     localGames = config["LOCAL_GAMES"]["GAMES"]
     
@@ -415,6 +431,7 @@ def main():
         
     # declare variables
     isPlaying = False
+    isPlayingLocalGame = False
     startTime = 0
     coverImage = None
     coverImageText = None
