@@ -203,7 +203,7 @@ def getGameImage():
             
             # if it was redirected to the main page (steam does this whenever it recieves an invalid URL), exit
             if page.url == "https://store.steampowered.com/":
-                log(f"the app ID found for {gameName} ({steamAppID}) does not seem to be valid, exiting")
+                log(f"the app ID found for {gameName} ({steamAppID}) does not seem to be valid, ignoring")
                 return
             
             if r.status_code != 200:
@@ -215,7 +215,7 @@ def getGameImage():
             # save it to variable
             coverImage = img["src"]
             coverImageText = f"{gameName} on steam"
-            # do not this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
+            # do note this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
             
             log(f"successfully found steam's icon for {gameName}")
   
@@ -235,20 +235,21 @@ def getSteamPresence(userIDs):
         error(f"error code {r.status_code} met when trying to fetch game, ignoring")
         return ""
     
-    respone = r.json()
+    response = r.json()
     
-    if len(respone["response"]["players"]) == 0:
+    if len(response["response"]["players"]) == 0:
         error("No account found, please verify that all your user IDs are correct")
         exit()
 
-    if "gameextrainfo" in respone["response"]["players"][0]:
-        game_title = respone["response"]["players"][0]["gameextrainfo"]
-        return game_title
+    for i in range(0, len(response["response"]["players"])):
+        if "gameextrainfo" in response["response"]["players"][0]:
+            game_title = response["response"]["players"][0]["gameextrainfo"]
+            return game_title
 
     return ""
 
 # requests a list of all games recognized internally by discord, if any of the names matches
-# the detected game, save the discord game ID associated with said title, this is used to report to discord as that game 
+# the detected game, save the discord game ID associated with said title to RAM, this is used to report to discord as that game 
 def getGameDiscordID():
     log(f"fetching the Discord game ID for {gameName}")
     r = requests.get("https://discordapp.com/api/v8/applications/detectable")
@@ -281,23 +282,21 @@ def getGameDiscordID():
     appID = defaultAppID
     return
 
+# checks if any local games are running
 def getLocalPresence():
-    if not isPlaying:
-        log("checking for locally running game")
-    
     # load the custom games, all lower case
     config = getConfigFile()
-    templist = config["CUSTOM_GAMES"]["GAMES"]
-    customGames = []
+    templist = config["LOCAL_GAMES"]["GAMES"]
+    localGames = []
     for i in templist:
-        customGames.append(i.lower())
+        localGames.append(i.lower())
 
     
     gameFound = False
     # loop thru all open applications
     for process in psutil.process_iter():
         # if the name is in the list, set it to the gamename and stop the loop
-        if process.name().lower() in customGames:
+        if process.name().lower() in localGames:
             if not isPlaying:
                 log(f"found {process.name()} running locally")
             gameFound = True
@@ -314,8 +313,11 @@ def getLocalPresence():
     if exists(f"{dirname(__file__)}/games.txt"):
         with open(f'{dirname(__file__)}/games.txt', 'r+') as gamesFile:
             for i in gamesFile:
+                # remove the new line
                 game = i.split("\n")
                 game = game[0].split("=")
+                
+                # if there's a match
                 if game[0].lower() == process.name().lower():
                     gameName = game[1]
                     startTime = process.create_time()
@@ -331,12 +333,17 @@ def getLocalPresence():
             gamesFile.write(f"{process.name().lower()}={process.name().title()}\n")
             gamesFile.close()
             
+            gameName = process.name().title()
+            startTime = process.create_time()
                     
     else:
         log("games.txt does not exist, creating one")
         with open(f'{dirname(__file__)}/games.txt', 'a') as gamesFile:
             gamesFile.write(f"{process.name()}={process.name().title()}\n")
             gamesFile.close()
+            
+            gameName = process.name().title()
+            startTime = process.create_time()
 
     
 
@@ -360,7 +367,7 @@ def setPresenceDetails():
 def main():
     global steamAPIKey
     global defaultAppID
-    global customGames
+    global localGames
     
     global appID
     global startTime
@@ -383,8 +390,8 @@ def main():
     
     steamAPIKey = config["STEAM_API_KEY"]
     defaultAppID = config["DISCORD_APPLICATION_ID"]
-    doLocalGames = config["CUSTOM_GAMES"]["ENABLED"]
-    customGames = config["CUSTOM_GAMES"]["GAMES"]
+    doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
+    localGames = config["LOCAL_GAMES"]["GAMES"]
     
     steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
     gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
@@ -448,7 +455,7 @@ def main():
             
             
         # if the game has changed
-        if previousGameName != gameName :
+        if previousGameName != gameName:
             # if the game has been closed
             if gameName == "":
                 # only close once
@@ -456,6 +463,10 @@ def main():
                     log(f"closing previous rich presence object, no longer playing {previousGameName}")
                     print("----------------------------------------------------------")
                     RPC.close()
+                    
+                    # set previous game name to "", this is used to check if the game has changed
+                    # if we don't use this and the user opens a game, closes it, and then relaunches it - the script won't detect that
+                    previousGameName = ""
                     startTime = 0
                     isPlaying = False
             
@@ -464,7 +475,7 @@ def main():
                 if doCustomGame:
                     log(f"using custom game '{customGameName}'")
     
-                log(f"game changed, updating to '{gameName}' from '{previousGameName}'")
+                log(f"game changed, updating to '{gameName}'")
                 
                 if startTime == 0:
                     startTime = round(time())

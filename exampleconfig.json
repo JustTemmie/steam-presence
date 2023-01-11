@@ -12,7 +12,7 @@
         "USE_STEAM_STORE_FALLBACK": true
     },
 
-    "CUSTOM_GAMES": {
+    "LOCAL_GAMES": {
         "ENABLED": false,
         "GAMES": [
             "processName1",
