@@ -18,6 +18,8 @@
   - [Custom Icon](#custom-icon)
 - [Run On Startup](#run-on-startup)
   - [Steam Deck / Linux with Systemd](#steam-deck--linux-with-systemd)
+    - [Installer](#installer)
+    - [Manual Installation](#manual-installation)
   - [Linux (not using Systemd)](#linux-not-using-systemd) 
 
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
@@ -236,6 +238,18 @@ if you're running either Windows or MacOS i cannot really give you any help with
 ## Steam Deck / Linux with Systemd
 
 If you have a Steam Deck, it is possible to have steam-presence start automatically when your Steam Deck boots.  This method may also work on other Linux distributions that use per-user Systemd instances.  If you (as a regular user) can run the command `systemctl --user status` successfully, then this should work.
+
+### Installer
+
+simply run the `installer.sh` file
+
+open konsole/another terminal and run this command:
+
+```
+./installer.sh
+```
+
+### Manual Installation
 
 The file `steam-presence.service` has more information and instructions.
 

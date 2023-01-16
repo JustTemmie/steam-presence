@@ -49,18 +49,18 @@ echo ""
 
 timeout 2.5s ./bin/python ./main.py
 
-echo "Test might've worked, did it spit out any errors?"
+echo "Test might've worked, did it spit out any errorcds?"
 echo "Commands executed."
 
 # Replace "deck" user with local username in steam-presence.service file
+echo "Editing service file"
 local_username=$(whoami)
 sed -i "s/deck/$local_username/g" "$HOME/steam-presence/steam-presence.service"
 
-echo ""
-echo "To enable the service to start on boot, run the following command as root:"
-echo "sudo systemctl enable $HOME/steam-presence/steam-presence.service && sudo systemctl start steam-presence.service"
-echo ""
+echo "Starting service"
+systemctl --user --now enable "$HOME/steam-presence/steam-presence.service"
 
 echo "If you encountered any errors with this script, please create an issue on the GitHub page"
-
+echo ""
 echo "Script completed."
+echo "If you ever want to check the status of the script, simply run \"systemctl --user status steam-presence\""

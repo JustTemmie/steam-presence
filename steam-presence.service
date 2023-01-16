@@ -55,10 +55,8 @@
 # * Reload Systemd, so that is becomes aware of steam-presence:
 #   > systemctl --user daemon-reload
 # * Enable steam-presence, so that it will start automatically when the Steam
-#   Deck is restarted:
-#   > systemctl --user enable steam-presence
-# * Tell Systemd to start steam-presence:
-#   > systemctl --user start steam-presence
+#   Deck is restarted, the --now argument makes it also start now:
+#   > systemctl --user enable --now steam-presence
 # * Check on the status of steam-presence, to see if it started OK:
 #   > systemctl --user status steam-presence
 #   Systemd should tell you that steam-presence is running, and at the end
