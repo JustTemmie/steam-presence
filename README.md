@@ -1,3 +1,5 @@
+![image](https://user-images.githubusercontent.com/47639983/212717243-8325d457-5eb3-4948-ab45-865a763445c3.png)
+
 # Steam Presence
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
 
@@ -46,31 +48,6 @@ here's a step by step explanation of what happens. Let's say I launch Deep Rock 
 4) steam-presence (still on my Mac) pushes the rich presence information to the Discord client (also running on my Mac).
 
 5) The Discord client will now display your current game on your profile, for your friends to see
-
-## Table of Contents
-- [Steam presence](#steam-presence)
-  - [Showcase](#showcase) 
-  - [Features](#features)
-  - [Why](#why)
-- [Table of Contents](#table-of-contents)
-- [Installation](#installation)
-- [Setup](#setup)
-  - [Steam Web API](#steam-web-api)
-  - [Steam User IDs](#user-ids)
-  - [Discord Application ID](#discord-application-id)
-  - [Cover Art](#cover-art)
-    - [Steam Grid DB](#steam-grid-db-sgdb)
-    - [Use Steam Store Fallback](#use-steam-store-fallback)
-  - [Local Games](#local-games)
-    - [Discord App Id](#local-discord-app-id)
-    - [Games](#games)
-  - [Custom Game Overwrite](#game-overwrite)
-  - [Custom Icon](#custom-icon)
-- [Run On Startup](#run-on-startup)
-  - [Steam Deck / Linux with Systemd](#steam-deck--linux-with-systemd)
-    - [Installer](#installer)
-    - [Manual Installation](#manual-installation)
-  - [Linux (not using Systemd)](#linux-not-using-systemd) 
 
 ## Installation
 
