@@ -31,7 +31,7 @@ playing "BTD6" with the script running
 
 ![ExampleImage2](readmeimages/example2.png)
 
-playing "Everything" with the script running (more niche game so Discord doesn't have it saved)
+playing "Everything" with the script running (more niche game so fetching the game ID thru Discord isn't possible)
 
 ### Features
 
