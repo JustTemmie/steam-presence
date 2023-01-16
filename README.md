@@ -1,3 +1,4 @@
+# Steam Presence
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
 
 ### Showcase
