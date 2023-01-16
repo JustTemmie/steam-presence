@@ -3,6 +3,7 @@
 ## Table of Contents
 - [Steam presence](#steam-presence)
   - [Why](#why)
+  - [Features](#features)
 - [Installation](#installation)
 - [Setup](#setup)
   - [Steam Web API](#steam-web-api)
@@ -31,6 +32,14 @@ playing "BTD6" with the script running
 ![ExampleImage2](readmeimages/example2.png)
 
 playing "Everything" with the script running (more niche game so Discord doesn't have it saved)
+
+### Features
+
+* Set Discord Rich Presence with large image, large image hover text, small image, small image hover text, and start timestamps.
+* Automatically fetches game information from steam.
+* Supports locally running applications, both games and other programs.
+* Supports custom large image cover art, along with text for any game.
+* Dynamic config file reloading.
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
