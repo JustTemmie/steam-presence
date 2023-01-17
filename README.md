@@ -1,36 +1,24 @@
-# steam presence
+![image](https://user-images.githubusercontent.com/47639983/212717243-8325d457-5eb3-4948-ab45-865a763445c3.png)
 
-## Table of Contents
-- [Steam presence](#steam-presence)
-  - [Why](#why)
-- [Installation](#installation)
-- [Setup](#setup)
-  - [Steam Web API](#steam-web-api)
-  - [Steam User IDs](#user-ids)
-  - [Discord Application ID](#discord-application-id)
-  - [Cover Art](#cover-art)
-    - [Steam Grid DB](#steam-grid-db-sgdb)
-    - [Use Steam Store Fallback](#use-steam-store-fallback)
-  - [Local Games](#local-games)
-    - [Discord App Id](#local-discord-app-id)
-    - [Games](#games)
-  - [Custom Game Overwrite](#game-overwrite)
-  - [Custom Icon](#custom-icon)
-- [Run On Startup](#run-on-startup)
-  - [Steam Deck / Linux with Systemd](#steam-deck--linux-with-systemd)
-    - [Installer](#installer)
-    - [Manual Installation](#manual-installation)
-  - [Linux (not using Systemd)](#linux-not-using-systemd) 
-
+# Steam Presence
 a simple script to check a Steam user's current game, and display that as a Discord rich presence
 
+### Showcase
 ![ExampleImage1](readmeimages/example1.png)
 
 playing "BTD6" with the script running 
 
 ![ExampleImage2](readmeimages/example2.png)
 
-playing "Everything" with the script running (more niche game so Discord doesn't have it saved)
+playing "Everything" with the script running (more niche game so fetching the game ID thru Discord isn't possible)
+
+### Features
+
+* Set Discord Rich Presence with large image, large image hover text, small image, small image hover text, and start timestamps.
+* Automatically fetches game information from steam.
+* Supports locally running applications, both games and other programs.
+* Supports custom large image cover art, along with text for any game.
+* Dynamic config file reloading.
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
