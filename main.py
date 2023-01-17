@@ -195,6 +195,8 @@ def getGameImage():
             # if we didn't find the game at all on steam, 
             if steamAppID == 0:
                 log(f"could not find the steam app ID for {gameName}")
+                coverImage = None
+                coverImageText = None
                 return
 
             # then load the store page, and find the icon thru it
@@ -293,21 +295,29 @@ def getGameDiscordID():
 
 # checks if any local games are running
 def getLocalPresence():
-    # load the custom games, all lower case
     config = getConfigFile()
-    templist = config["LOCAL_GAMES"]["GAMES"]
-    localGames = []
-    for i in templist:
-        localGames.append(i.lower())
+    # load the custom games, all lower case
+    localGames = list(map(str.lower, config["LOCAL_GAMES"]["GAMES"]))
 
     
     gameFound = False
-    # loop thru all open applications
-    for process in psutil.process_iter():
-        # if the name is in the list, set it to the gamename and stop the loop
-        if process.name().lower() in localGames:
+    # process = None
+    
+    # get a list of all open applications, make a list of their creation times, and their names
+    processCreationTimes = [i.create_time() for i in psutil.process_iter()]
+    processNames = [i.name().lower() for i in psutil.process_iter()]
+    
+    # loop thru all games we're supposed to look for
+    for game in localGames:
+        # check if that game is running locally
+        if game in processNames:
+            # write down the process name and it's creation time
+            processCreationTime = processCreationTimes[processNames.index(game)]
+            processName = game
+        
             if not isPlaying:
-                log(f"found {process.name()} running locally")
+                log(f"found {processName} running locally")
+
             gameFound = True
             break
     
@@ -325,12 +335,13 @@ def getLocalPresence():
             for i in gamesFile:
                 # remove the new line
                 game = i.split("\n")
+                # split first and second part of the string
                 game = game[0].split("=")
                 
                 # if there's a match
-                if game[0].lower() == process.name().lower():
+                if game[0].lower() == processName:
                     gameName = game[1]
-                    startTime = process.create_time()
+                    startTime = processCreationTime
                     isPlayingLocalGame = True
                     
                     if not isPlaying:
@@ -339,24 +350,27 @@ def getLocalPresence():
                     gamesFile.close()
                     return
             
-            log(f"could not find a name for {process.name()}, adding an entry to games.txt")
+            # if there wasn't a local entry for the game
+            log(f"could not find a name for {processName}, adding an entry to games.txt")
             
-            gamesFile.write(f"{process.name().lower()}={process.name().title()}\n")
+            gamesFile.write(f"{processName.lower()}={processName.title()}\n")
             gamesFile.close()
             
             isPlayingLocalGame = True
-            gameName = process.name().title()
-            startTime = process.create_time()
-                    
+            gameName = processName.title()
+            startTime = processCreationTime
+
+
+    # if games.txt doesn't exist at all           
     else:
         log("games.txt does not exist, creating one")
         with open(f'{dirname(__file__)}/games.txt', 'a') as gamesFile:
-            gamesFile.write(f"{process.name()}={process.name().title()}\n")
+            gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
             
             isPlayingLocalGame = True
-            gameName = process.name().title()
-            startTime = process.create_time()
+            gameName = processName.title()
+            startTime = processCreationTime
 
     
 
@@ -508,7 +522,10 @@ def main():
                 if isPlaying:
                     log(f"RPC for {previousGameName} still open, closing it")
                     RPC.close()
-                    startTime = round(time())
+                    
+                    # if the game is fetched thru local tasks, the startTime has already been set
+                    if not isPlayingLocalGame:
+                        startTime = round(time())
                 # redefine and reconnect to the RPC object
                 log(f"creating new rich presence object for {gameName}")
                 RPC = Presence(client_id=appID)
