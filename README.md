@@ -55,7 +55,7 @@ here's a step by step explanation of what happens. Let's say I launch Deep Rock 
  - Python 3.8 or higher installed
  - pip installed
  - a verified steam account (requires your account to have spent 5 USD on games) 
- - your steam account must be online
+ - your steam account must be online in order to detect your current game
  
 ## Installation
 
