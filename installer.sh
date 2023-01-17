@@ -31,6 +31,11 @@ ln -s "$(pwd)/icons.txt" "$HOME/steam-presence/icons.txt"
 ln -s "$(pwd)/requirements.txt" "$HOME/steam-presence/requirements.txt"
 ln -s "$(pwd)/steam-presence.service" "$HOME/steam-presence/steam-presence.service"
 
+# Create a symlink for games.txt if it exists
+if [ -e "$(pwd)/games.txt" ]; then
+  ln -s "$(pwd)/games.txt" "$HOME/steam-presence/games.txt"
+fi
+
 echo "Symlinks created."
 
 # Change to steam-presence directory
@@ -49,7 +54,7 @@ echo ""
 
 timeout 2.5s ./bin/python ./main.py
 
-echo "Test might've worked, did it spit out any errorcds?"
+echo "Test might've worked, did it spit out any errors?"
 echo "Commands executed."
 
 # Replace "deck" user with local username in steam-presence.service file
