@@ -36,6 +36,11 @@ if [ -e "$(pwd)/games.txt" ]; then
   ln -s "$(pwd)/games.txt" "$HOME/steam-presence/games.txt"
 fi
 
+# Create a symlink for gameIDs.json if it exists
+if [ -e "$(pwd)/customGameIDs.json" ]; then
+  ln -s "$(pwd)/customGameIDs.json" "$HOME/steam-presence/customGameIDs.json"
+fi
+
 echo "Symlinks created."
 
 # Change to steam-presence directory

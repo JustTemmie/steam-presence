@@ -262,8 +262,22 @@ def getGameDiscordID():
     if r.status_code != 200:
         error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
     
+    
     response = r.json()
     
+    # check if the "customGameIDs.json" file exists, if so, open it
+    if exists(f"{dirname(__file__)}/customGameIDs.json"):
+        with open(f"{dirname(__file__)}/customGameIDs.json", "r") as f:
+            # load the values of the file
+            gameIDsFile = json.load(f)
+            
+            # add the values from the file directly to the list returned by discord
+            for i in gameIDsFile:
+                response.append({
+                    "name": i,
+                    "id": gameIDsFile[i]
+                })
+            
     global appID
     
     # loop thru all games

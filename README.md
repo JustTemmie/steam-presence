@@ -172,6 +172,7 @@ the only thing you need to fill out on their site is the application name itself
 for example i simply named mine "a game", rather generic but you can call it whatever
 
 ## Games
+
 please fill in the games field according to the names of the tasks, these are not case sensitive
 
 example for unix users:
@@ -206,6 +207,7 @@ steam=Steam Store
 if you want to find out what's running locally, you can run the runningApps.py script, it will simply print out every single application it detects locally, ctrl + f is your best friend. This script is likely going to get improved in the future
 
 # Game Overwrite
+
 if you want to display a game that isn't on steam, you can use the `GAME_OVERWRITE` section.
 
 set enabled to true and fill in the name of the game you want to display.
@@ -213,9 +215,34 @@ set enabled to true and fill in the name of the game you want to display.
 this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving it one yourself.
 
 # Custom Icon
+
 this is a small icon that appears in the bottom right, enable it or disable it.
 
 set an URL to the image you want to use, and a text that will appear when hovering over the icon.
+
+# Custom Game IDs
+
+if you wish to, you can create a file named "customGameIDs.json", this file will allow the script to properly display the game name for everything.
+
+you need to create a game thru discord's dashboard https://discord.com/developers/applications/ the only thing you need so set is the application name, everything else is irrelevant.
+
+then pair this up with the game's name, be careful with the end of line commas.
+
+note, you will have to make an application thru discord for every single game you add here.
+
+this is compatible with games both fetched thru steam and detected running locally.
+
+
+
+template:
+
+```
+{
+    "Firefox": 1065236154477203456,
+    "Godot Engine": 1065241036932268073,
+    "Beaver Clicker": 1065249144853254245
+}
+```
 
 # Python
 only tested on python3.8 and higher.
