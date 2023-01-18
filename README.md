@@ -232,7 +232,7 @@ note, you will have to make an application thru discord for every single game yo
 
 this is compatible with games both fetched thru steam and detected running locally.
 
-
+![image](https://user-images.githubusercontent.com/47639983/213175355-a082bfc3-3083-4e76-9747-d2cda4f18790.png)
 
 template:
 
