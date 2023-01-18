@@ -222,7 +222,7 @@ set an URL to the image you want to use, and a text that will appear when hoveri
 
 # Custom Game IDs
 
-if you wish to, you can create a file named "customGameIDs.json", this file will allow the script to properly display the game name for everything.
+if you wish to, you can create a file named "customGameIDs.json", this file will allow the script to properly display the game name for everything the script can't find on it's own.
 
 you need to create a game thru discord's dashboard https://discord.com/developers/applications/ the only thing you need so set is the application name, everything else is irrelevant.
 
