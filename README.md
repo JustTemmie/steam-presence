@@ -154,16 +154,16 @@ you can get your API key here https://www.steamgriddb.com/profile/preferences/ap
 additionally, this caches the url to a file named icons.txt, so if you don't like an icon it found you can open the file, find the game, and replace it with any image you want.
 
 ## Use Steam Store Fallback 
-this will only have an effct if 1) the script fails to fetch an icon from SGDB, or 2) SGDB is simply disabled
+this will only have an effect if 1) the script fails to fetch an icon from SGDB, or 2) SGDB is simply disabled
 
-what this does is navigate to the store page of your game, and simply uses the 32x32 pixel icon on there, this is fairly low res but it works and is a nice fallback
+what this does is navigate to the store page of your game, and gets the link from the header image there, this will get cropped so it's not ideal but it works and is a nice fallback
 
 # Local Games
 this will make the script scan for games running locally
 
 ## Local Discord App ID
 
-this is the application ID of the app you want to show up whenever you're playing a game that was detected locally
+this is the application ID of the app you want to show up whenever you're playing a game that was detected locally. if you want to, this can be the same as the other default app ID
 
 please generate one here https://discordapp.com/developers/applications/ or use mine "1062648118375616594"
 
