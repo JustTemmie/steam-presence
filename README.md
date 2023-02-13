@@ -67,7 +67,7 @@ git clone https://github.com/JustTemmie/steam-presence
 
 follow the **setup** guide
 
-and for linux users, run the [Installer](#installer)
+and for linux users, run the [Installer](#automatic-installer)
 
 ## Setup
 create a file named `config.json` in the same directory as main.py and fill it in accordingly.
@@ -264,7 +264,7 @@ if you're running either Windows or MacOS i cannot really give you any help with
 
 If you have a Steam Deck, it is possible to have steam-presence start automatically when your Steam Deck boots.  This method may also work on other Linux distributions that use per-user Systemd instances.  If you (as a regular user) can run the command `systemctl --user status` successfully, then this should work.
 
-### Installer
+### Automatic Installer
 
 simply run the `installer.sh` file
 
