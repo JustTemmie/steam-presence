@@ -208,11 +208,13 @@ if you want to find out what's running locally, you can run the runningApps.py s
 
 # Game Overwrite
 
-if you want to display a game that isn't on steam, you can use the `GAME_OVERWRITE` section.
+if you want to display soemthing else, you can use the `GAME_OVERWRITE` section.
 
-set enabled to true and fill in the name of the game you want to display.
+set enabled to true and fill in the name of whatever you want to display.
 
 this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving it one yourself.
+
+this field can be *anything* if you want to be seen playing "eirasdtloawbd" you can do so.
 
 # Custom Icon
 
