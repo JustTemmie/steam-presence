@@ -3,6 +3,8 @@
     "USER_IDS": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
+
+    "WEB_SCRAPE": false,
     
     "COVER_ART": {
         "STEAM_GRID_DB": {

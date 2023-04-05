@@ -78,6 +78,8 @@ create a file named `config.json` in the same directory as main.py and fill it i
     "USER_IDS": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
+
+    "WEB_SCRAPE": false,
     
     "COVER_ART": {
         "STEAM_GRID_DB": {
@@ -205,6 +207,27 @@ steam=Steam Store
 ```
 
 if you want to find out what's running locally, you can run the runningApps.py script, it will simply print out every single application it detects locally, ctrl + f is your best friend. This script is likely going to get improved in the future
+
+# Non Steam Games
+ahh... the non steam games
+
+so for a bit of background of why this might seem a bit weird at first Steam's actual API does not report non steam games in ANY capacity.
+
+so the solution for this, web scraping - loading a website in the background, reading the data off it, and closing it - redoing this every 20 seconds.
+
+performance wise it's actually fine, being reasonably light weight and on anything reasonably modern this should be fine.
+
+download your cookies for steam, from my own experience these tend to stay valid for about a week, meaning you have to redo this step EVERY week
+
+download this addon for firefox, i couldn't find any plugins for chrome that i would consider safe.
+
+https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/
+
+navigate to your profile on steam, and download the steam cookie file, naming it "cookies.txt" and save it in the same folder as main.py
+
+then change WEB_SCRAPE in the config file to true
+
+**Note**: due to the names of non steam games being set by yourself, steam grid DB might have problems finding icons for the game, but if it's in their database, this script will fetch it
 
 # Game Overwrite
 

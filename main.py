@@ -27,6 +27,9 @@ try:
     
     # used to check applications that are open locally
     import psutil
+    
+    # used to load cookies for non-steam games
+    import http.cookiejar as cookielib
 
 except:
     answer = input("looks like either requests, pypresence, steamgrid, psutil, or beautifulSoup is not installed, do you want to install them? (y/n) ")
@@ -40,6 +43,7 @@ except:
         from bs4 import BeautifulSoup
         import psutil
         import requests
+        import http.cookiejar as cookielib
         
         print("\npackages installed and imported successfully!")
 
@@ -244,8 +248,44 @@ def getGameImage():
     if steamStoreCoverartBackup:
         getImageFromStorepage()
 
+# web scrapes the user's web page, sending the needed cookies along with the request
+def getWebScrapePresence():
+    if not exists(f"{dirname(__file__)}/cookies.txt"):
+        print("cookie.txt not found")
+        return
+    
+    cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
+    cj.load()
+    
+    # split on ',' in case of multiple userIDs
+    for i in userIDs.split(","):
+        URL = f"https://steamcommunity.com/profiles/{i}/"
+        page = requests.post(URL, cookies=cj)
+        
+        if page.status_code == 403:
+            error("Forbidden, Access to Steam has been denied, please verify that your cookies are up to date")
+
+        elif page.status_code != 200:
+            error(f"error code {page.status_code} met when trying to fetch game thru webscraping, ignoring")
+    
+        else:
+            soup = BeautifulSoup(page.content, "html.parser")
+
+            for element in soup.find_all("div", class_="profile_in_game_name"):
+                result = element.text.strip()
+
+                # the "last online x min ago" field is the same div as the game name
+                if "Last Online" not in result:
+                    
+                    global isPlayingLocalGame
+                    
+                    isPlayingLocalGame = False
+                    return result
+    
+    return
+
 # checks what game the user is currently playing
-def getSteamPresence(userIDs):
+def getSteamPresence():
     r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userIDs}")
     if r.status_code == 403:
         error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
@@ -424,6 +464,7 @@ def setPresenceDetails():
     )
 
 def main():
+    global userIDs
     global steamAPIKey
     global localGames
     global defaultAppID
@@ -463,6 +504,16 @@ def main():
     # load these later on
     customIconURL = None
     customIconText = None
+    
+    # added in 1.8, settings that aren't required and might not be in the config file
+    optionalSettings = {
+        "WEB_SCRAPE": False
+    }
+    for i in optionalSettings:
+        if i in config:
+            optionalSettings[i] = config[i]
+            
+    print(optionalSettings)
     
     # loads the user ids and turns them into a string of (for example) user1,user2,user3
     userIDs = ""
@@ -511,10 +562,13 @@ def main():
             gameName = customGameName
         
         else:
-            gameName = getSteamPresence(userIDs)
+            gameName = getSteamPresence()
             
             if gameName == "" and doLocalGames:
                 getLocalPresence()
+            
+            if gameName == "" and optionalSettings["WEB_SCRAPE"]:
+                gameName = getWebScrapePresence()
             
             
         # if the game has changed
