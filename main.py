@@ -65,6 +65,150 @@ def getConfigFile():
         error("Config file not found. Please read the readme and create a config file.")
         exit()
 
+def getImageFromSGDB():
+    global coverImage
+    global coverImageText
+    
+    log("searching for an icon using the SGDB")
+    # searches SGDB for the game you're playing
+    results = sgdb.search_game(gameName)
+    
+    if len(results) == 0:
+        log(f"could not find anything on SGDB")
+        return
+
+    
+    log(f"found the game {results[0]} on SGDB")
+    gridAppID = results[0].id
+    
+    # searches for icons
+    gridIcons = sgdb.get_icons_by_gameid(game_ids=[gridAppID])
+    
+    # makes sure anything was returned at all
+    if gridIcons != None:
+    
+        # throws the icons into a dictionary with the required information, then sorts them using the icon height
+        gridIconsDict = {}
+        for i, gridIcon in enumerate(gridIcons):
+            gridIconsDict[i] = [gridIcon.height, gridIcon._nsfw, gridIcon.url, gridIcon.mime, gridIcon.author.name, gridIcon.id]
+        
+        gridIconsDict = (sorted(gridIconsDict.items(), key=lambda x:x[1], reverse=True))
+        
+        
+        # does a couple checks before making it the cover image
+        for i in range(0, len(gridIconsDict)):
+            entry = gridIconsDict[i][1]
+            # makes sure image is not NSFW
+            if entry[1] == False:
+                # makes sure it's not an .ico file - discord cannot display these
+                if entry[3] == "image/png":
+                    # sets the link, and gives credit to the artist if anyone hovers over the icon
+                    coverImage = entry[2]
+                    coverImageText = f"Art by {entry[4]} on SteamGrid DB"
+                    log("successfully retrived icon from SGDB")
+                    # saves this data to disk
+                    with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+                        icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
+                        icons.close()
+                    return
+        
+        log("failed, trying to load from the website directly")
+        # if the game doesn't have any .png files for the game, try to web scrape them from the site
+        for i in range(0, len(gridIconsDict)):
+            entry = gridIconsDict[i][1]
+            # makes sure image is not NSFW
+            if entry[1] == False:
+                URL = f"https://www.steamgriddb.com/icon/{entry[5]}"
+                page = requests.get(URL)
+                
+                if page.status_code != 200:
+                    error(f"status code {page.status_code} recieved when trying to web scrape SGDB, ignoring")
+                    return
+
+                # web scraping, this code is messy
+                soup = BeautifulSoup(page.content, "html.parser")
+
+                img = soup.find("meta", property="og:image")
+                
+                coverImage = img["content"]
+                coverImageText = f"Art by {entry[4]} on SteamGrid DB"
+
+                log("successfully retrived icon from SGDB")
+
+                # saves data to disk
+                with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+                    icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
+                    icons.close()
+                return
+        
+        log("failed to fetch icon from SGDB")
+    
+    else:
+        log(f"SGDB doesn't seem to have any entries for {gameName}")
+
+
+def getImageFromStorepage():
+    global coverImage
+    global coverImageText
+    
+    log("getting icon from the steam store")
+    try:
+        # fetches a list of ALL games on steam
+        r = requests.get(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+        
+        if r.status_code == 403:
+            error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
+            exit()
+        
+        if r.status_code != 200:
+            error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
+            return
+
+        respone = r.json()
+        
+        steamAppID = 0
+        # loops thru every game until it finds one matching your game's name
+        for i in respone["applist"]["apps"]:
+            if gameName.lower() == i["name"].lower():
+                steamAppID = i["appid"]
+                
+                log(f"steam app ID {steamAppID} found for {gameName}")
+                break
+        
+        # if we didn't find the game at all on steam, 
+        if steamAppID == 0:
+            log(f"could not find the steam app ID for {gameName}")
+            coverImage = None
+            coverImageText = None
+            return
+
+        # then load the store page, and find the icon thru it
+        URL = f"https://store.steampowered.com/app/{steamAppID}/"
+        page = requests.get(URL, allow_redirects=True)
+        
+        # if it was redirected to the main page (steam does this whenever it recieves an invalid URL), exit
+        if page.url == "https://store.steampowered.com/":
+            log(f"the app ID found for {gameName} ({steamAppID}) does not seem to be valid, ignoring")
+            return
+        
+        if r.status_code != 200:
+            error(f"error code {r.status_code} met when trying to load store page for {gameName}, ignoring")
+            return
+        
+        soup = BeautifulSoup(page.content, "html.parser")
+        img = soup.find("div", {"class": "game_header_image_ctn"}).find("img")
+        # save it to variable
+        coverImage = img["src"]
+        coverImageText = f"{gameName} on steam"
+        # do note this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
+        
+        log(f"successfully found steam's icon for {gameName}")
+
+    except Exception as e:
+        error(f"Exception {e} raised when trying to fetch {gameName}'s icon thru steam, ignoring")
+        coverImage = None
+        coverImageText = None
+
 
 # searches the steam grid DB or the official steam store to get cover images for games
 def getGameImage():
@@ -95,136 +239,10 @@ def getGameImage():
     
     
     if gridEnabled:
-        log("searching for an icon using the SGDB")
-        # searches SGDB for the game you're playing
-        results = sgdb.search_game(gameName)
-        log(f"found the game {results[0]} on SGDB")
-        gridAppID = results[0].id
+        getImageFromSGDB()
         
-        # searches for icons
-        gridIcons = sgdb.get_icons_by_gameid(game_ids=[gridAppID])
-        
-        # makes sure anything was returned at all
-        if gridIcons != None:
-        
-            # throws the icons into a dictionary with the required information, then sorts them using the icon height
-            gridIconsDict = {}
-            for i, gridIcon in enumerate(gridIcons):
-                gridIconsDict[i] = [gridIcon.height, gridIcon._nsfw, gridIcon.url, gridIcon.mime, gridIcon.author.name, gridIcon.id]
-            
-            gridIconsDict = (sorted(gridIconsDict.items(), key=lambda x:x[1], reverse=True))
-            
-            
-            # does a couple checks before making it the cover image
-            for i in range(0, len(gridIconsDict)):
-                entry = gridIconsDict[i][1]
-                # makes sure image is not NSFW
-                if entry[1] == False:
-                    # makes sure it's not an .ico file - discord cannot display these
-                    if entry[3] == "image/png":
-                        # sets the link, and gives credit to the artist if anyone hovers over the icon
-                        coverImage = entry[2]
-                        coverImageText = f"Art by {entry[4]} on SteamGrid DB"
-                        log("successfully retrived icon from SGDB")
-                        # saves this data to disk
-                        with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
-                            icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
-                            icons.close()
-                        return
-            
-            log("failed, trying to load from the website directly")
-            # if the game doesn't have any .png files for the game, try to web scrape them from the site
-            for i in range(0, len(gridIconsDict)):
-                entry = gridIconsDict[i][1]
-                # makes sure image is not NSFW
-                if entry[1] == False:
-                    URL = f"https://www.steamgriddb.com/icon/{entry[5]}"
-                    page = requests.get(URL)
-                    
-                    if page.status_code != 200:
-                        error(f"status code {page.status_code} recieved when trying to web scrape SGDB, ignoring")
-                        return
-
-                    # web scraping, this code is messy
-                    soup = BeautifulSoup(page.content, "html.parser")
-
-                    img = soup.find("meta", property="og:image")
-                    
-                    coverImage = img["content"]
-                    coverImageText = f"Art by {entry[4]} on SteamGrid DB"
-
-                    log("successfully retrived icon from SGDB")
-
-                    # saves data to disk
-                    with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
-                        icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
-                        icons.close()
-                    return
-            
-            log("failed to fetch icon from SGDB")
-        
-        else:
-            log(f"SGDB doesn't seem to have any entries for {gameName}")
-
-
     if steamStoreCoverartBackup:
-        log("getting icon from the steam store")
-        try:
-            # fetches a list of ALL games on steam
-            r = requests.get(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
-            
-            if r.status_code == 403:
-                error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
-                exit()
-            
-            if r.status_code != 200:
-                error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
-                return
-
-            respone = r.json()
-            
-            steamAppID = 0
-            # loops thru every game until it finds one matching your game's name
-            for i in respone["applist"]["apps"]:
-                if gameName.lower() == i["name"].lower():
-                    steamAppID = i["appid"]
-                    
-                    log(f"steam app ID {steamAppID} found for {gameName}")
-                    break
-            
-            # if we didn't find the game at all on steam, 
-            if steamAppID == 0:
-                log(f"could not find the steam app ID for {gameName}")
-                coverImage = None
-                coverImageText = None
-                return
-
-            # then load the store page, and find the icon thru it
-            URL = f"https://store.steampowered.com/app/{steamAppID}/"
-            page = requests.get(URL, allow_redirects=True)
-            
-            # if it was redirected to the main page (steam does this whenever it recieves an invalid URL), exit
-            if page.url == "https://store.steampowered.com/":
-                log(f"the app ID found for {gameName} ({steamAppID}) does not seem to be valid, ignoring")
-                return
-            
-            if r.status_code != 200:
-                error(f"error code {r.status_code} met when trying to load store page for {gameName}, ignoring")
-                return
-            
-            soup = BeautifulSoup(page.content, "html.parser")
-            img = soup.find("div", {"class": "game_header_image_ctn"}).find("img")
-            # save it to variable
-            coverImage = img["src"]
-            coverImageText = f"{gameName} on steam"
-            # do note this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
-            
-            log(f"successfully found steam's icon for {gameName}")
-  
-        except Exception as e:
-            error(f"Exception {e} raised when trying to fetch {gameName}'s icon thru steam, ignoring")
-            coverImage = None
-            coverImageText = None
+        getImageFromStorepage()
 
 # checks what game the user is currently playing
 def getSteamPresence(userIDs):

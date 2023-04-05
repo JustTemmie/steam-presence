@@ -1,2 +1,4 @@
 firefox-bin=Firefox Web Browser
 steam=Steam Store
+prismrun=Minecraft
+firefox=Firefox
