@@ -67,7 +67,7 @@ git clone https://github.com/JustTemmie/steam-presence
 
 follow the **setup** guide
 
-and for linux users, run the [Installer](#installer)
+and for linux users, run the [Installer](#automatic-installer)
 
 ## Setup
 create a file named `config.json` in the same directory as main.py and fill it in accordingly.
@@ -231,11 +231,13 @@ then change WEB_SCRAPE in the config file to true
 
 # Game Overwrite
 
-if you want to display a game that isn't on steam, you can use the `GAME_OVERWRITE` section.
+if you want to display soemthing else, you can use the `GAME_OVERWRITE` section.
 
-set enabled to true and fill in the name of the game you want to display.
+set enabled to true and fill in the name of whatever you want to display.
 
 this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving it one yourself.
+
+this field can be *anything* if you want to be seen playing "eirasdtloawbd" you can do so.
 
 # Custom Icon
 
@@ -287,7 +289,7 @@ if you're running either Windows or MacOS i cannot really give you any help with
 
 If you have a Steam Deck, it is possible to have steam-presence start automatically when your Steam Deck boots.  This method may also work on other Linux distributions that use per-user Systemd instances.  If you (as a regular user) can run the command `systemctl --user status` successfully, then this should work.
 
-### Installer
+### Automatic Installer
 
 simply run the `installer.sh` file
 
