@@ -85,7 +85,8 @@ def getConfigFile():
 
         "GAME_OVERWRITE": {
             "ENABLED": False,
-            "NAME": "NAME"
+            "NAME": "NAME",
+            "SECONDS_SINCE_START": 0
         },
 
         "CUSTOM_ICON": {
@@ -551,6 +552,7 @@ def main():
     
     doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
     customGameName = config["GAME_OVERWRITE"]["NAME"]
+    customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
     
     # load these later on
     customIconURL = None
@@ -615,6 +617,7 @@ def main():
         
         doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
         customGameName = config["GAME_OVERWRITE"]["NAME"]
+        customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
 
 
         # set the custom game
@@ -655,7 +658,8 @@ def main():
                 log(f"game changed, updating to '{gameName}'")
                 
                 if startTime == 0:
-                    startTime = round(time())
+                    print(customGameStartOffset)
+                    startTime = round(time() - customGameStartOffset)
 
 
                 # fetch the new app ID

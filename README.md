@@ -133,7 +133,8 @@ you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api)
 
     "GAME_OVERWRITE": {
         "ENABLED": false,
-        "NAME": "NAME"
+        "NAME": "Breath of the wild, now on steam!",
+        "SECONDS_SINCE_START": 0
     },
 
     "CUSTOM_ICON": {
@@ -180,9 +181,7 @@ first is the STEAM_GRID_DB subsection
 
 this will download an icon from steamGridDB and use it as the cover art for the discord presence.
 
-change the ENABLED field to true and fill in the api key enable this.
-
-**NOTE** this is optional and the script functions perfectly without it, you'll just be living with lower quality cover art.
+change the ENABLED field to true and fill in the api key to enable this.
 
 you can get your API key here https://www.steamgriddb.com/profile/preferences/api
 
@@ -196,13 +195,13 @@ deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee7
 a short hike=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/6a30e32e56fce5cf381895dfe6ca7b6f.png||Art by Julia on SteamGrid DB
 risk of rain 2=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/c4492cbe90fbdbf88a5aec486aa81ed5/32/256x256.png||Art by darklinkpower on SteamGrid DB
 ```
-name of game=link to image||text to appear when hovering over (optional)
+name of game=link to image||optional text to appear when hovering over
 
 
 ## Use Steam Store Fallback 
 this will only have an effect if 1) the script fails to fetch an icon from SGDB, or 2) SGDB is simply disabled
 
-what this does is navigate to the store page of your game, and gets the link from the header image there, this will get cropped so it's not ideal but it works and is a nice fallback
+what this does is navigate to the store page of your game, and copy the link directly from the header image there, this image will end up getting cropped so it's not ideal but it works fairly well, at least in my opinion.
 
 # Local Games
 this will make the script scan for games running locally
@@ -289,6 +288,16 @@ this will still try to grab an icon from steamGridDB, but if it can't find one y
 this field can be *anything* if you want to be seen playing "eirasdtloawbd", or "Hollow knight: Silksong" you can do so.
 
 (note to self, remove the silksong joke when the game actually releases) 
+
+## Seconds Since Start 
+
+this should be set to 0 most of the time
+
+but if you want to display that you've been playing since 2 hours ago, you can set this 7200 (3600 seconds in an hour * 2 hours)
+
+this sadly won't help you break Discord's cap of 24 hours on rich presences
+
+if you set the game to start in -3600 seconds (or 1 hour) it just display 0:00:00
 
 # Custom Icon
 

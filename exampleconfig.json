@@ -27,7 +27,8 @@
 
     "GAME_OVERWRITE": {
         "ENABLED": false,
-        "NAME": "NAME"
+        "NAME": "Breath of the wild, now on steam!",
+        "SECONDS_SINCE_START": 0
     },
 
     "CUSTOM_ICON": {
