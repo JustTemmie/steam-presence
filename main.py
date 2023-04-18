@@ -668,7 +668,6 @@ def main():
                 log(f"game changed, updating to '{gameName}'")
                 
                 if startTime == 0:
-                    print(customGameStartOffset)
                     startTime = round(time() - customGameStartOffset)
 
 
