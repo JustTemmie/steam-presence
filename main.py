@@ -206,6 +206,9 @@ def getImageFromStorepage():
         # fetches a list of ALL games on steam
         r = requests.get(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
         
+        # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+        sleep(0.2)
+        
         if r.status_code == 403:
             error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
             exit()
@@ -235,6 +238,9 @@ def getImageFromStorepage():
         # then load the store page, and find the icon thru it
         URL = f"https://store.steampowered.com/app/{steamAppID}/"
         page = requests.get(URL, allow_redirects=True)
+        
+        # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+        sleep(0.2)
         
         # if it was redirected to the main page (steam does this whenever it recieves an invalid URL), exit
         if page.url == "https://store.steampowered.com/":
@@ -333,6 +339,10 @@ def getWebScrapePresence():
 # checks what game the user is currently playing
 def getSteamPresence():
     r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userIDs}")
+    
+    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+    sleep(0.2)
+        
     if r.status_code == 403:
         error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
         exit()
@@ -573,7 +583,7 @@ def main():
             "it should either be something like `\"USER_IDS\": \"76561198845672697\",`\n",
             "or something like `\"USER_IDS\": [\"76561198845672697\", \"92517850912591921\"],`"
         )
-        
+    
     # declare variables
     isPlaying = False
     isPlayingLocalGame = False
@@ -689,8 +699,8 @@ def main():
                 
                 print("----------------------------------------------------------")
 
-        # wait for a bit in order to not get limited by the steam API
-        sleep(20)
+        # wait for a 20 seconds for every steam user queried, to avoid getting banned
+        sleep(20 * (userIDs.count(",") + 1))
 
 
 if __name__ == "__main__":
