@@ -14,6 +14,8 @@ fi
 # Check if config.json file exists
 if [ ! -f "config.json" ]; then
    echo "Error: config.json file not found. Please make sure it exists in the current directory"
+   echo "files in current directory:"
+   ls
    exit 1
 fi
 
@@ -24,22 +26,33 @@ fi
 
 echo "Creating symlinks of necessary files..."
 
+# Create games.txt if it doesn't exist
+if [! -e "$(pwd)/games.txt" ]; then
+  echo "creating games.txt"
+  touch "$(pwd)/games.txt"
+fi
+
+# Create icons.txt if it doesn't exist
+if [! -e "$(pwd)/icons.txt" ]; then
+  echo "creating icons.txt"
+  touch "$(pwd)/icons.txt"
+fi
+
+# Create gameIDs.json if it doesn't exist
+if [! -e "$(pwd)/customGameIDs.json" ]; then
+  echo "creating customGameIDs.json"
+  echo "{}" > "$(pwd)/customGameIDs.json"
+fi
+
+
 # Create symlinks of necessary files
 ln -s "$(pwd)/main.py" "$HOME/steam-presence/main.py"
-ln -s "$(pwd)/config.json" "$HOME/steam-presence/config.json"
-ln -s "$(pwd)/icons.txt" "$HOME/steam-presence/icons.txt"
 ln -s "$(pwd)/requirements.txt" "$HOME/steam-presence/requirements.txt"
 ln -s "$(pwd)/steam-presence.service" "$HOME/steam-presence/steam-presence.service"
-
-# Create a symlink for games.txt if it exists
-if [ -e "$(pwd)/games.txt" ]; then
-  ln -s "$(pwd)/games.txt" "$HOME/steam-presence/games.txt"
-fi
-
-# Create a symlink for gameIDs.json if it exists
-if [ -e "$(pwd)/customGameIDs.json" ]; then
-  ln -s "$(pwd)/customGameIDs.json" "$HOME/steam-presence/customGameIDs.json"
-fi
+ln -s "$(pwd)/config.json" "$HOME/steam-presence/config.json"
+ln -s "$(pwd)/games.txt" "$HOME/steam-presence/games.txt"
+ln -s "$(pwd)/icons.txt" "$HOME/steam-presence/icons.txt"
+ln -s "$(pwd)/customGameIDs.json" "$HOME/steam-presence/customGameIDs.json"
 
 echo "Symlinks created."
 
