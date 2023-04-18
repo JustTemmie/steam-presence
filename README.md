@@ -284,7 +284,7 @@ if you want to display soemthing else, you can use the `GAME_OVERWRITE` section.
 
 set enabled to true and fill in the name of whatever you want to display.
 
-this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving the game an icon yourself, [see icons.txt](#icons.txt).
+this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving the game an icon yourself, [see icons.txt](#iconstxt).
 
 this field can be *anything* if you want to be seen playing "eirasdtloawbd", or "Hollow knight: Silksong" you can do so.
 
