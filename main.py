@@ -699,7 +699,7 @@ def main():
                 
                 print("----------------------------------------------------------")
 
-        # wait for a 20 seconds for every steam user queried, to avoid getting banned
+        # wait for a 20 seconds for every steam user queried, to avoid getting banned from the steam API
         sleep(20 * (userIDs.count(",") + 1))
 
 
