@@ -19,6 +19,7 @@ playing "Everything" with the script running (more niche game so fetching the ga
 * Supports locally running applications, both games and other programs.
 * Supports custom large image cover art, along with text for any game.
 * Dynamic config file reloading.
+* Simple to set up the core functionality.
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
@@ -70,8 +71,38 @@ follow the **setup** guide
 and for linux users, run the [Installer](#automatic-installer)
 
 ## Setup
-create a file named `config.json` in the same directory as main.py and fill it in accordingly.
- 
+create a file named `config.json` in the same directory as main.py and fill in the required data:
+
+```json
+{
+    "STEAM_API_KEY": "STEAM_API_KEY",
+    "USER_IDS": "USER_ID"
+}
+```
+
+instructions for the `STEAM_API_KEY` can be found [here](#steam-web-api)
+and the `USER_IDS` field can be found [here](#user-ids)
+
+
+this will lead to some of the features not being able to work, but it does an alright job,
+the script will find:
+ - Games running thru steam
+ - Art of said games taken from the steam store
+ - The rich presence will have the correct name for most games, whilst some nicher titles will be listed as "a game on steam"
+
+
+ if you want ALL the features that this script provides, you may fill in whatever parts of this config file seem interesting to you.
+ this will allow the script functionality such as:
+ - [Setting a custom game to appear when the script can't find the correct one](#discord-application-id)
+ - [Detection of non-steam games running thru steam (done thru scuffed webscraping)](#non-steam-games)
+ - [Usually better art (thru steam-grid-DB)](#steam-grid-db-(sgdb))
+ - [The detection of games running locally, such as minecraft (actually not scuffed)](#local-games)
+ - [Overwriting it with whatever you want, even when not playing anything](#game-overwrite)
+ - [A custom icon in the rich presence](custom-icon)
+ - [Manually adding the correct names for any game you'd like](#custom-game-ids)
+
+you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_IDS` found [here](#user-ids)
+
 ```json
 {
     "STEAM_API_KEY": "STEAM_API_KEY",
@@ -116,6 +147,8 @@ create a file named `config.json` in the same directory as main.py and fill it i
 the `STEAM_API_KEY` in this case is regarding to the Steam web API.
 
 this you can obtain by registering here https://steamcommunity.com/dev/apikey while logged in
+
+the `domain` asked for does not matter in the slightest, just write something like 127.0.0.1 or github.com 
 
 # User IDs
 the `USER_IDS` is the steam user id of the user you want to track.
@@ -209,17 +242,20 @@ steam=Steam Store
 if you want to find out what's running locally, you can run the runningApps.py script, it will simply print out every single application it detects locally, ctrl + f is your best friend. This script is likely going to get improved in the future
 
 # Non Steam Games
-ahh... the non steam games
 
-so for a bit of background of why this might seem a bit weird at first Steam's actual API does not report non steam games in ANY capacity.
+okay i'll be frank, this functionality is VERY scuffed, but - it does work.
 
-so the solution for this, web scraping - loading a website in the background, reading the data off it, and closing it - redoing this every 20 seconds.
+so for a bit of background to why this is scuffed, the main reason being that Steam's actual API does not report non steam games in ANY capacity.
+
+so the best solution i could come up with to solve this; web scraping - loading a website in the background, reading the data off it, and closing it - redoing this every 20 seconds.
 
 performance wise it's actually fine, being reasonably light weight and on anything reasonably modern this should be fine.
 
-download your cookies for steam, from my own experience these tend to stay valid for about a week, meaning you have to redo this step EVERY week
+to do this, download your cookies for steam these are needed because the script needs to login as you in order to see what games you're playing (yes it's scuffed).
 
-download this addon for firefox, i couldn't find any plugins for chrome that i would consider safe.
+from my own experience these tend to stay valid for about a week, meaning you have to redo this step EVERY week.
+
+download this addon for firefox, i couldn't find any extensions for chrome that i'm certain aren't viruses (sorry).
 
 https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/
 

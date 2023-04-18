@@ -57,17 +57,62 @@ def error(error):
 
 # opens the config file and loads the data
 def getConfigFile():
+    defaultSettings = {
+        "STEAM_API_KEY": "STEAM_API_KEY",
+        "USER_IDS": "USER_ID",
+
+        "DISCORD_APPLICATION_ID": "869994714093465680",
+
+        "WEB_SCRAPE": False,
+        
+        "COVER_ART": {
+            "STEAM_GRID_DB": {
+                "ENABLED": False,
+                "STEAM_GRID_API_KEY": "STEAM_GRID_API_KEY"
+            },
+            "USE_STEAM_STORE_FALLBACK": True
+        },
+
+        "LOCAL_GAMES": {
+            "ENABLED": False,
+            "LOCAL_DISCORD_APPLICATION_ID": "1062648118375616594",
+            "GAMES": [
+                "processName1",
+                "processName2",
+                "processName3"
+            ]
+        },
+
+        "GAME_OVERWRITE": {
+            "ENABLED": False,
+            "NAME": "NAME"
+        },
+
+        "CUSTOM_ICON": {
+            "ENABLED": False,
+            "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence/main/readmeimages/defaulticon.png",
+            "TEXT": "Steam Presence on Discord"
+        }
+    }
+
     if exists(f"{dirname(__file__)}/config.json"):
         with open(f"{dirname(__file__)}/config.json", "r") as f:
-            return json.load(f)
+            data = json.load(f)
     
-    if exists(f"{dirname(__file__)}/exampleconfig.json"):
+    elif exists(f"{dirname(__file__)}/exampleconfig.json"):
         with open(f"{dirname(__file__)}/exampleconfig.json", "r") as f:
-            return json.load(f)
+            data = json.load(f)
     
     else:
         error("Config file not found. Please read the readme and create a config file.")
         exit()
+        
+    settings = defaultSettings
+    for i in defaultSettings:
+        if i in data:
+            settings[i] = data[i]
+
+    return settings
 
 def getImageFromSGDB():
     global coverImage
@@ -501,19 +546,16 @@ def main():
     gridKey = config["COVER_ART"]["STEAM_GRID_DB"]["STEAM_GRID_API_KEY"]
     
     doCustomIcon = config["CUSTOM_ICON"]["ENABLED"]
+    
+    doWebScraping = config["WEB_SCRAPE"]
+    
+    doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
+    customGameName = config["GAME_OVERWRITE"]["NAME"]
+    
     # load these later on
     customIconURL = None
     customIconText = None
     
-    # added in 1.8, settings that aren't required and might not be in the config file
-    optionalSettings = {
-        "WEB_SCRAPE": False
-    }
-    for i in optionalSettings:
-        if i in config:
-            optionalSettings[i] = config[i]
-            
-    print(optionalSettings)
     
     # loads the user ids and turns them into a string of (for example) user1,user2,user3
     userIDs = ""
@@ -524,7 +566,11 @@ def main():
             userIDs += f"{i},"
         userIDs = userIDs[:-1]
     else:
-        error("type error whilst reading the USER_IDS field, please make sure the formating is correct")
+        error(
+            "type error whilst reading the USER_IDS field, please make sure the formating is correct\n",
+            "it should either be something like `\"USER_IDS\": \"76561198845672697\",`\n",
+            "or something like `\"USER_IDS\": [\"76561198845672697\", \"92517850912591921\"],`"
+        )
         
     # declare variables
     isPlaying = False
@@ -553,6 +599,20 @@ def main():
         # these values are taken from the config file every cycle, so the user can change these whilst the script is running
         config = getConfigFile()
         
+        steamAPIKey = config["STEAM_API_KEY"]
+        defaultAppID = config["DISCORD_APPLICATION_ID"]
+        defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
+        doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
+        localGames = config["LOCAL_GAMES"]["GAMES"]
+        
+        steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
+        gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
+        gridKey = config["COVER_ART"]["STEAM_GRID_DB"]["STEAM_GRID_API_KEY"]
+        
+        doCustomIcon = config["CUSTOM_ICON"]["ENABLED"]
+        
+        doWebScraping = config["WEB_SCRAPE"]
+        
         doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
         customGameName = config["GAME_OVERWRITE"]["NAME"]
 
@@ -567,7 +627,7 @@ def main():
             if gameName == "" and doLocalGames:
                 getLocalPresence()
             
-            if gameName == "" and optionalSettings["WEB_SCRAPE"]:
+            if gameName == "" and doWebScraping:
                 gameName = getWebScrapePresence()
             
             
