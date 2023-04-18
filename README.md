@@ -91,9 +91,9 @@ the script will find:
  - The rich presence will have the correct name for most games, whilst some nicher titles will be listed as "a game on steam"
 
 
- if you want ALL the features that this script provides, you may fill in whatever parts of this config file seem interesting to you.
+ if you want more of the features provided by this script, you may fill in whatever parts of this config file seem interesting to you.
  this will allow the script functionality such as:
- - [Setting a custom game to appear when the script can't find the correct one](#discord-application-id)
+ - [Customizing the default game name to display when the script can't find the correct name (I.E the correct discord ID)](#discord-application-id)
  - [Detection of non-steam games running thru steam (done thru scuffed webscraping)](#non-steam-games)
  - [Usually better art (thru steam-grid-DB)](#steam-grid-db-(sgdb))
  - [The detection of games running locally, such as minecraft (actually not scuffed)](#local-games)
@@ -186,7 +186,18 @@ change the ENABLED field to true and fill in the api key enable this.
 
 you can get your API key here https://www.steamgriddb.com/profile/preferences/api
 
-additionally, this caches the url to a file named icons.txt, so if you don't like an icon it found you can open the file, find the game, and replace it with any image you want.
+### icons.txt
+additionally, images from SGDB will be cached to a file named icons.txt, so if you don't like an icon it found you can open the file, find the game, and replace it with any image you want.
+
+basic example:
+```
+hades=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fe50ae64d08d4f8245aaabc55d1baf79/32/80x80.png||Art by DIGGRID on SteamGrid DB
+deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee78a0e58c68be06d8a2eb/32/256x256.png||Art by darklinkpower on SteamGrid DB
+a short hike=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/6a30e32e56fce5cf381895dfe6ca7b6f.png||Art by Julia on SteamGrid DB
+risk of rain 2=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/c4492cbe90fbdbf88a5aec486aa81ed5/32/256x256.png||Art by darklinkpower on SteamGrid DB
+```
+name of game=link to image||text to appear when hovering over (optional)
+
 
 ## Use Steam Store Fallback 
 this will only have an effect if 1) the script fails to fetch an icon from SGDB, or 2) SGDB is simply disabled
@@ -230,6 +241,8 @@ whilst on windows you need to write something similar to this:
 
 to find the task names, you can check all your local apps by running `runningApps.py`
 
+### games.txt
+
 you may also set a proper display name inside games.txt
 
 example:
@@ -245,7 +258,7 @@ if you want to find out what's running locally, you can run the runningApps.py s
 
 okay i'll be frank, this functionality is VERY scuffed, but - it does work.
 
-so for a bit of background to why this is scuffed, the main reason being that Steam's actual API does not report non steam games in ANY capacity.
+so for a bit of background to why this was thrown together in such a scuffed manner, the main reason being that Steam's actual API does not report non steam games in ANY capacity.
 
 so the best solution i could come up with to solve this; web scraping - loading a website in the background, reading the data off it, and closing it - redoing this every 20 seconds.
 
@@ -253,9 +266,9 @@ performance wise it's actually fine, being reasonably light weight and on anythi
 
 to do this, download your cookies for steam these are needed because the script needs to login as you in order to see what games you're playing (yes it's scuffed).
 
-from my own experience these tend to stay valid for about a week, meaning you have to redo this step EVERY week.
+from my own experience steam's cookies tend to stay valid for about a week, meaning you have to redo this step EVERY week.
 
-download this addon for firefox, i couldn't find any extensions for chrome that i'm certain aren't viruses (sorry).
+download this addon for firefox, i couldn't find any extensions for chrome that i'm certain aren't viruses (sorry, just go download firefox for this).
 
 https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/
 
@@ -271,15 +284,17 @@ if you want to display soemthing else, you can use the `GAME_OVERWRITE` section.
 
 set enabled to true and fill in the name of whatever you want to display.
 
-this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving it one yourself.
+this will still try to grab an icon from steamGridDB, but if it can't find one you can try giving the game an icon yourself, [see icons.txt](#icons.txt).
 
-this field can be *anything* if you want to be seen playing "eirasdtloawbd" you can do so.
+this field can be *anything* if you want to be seen playing "eirasdtloawbd", or "Hollow knight: Silksong" you can do so.
+
+(note to self, remove the silksong joke when the game actually releases) 
 
 # Custom Icon
 
 this is a small icon that appears in the bottom right, enable it or disable it.
 
-set an URL to the image you want to use, and a text that will appear when hovering over the icon.
+set the URL for an image you'd like to use, and some text to appear when anyone hovers over the icon.
 
 # Custom Game IDs
 
