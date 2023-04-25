@@ -57,6 +57,7 @@ def error(error):
 
 # opens the config file and loads the data
 def getConfigFile():
+    # the default settings, don't use exampleConfig.json as people might change that
     defaultSettings = {
         "STEAM_API_KEY": "STEAM_API_KEY",
         "USER_IDS": "USER_ID",
@@ -98,21 +99,24 @@ def getConfigFile():
 
     if exists(f"{dirname(__file__)}/config.json"):
         with open(f"{dirname(__file__)}/config.json", "r") as f:
-            data = json.load(f)
+            userSettings = json.load(f)
     
     elif exists(f"{dirname(__file__)}/exampleconfig.json"):
         with open(f"{dirname(__file__)}/exampleconfig.json", "r") as f:
-            data = json.load(f)
+            userSettings = json.load(f)
     
     else:
         error("Config file not found. Please read the readme and create a config file.")
         exit()
         
-    settings = defaultSettings
-    for i in defaultSettings:
-        if i in data:
-            settings[i] = data[i]
-
+        
+    # if something isn't speficied in the user's config file, fill it in with data from the default settings 
+    settings = {**defaultSettings, **userSettings}
+    for key, value in defaultSettings.items():
+        if key in settings and isinstance(value, dict):
+            settings[key] = {**value, **settings[key]}
+            
+    
     return settings
 
 def getImageFromSGDB():
