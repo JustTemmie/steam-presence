@@ -62,7 +62,7 @@ cd "$HOME/steam-presence"
 echo "Executing commands in steam-presence directory..."
 
 # Execute commands in steam-presence directory
-python3.10 -m venv .
+python -m venv .
 ./bin/python -m pip install --upgrade pip wheel
 ./bin/python -m pip install -r requirements.txt
 
