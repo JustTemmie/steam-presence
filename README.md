@@ -10,9 +10,14 @@ a simple script to fetch a Steam user's current game and related info, and displ
 
 playing "BTD6" with the script running, discord still finds some of the executables so it appears twice
 
-![Playing Everything with the script running](readmeimages/example2.png)
+![Playing Snake vs Snake with the script running](readmeimages/example2.png)
 
-playing "Everything" with the script running (more niche game so fetching the game ID thru Discord isn't possible)
+playing "Snake vs Snake" with the script running
+
+this is pretty much the worst case scenario for the script as it's so niche
+
+* that fetching the game ID thru Discord isn't possible, so it ends up as "a game on steam"
+* and there's no art found in any public databases, so it just uses the cover art from steam, which sometimes ends up being a bit cropped
 
 ![Playing a local "game", known as calculator](readmeimages/example3.png)
 
