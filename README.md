@@ -1,16 +1,22 @@
 ![image](https://user-images.githubusercontent.com/47639983/212717243-8325d457-5eb3-4948-ab45-865a763445c3.png)
 
 # Steam Presence
-a simple script to check a Steam user's current game, and display that as a Discord rich presence
+
+a simple script to fetch a Steam user's current game and related info, and display it as a Discord rich presence
 
 ### Showcase
-![ExampleImage1](readmeimages/example1.png)
 
-playing "BTD6" with the script running 
+![Playing BTD6 with the script running](readmeimages/example1.png)
 
-![ExampleImage2](readmeimages/example2.png)
+playing "BTD6" with the script running, discord still finds some of the executables so it "appears" twice
+
+![Playing Everything with the script running](readmeimages/example2.png)
 
 playing "Everything" with the script running (more niche game so fetching the game ID thru Discord isn't possible)
+
+![Playing a local "game", known as calculator](readmeimages/example3.png)
+
+playing a local game i've set up, in this case "calculator", it's not running thru steam, so it's not "a game on steam", but rather just "a game"
 
 ### Features
 
