@@ -313,36 +313,34 @@ def getWebScrapePresence():
     cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
     cj.load()
     
-    # split on ',' in case of multiple userIDs
-    for i in userIDs.split(","):
-        URL = f"https://steamcommunity.com/profiles/{i}/"
-        page = requests.post(URL, cookies=cj)
-        
-        if page.status_code == 403:
-            error("Forbidden, Access to Steam has been denied, please verify that your cookies are up to date")
-
-        elif page.status_code != 200:
-            error(f"error code {page.status_code} met when trying to fetch game thru webscraping, ignoring")
+    URL = f"https://steamcommunity.com/profiles/{i}/"
+    page = requests.post(URL, cookies=cj)
     
-        else:
-            soup = BeautifulSoup(page.content, "html.parser")
+    if page.status_code == 403:
+        error("Forbidden, Access to Steam has been denied, please verify that your cookies are up to date")
 
-            for element in soup.find_all("div", class_="profile_in_game_name"):
-                result = element.text.strip()
+    elif page.status_code != 200:
+        error(f"error code {page.status_code} met when trying to fetch game thru webscraping, ignoring")
 
-                # the "last online x min ago" field is the same div as the game name
-                if "Last Online" not in result:
-                    
-                    global isPlayingLocalGame
-                    
-                    isPlayingLocalGame = False
-                    return result
+    else:
+        soup = BeautifulSoup(page.content, "html.parser")
+
+        for element in soup.find_all("div", class_="profile_in_game_name"):
+            result = element.text.strip()
+
+            # the "last online x min ago" field is the same div as the game name
+            if "Last Online" not in result:
+                
+                global isPlayingLocalGame
+                
+                isPlayingLocalGame = False
+                return result
     
     return
 
 # checks what game the user is currently playing
 def getSteamPresence():
-    r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userIDs}")
+    r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userID}")
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
@@ -360,16 +358,17 @@ def getSteamPresence():
     response = r.json()
     
     if len(response["response"]["players"]) == 0:
-        error("No account found, please verify that all your user IDs are correct")
+        error("No account found, please verify that your user ID is correct")
         exit()
 
-    for i in range(0, len(response["response"]["players"])):
-        if "gameextrainfo" in response["response"]["players"][0]:
-            game_title = response["response"]["players"][0]["gameextrainfo"]
-            isPlayingLocalGame = False
-            return game_title
+    if "gameextrainfo" in response["response"]["players"][0]:
+        game_title = response["response"]["players"][0]["gameextrainfo"]
+        isPlayingLocalGame = False
+        return game_title
 
     return ""
+   
+    
 
 # requests a list of all games recognized internally by discord, if any of the names matches
 # the detected game, save the discord game ID associated with said title to RAM, this is used to report to discord as that game 
@@ -524,7 +523,7 @@ def setPresenceDetails():
     )
 
 def main():
-    global userIDs
+    global userID
     global steamAPIKey
     global localGames
     global defaultAppID
@@ -573,19 +572,14 @@ def main():
     customIconText = None
     
     
-    # loads the user ids and turns them into a string of (for example) user1,user2,user3
-    userIDs = ""
+    # loads the steam user id
+    userID = ""
     if type(config["USER_IDS"]) == str:
-        userIDs = config["USER_IDS"]
-    elif type(config["USER_IDS"]) == list:
-        for i in config["USER_IDS"]:
-            userIDs += f"{i},"
-        userIDs = userIDs[:-1]
+        userID = config["USER_IDS"]
     else:
         error(
             "type error whilst reading the USER_IDS field, please make sure the formating is correct\n",
-            "it should either be something like `\"USER_IDS\": \"76561198845672697\",`\n",
-            "or something like `\"USER_IDS\": [\"76561198845672697\", \"92517850912591921\"],`"
+            "it should be something like `\"USER_IDS\": \"76561198845672697\",`",
         )
     
     # declare variables
@@ -702,8 +696,8 @@ def main():
                 
                 print("----------------------------------------------------------")
 
-        # wait for a 20 seconds for every steam user queried, to avoid getting banned from the steam API
-        sleep(20 * (userIDs.count(",") + 1))
+        # wait for a 20 seconds every time we query anything, to avoid getting banned from the steam API
+        sleep(20)
 
 
 if __name__ == "__main__":

@@ -160,8 +160,6 @@ the easiest way i've found to get the ID is by throwing your url into the steamD
 
 and then taking the ID from that url
 
-(the script will accept multiple IDs, as long as you format them as an array - I.E ["user1", "user2"] and so on)
-
 ![ExampleImage](readmeimages/steamDB.png)
 
 # Discord Application ID
