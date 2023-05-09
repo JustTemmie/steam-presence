@@ -260,7 +260,7 @@ if you want to find out what's running locally, you can run the runningApps.py s
 
 ![image](https://user-images.githubusercontent.com/47639983/237048939-d08c1b01-f85a-40d5-928e-df3e88116063.png)
 
-the "enhanced rich presence" info in question
+the "enhanced rich presence" info here is talking about the "Browsing Menus" part 
 
 some steam games have what steam calls "enhanced rich presence", it's pretty much the same rich presence system discord has, but on steam!
 
