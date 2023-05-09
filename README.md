@@ -14,12 +14,11 @@ playing "Everything" with the script running (more niche game so fetching the ga
 
 ### Features
 
-* Set Discord Rich Presence with large image, large image hover text, small image, small image hover text, and start timestamps.
-* Automatically fetches game information from steam.
+* Set Discord Rich Presence based on information fetched from steam.
 * Supports locally running applications, both games and other programs.
-* Supports custom large image cover art, along with text for any game.
 * Dynamic config file reloading.
 * Simple to set up the core functionality.
+[More features listed here](#setup)
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
@@ -89,6 +88,7 @@ the script will find:
  - Games running thru steam
  - Art of said games taken from the steam store
  - The rich presence will have the correct name for most games, whilst some nicher titles will be listed as "a game on steam"
+ - Fetch rich presence information thru steam, for example in Hades you can be "Battling out of Elysium" or in BTD6 you can be "Broswing Menus"
 
 
  if you want more of the features provided by this script, you may fill in whatever parts of this config file seem interesting to you.
@@ -100,6 +100,7 @@ the script will find:
  - [Overwriting it with whatever you want, even when not playing anything](#game-overwrite)
  - [A custom icon in the rich presence](custom-icon)
  - [Manually adding the correct names for any game you'd like](#custom-game-ids)
+ - [Disabling fetching steam's rich presence](#fetch-steam-rich-presence)
 
 you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_IDS` found [here](#user-ids)
 
@@ -109,6 +110,8 @@ you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api)
     "USER_IDS": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
+
+    "FETCH_STEAM_RICH_PRESENCE": true,
 
     "WEB_SCRAPE": false,
     
@@ -250,6 +253,15 @@ steam=Steam Store
 ```
 
 if you want to find out what's running locally, you can run the runningApps.py script, it will simply print out every single application it detects locally, ctrl + f is your best friend. This script is likely going to get improved in the future
+
+
+# Fetch Steam Rich Presence
+
+some steam games have what steam calls "enhanced rich presence", it's pretty much the same rich presence system discord has, but on steam!
+
+not a ton of games have this implementet, as i can speak from personal experience as a game dev, it's pretty hard and un-intuitive
+
+fetching this "enhanced rich presence" is enabled by default, but can be disabled if you like by adding `"FETCH_STEAM_RICH_PRESENCE": true,` to the config file
 
 # Non Steam Games
 

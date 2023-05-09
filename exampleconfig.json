@@ -4,6 +4,8 @@
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
 
+    "FETCH_STEAM_RICH_PRESENCE": true,
+
     "WEB_SCRAPE": false,
     
     "COVER_ART": {

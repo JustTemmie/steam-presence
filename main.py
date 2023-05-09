@@ -64,6 +64,8 @@ def getConfigFile():
 
         "DISCORD_APPLICATION_ID": "869994714093465680",
 
+        "FETCH_STEAM_RICH_PRESENCE": True,
+        
         "WEB_SCRAPE": False,
         
         "COVER_ART": {
@@ -367,7 +369,36 @@ def getSteamPresence():
         return game_title
 
     return ""
-   
+
+# webscrape the "enhanced" rich presence information for your profile
+# if you're confused this uses your <id3>, it's your <id64> (which is what you put into the config file) minus 76561197960265728
+# aka <id3> = <id64> - 76561197960265728
+# why steam does this is beyond me but it's fine
+# thank you so much to `wuddih` in this post for being the reason i found out about this https://steamcommunity.com/discussions/forum/1/5940851794736009972/ lmao 
+def getSteamRichPresence():
+    # userID type 3. <id3> = <id64> - 76561197960265728
+    pageRequest = requests.get(f"https://steamcommunity.com/miniprofile/{int(userID) - 76561197960265728}")
+    
+    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+    sleep(0.2)
+    
+    if pageRequest.status_code != 200:
+        error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info from steam, ignoring")
+        return
+
+    # turn the page into proper html formating
+    soup = BeautifulSoup(pageRequest.content, "html.parser")
+    # find the correct entry where the rich presence is located
+    rich_presence = soup.find("span", class_="rich_presence")
+    
+    # error handling
+    if rich_presence == None:
+        return
+    
+    # save rich presence
+    global gameRichPresence
+    gameRichPresence = rich_presence.contents[0]
+    
     
 
 # requests a list of all games recognized internally by discord, if any of the names matches
@@ -378,7 +409,6 @@ def getGameDiscordID():
     
     if r.status_code != 200:
         error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
-    
     
     response = r.json()
     
@@ -506,17 +536,34 @@ def getLocalPresence():
     
 
 def setPresenceDetails():
-    log("pushing presence to Discord")
+    
+    global activeRichPresence
+    
+    details = None
+    state = None
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
     if appID == defaultAppID or appID == defaultLocalAppID:
         details = gameName
-    else:
-        details = None
-
+    
+    if activeRichPresence != gameRichPresence:
+        if gameRichPresence != "":
+            if details == None:
+                log(f"setting the details for {gameName} to `{gameRichPresence}`")
+                details = gameRichPresence
+            elif state == None:
+                log(f"setting the state for {gameName} to `{gameRichPresence}`")
+                state = gameRichPresence
+        
+            
+        activeRichPresence = gameRichPresence
+    
+    
+    log("pushing presence to Discord")
+    
     RPC.update(
         # state field currently unused
-        details = details, state = None,
+        details = details, state = state,
         start = startTime,
         large_image = coverImage, large_text = coverImageText,
         small_image = customIconURL, small_text = customIconText
@@ -532,6 +579,8 @@ def main():
     global appID
     global startTime
     global gameName
+    global gameRichPresence
+    global activeRichPresence
     global isPlaying
     global isPlayingLocalGame
     
@@ -567,6 +616,8 @@ def main():
     customGameName = config["GAME_OVERWRITE"]["NAME"]
     customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
     
+    doSteamRichPresence = config["FETCH_STEAM_RICH_PRESENCE"]
+    
     # load these later on
     customIconURL = None
     customIconText = None
@@ -590,6 +641,9 @@ def main():
     coverImageText = None
     gameName = ""
     previousGameName = ""
+    gameRichPresence = ""
+    # the rich presence text that's actually in the current discord presence
+    activeRichPresence = "beaver"
 
     if doCustomIcon:
         log("loading custom icon")
@@ -640,6 +694,10 @@ def main():
             
             if gameName == "" and doWebScraping:
                 gameName = getWebScrapePresence()
+        
+            if doSteamRichPresence and not isPlayingLocalGame:
+                gameRichPresence = ""
+                getSteamRichPresence()
             
             
         # if the game has changed
@@ -695,6 +753,10 @@ def main():
                 previousGameName = gameName
                 
                 print("----------------------------------------------------------")
+        
+        if activeRichPresence != gameRichPresence:
+            setPresenceDetails()
+            print("----------------------------------------------------------")
 
         # wait for a 20 seconds every time we query anything, to avoid getting banned from the steam API
         sleep(20)
