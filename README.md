@@ -18,6 +18,7 @@ playing "Everything" with the script running (more niche game so fetching the ga
 * Supports locally running applications, both games and other programs.
 * Dynamic config file reloading.
 * Simple to set up the core functionality.
+
 [More features listed here](#setup)
 
 ### Why??
