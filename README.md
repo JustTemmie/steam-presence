@@ -8,7 +8,7 @@ a simple script to fetch a Steam user's current game and related info, and displ
 
 ![Playing BTD6 with the script running](readmeimages/example1.png)
 
-playing "BTD6" with the script running, discord still finds some of the executables so it "appears" twice
+playing "BTD6" with the script running, discord still finds some of the executables so it appears twice
 
 ![Playing Everything with the script running](readmeimages/example2.png)
 
