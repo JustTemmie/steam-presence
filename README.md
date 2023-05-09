@@ -19,7 +19,7 @@ playing "Everything" with the script running (more niche game so fetching the ga
 * Dynamic config file reloading.
 * Simple to set up the core functionality.
 
-[More features listed here](#setup)
+if you want a more thorough list, look at some of the [features listed here](#setup)
 
 ### Why??
 well, why did i make this? Discord already detects the games you're playing so isn't this just pointless??
@@ -262,7 +262,9 @@ some steam games have what steam calls "enhanced rich presence", it's pretty muc
 
 not a ton of games have this implementet, as i can speak from personal experience as a game dev, it's pretty hard and un-intuitive
 
-fetching this "enhanced rich presence" is enabled by default, but can be disabled if you like by adding `"FETCH_STEAM_RICH_PRESENCE": true,` to the config file
+fetching this "enhanced rich presence" is enabled by default
+
+but it can be disabled if you like by adding `"FETCH_STEAM_RICH_PRESENCE": false,` to the config file
 
 # Non Steam Games
 
