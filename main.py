@@ -315,7 +315,7 @@ def getWebScrapePresence():
     cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
     cj.load()
     
-    URL = f"https://steamcommunity.com/profiles/{i}/"
+    URL = f"https://steamcommunity.com/profiles/{userID}/"
     page = requests.post(URL, cookies=cj)
     
     if page.status_code == 403:
@@ -754,7 +754,7 @@ def main():
                 
                 print("----------------------------------------------------------")
         
-        if activeRichPresence != gameRichPresence:
+        if activeRichPresence != gameRichPresence and isPlaying:
             setPresenceDetails()
             print("----------------------------------------------------------")
 
