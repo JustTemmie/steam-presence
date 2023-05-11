@@ -300,10 +300,10 @@ def getGameImage():
                 return
     
     
-    if gridEnabled:
+    if gridEnabled and coverImage == "":
         getImageFromSGDB()
         
-    if steamStoreCoverartBackup:
+    if steamStoreCoverartBackup and coverImage == "":
         getImageFromStorepage()
 
 # web scrapes the user's web page, sending the needed cookies along with the request
