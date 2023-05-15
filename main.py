@@ -277,6 +277,8 @@ def getGameImage():
     global coverImage
     global coverImageText
     
+    coverImage = ""
+    
     log(f"fetching icon for {gameName}")
     
     # checks if there's already an existing icon saved to disk for the game 
@@ -299,6 +301,7 @@ def getGameImage():
                 log(f"found icon for {gameName} in cache")
                 return
     
+    log("no image found in cache")
     
     if gridEnabled and coverImage == "":
         getImageFromSGDB()
@@ -315,30 +318,34 @@ def getWebScrapePresence():
     cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
     cj.load()
     
-    URL = f"https://steamcommunity.com/profiles/{userID}/"
-    page = requests.post(URL, cookies=cj)
-    
-    if page.status_code == 403:
-        error("Forbidden, Access to Steam has been denied, please verify that your cookies are up to date")
+    # split on ',' in case of multiple userIDs
+    for i in userID.split(","):
+        URL = f"https://steamcommunity.com/profiles/{i}/"
+        
+        # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+        sleep(0.2)
+        
+        page = requests.post(URL, cookies=cj)
+        
+        if page.status_code == 403:
+            error("Forbidden, Access to Steam has been denied, please verify that your cookies are up to date")
 
-    elif page.status_code != 200:
-        error(f"error code {page.status_code} met when trying to fetch game thru webscraping, ignoring")
+        elif page.status_code != 200:
+            error(f"error code {page.status_code} met when trying to fetch game thru webscraping, ignoring")
 
-    else:
-        soup = BeautifulSoup(page.content, "html.parser")
+        else:
+            soup = BeautifulSoup(page.content, "html.parser")
 
-        for element in soup.find_all("div", class_="profile_in_game_name"):
-            result = element.text.strip()
+            for element in soup.find_all("div", class_="profile_in_game_name"):
+                result = element.text.strip()
 
-            # the "last online x min ago" field is the same div as the game name
-            if "Last Online" not in result:
-                
-                global isPlayingLocalGame
-                
-                isPlayingLocalGame = False
-                return result
-    
-    return
+                # the "last online x min ago" field is the same div as the game name
+                if "Last Online" not in result:
+                    
+                    global isPlayingLocalGame
+                    
+                    isPlayingLocalGame = False
+                    return result
 
 # checks what game the user is currently playing
 def getSteamPresence():
@@ -355,18 +362,33 @@ def getSteamPresence():
         error(f"error code {r.status_code} met when trying to fetch game, ignoring")
         return ""
     
-    global isPlayingLocalGame
     
     response = r.json()
     
-    if len(response["response"]["players"]) == 0:
+    if len(response) == 0:
         error("No account found, please verify that your user ID is correct")
         exit()
 
-    if "gameextrainfo" in response["response"]["players"][0]:
-        game_title = response["response"]["players"][0]["gameextrainfo"]
-        isPlayingLocalGame = False
-        return game_title
+
+    global isPlayingLocalGame
+
+    # sort the players based on position in the config file
+    sorted_response = []
+    for steam_id in userID.split(","):
+        for player in response["response"]["players"]:
+            if player["steamid"] == steam_id:
+                sorted_response.append(player)
+                break
+
+
+    # loop thru every user in the response, if they're playing a game, save it
+    for i in range(0, len(sorted_response)):
+        if "gameextrainfo" in sorted_response[i]:
+            game_title = sorted_response[i]["gameextrainfo"]
+            if game_title != gameName:
+                log(f"found game {game_title} played by {sorted_response[i]['personaname']}")
+            isPlayingLocalGame = False
+            return game_title
 
     return ""
 
@@ -376,28 +398,38 @@ def getSteamPresence():
 # why steam does this is beyond me but it's fine
 # thank you so much to `wuddih` in this post for being the reason i found out about this https://steamcommunity.com/discussions/forum/1/5940851794736009972/ lmao 
 def getSteamRichPresence():
-    # userID type 3. <id3> = <id64> - 76561197960265728
-    pageRequest = requests.get(f"https://steamcommunity.com/miniprofile/{int(userID) - 76561197960265728}")
-    
-    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
-    sleep(0.2)
-    
-    if pageRequest.status_code != 200:
-        error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info from steam, ignoring")
-        return
+    for i in userID.split(","):
+        # userID type 3. <id3> = <id64> - 76561197960265728
+        pageRequest = requests.get(f"https://steamcommunity.com/miniprofile/{int(i) - 76561197960265728}")
+        
+        # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+        sleep(0.2)
+        
+        if pageRequest.status_code != 200:
+            error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info from steam, ignoring")
+            return
 
-    # turn the page into proper html formating
-    soup = BeautifulSoup(pageRequest.content, "html.parser")
-    # find the correct entry where the rich presence is located
-    rich_presence = soup.find("span", class_="rich_presence")
-    
-    # error handling
-    if rich_presence == None:
-        return
-    
-    # save rich presence
-    global gameRichPresence
-    gameRichPresence = rich_presence.contents[0]
+        # turn the page into proper html formating
+        soup = BeautifulSoup(pageRequest.content, "html.parser")
+        
+        
+        # double check if it's the correct game, yea i know we're basically fetching the game twice
+        # once thru here, and once thru the API... BUT OH WELL - the api is used for other things so people would still need a steam api key
+        # doesn't really change it that much, might change things around later
+        miniGameName = soup.find("span", class_="miniprofile_game_name")
+        if miniGameName != None:
+            if gameName != miniGameName.contents[0]:
+                # print(f"{gameName} doesn't match", soup.find("span", class_="miniprofile_game_name").contents[0])
+                break
+        
+        
+        # find the correct entry where the rich presence is located
+        rich_presence = soup.find("span", class_="rich_presence")
+        
+        # save rich presence if it exists
+        if rich_presence != None:
+            global gameRichPresence
+            gameRichPresence = rich_presence.contents[0]
     
     
 
@@ -627,6 +659,11 @@ def main():
     userID = ""
     if type(config["USER_IDS"]) == str:
         userID = config["USER_IDS"]
+    elif type(config["USER_IDS"]) == list:
+        for i in config["USER_IDS"]:
+            userID += f"{i},"
+        # remove the last comma
+        userID = userID[:-1]
     else:
         error(
             "type error whilst reading the USER_IDS field, please make sure the formating is correct\n",
@@ -758,13 +795,14 @@ def main():
             setPresenceDetails()
             print("----------------------------------------------------------")
 
-        # wait for a 20 seconds every time we query anything, to avoid getting banned from the steam API
-        sleep(20)
+        # sleep for a 20 seconds for every user we query, to avoid getting banned from the steam API
+        sleep(20 * (userID.count(",") + 1))
 
 
 if __name__ == "__main__":
+    main()
     try:
-        main()
+        pass
     except Exception as e:
         error(f"{e}\nautomatically restarting script in 60 seconds\n")
         sleep(60)
