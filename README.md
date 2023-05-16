@@ -82,6 +82,7 @@ follow the **setup** guide
 and for linux users, run the [Installer](#automatic-installer)
 
 ## Setup
+### Minimal
 create a file named `config.json` in the same directory as main.py and fill in the required data:
 
 ```json
@@ -103,6 +104,7 @@ the script will find:
  - Fetch rich presence information thru steam, for example in Hades you can be "Battling out of Elysium" or in BTD6 you can be "Broswing Menus"
 
 
+### Full Featureset
  if you want more of the features provided by this script, you may fill in whatever parts of this config file seem interesting to you.
  this will allow the script functionality such as:
  - [Customizing the default game name to display when the script can't find the correct name (I.E the correct discord ID)](#discord-application-id)
@@ -116,6 +118,7 @@ the script will find:
 
 you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_IDS` found [here](#user-ids)
 
+this is what a full config file looks like; you only need to fill in the parts that you want to change for this default
 ```json
 {
     "STEAM_API_KEY": "STEAM_API_KEY",
