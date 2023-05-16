@@ -35,7 +35,7 @@ except:
     answer = input("looks like either requests, pypresence, steamgrid, psutil, or beautifulSoup is not installed, do you want to install them? (y/n) ")
     if answer.lower() == "y":
         from os import system
-        print("installing req packages...")
+        print("installing required packages...")
         system(f"python3 -m pip install -r {dirname(__file__)}/requirements.txt")
         
         from pypresence import Presence
@@ -532,7 +532,7 @@ def getLocalPresence():
                 game = game[0].split("=")
                 
                 # if there's a match
-                if game[0].lower() == processName:
+                if game[0].lower() == processName.lower():
                     gameName = game[1]
                     startTime = processCreationTime
                     isPlayingLocalGame = True
@@ -546,7 +546,7 @@ def getLocalPresence():
             # if there wasn't a local entry for the game
             log(f"could not find a name for {processName}, adding an entry to games.txt")
             
-            gamesFile.write(f"{processName.lower()}={processName.title()}\n")
+            gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
             
             isPlayingLocalGame = True
