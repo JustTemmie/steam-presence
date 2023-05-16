@@ -804,9 +804,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
     try:
-        pass
+        main()
     except Exception as e:
         error(f"{e}\nautomatically restarting script in 60 seconds\n")
         sleep(60)
