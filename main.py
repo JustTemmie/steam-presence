@@ -418,9 +418,11 @@ def getSteamRichPresence():
         # doesn't really change it that much, might change things around later
         miniGameName = soup.find("span", class_="miniprofile_game_name")
         if miniGameName != None:
-            if gameName != miniGameName.contents[0]:
-                # print(f"{gameName} doesn't match", soup.find("span", class_="miniprofile_game_name").contents[0])
-                break
+            # this usually has a length of 0 when the user is playing a non steam game 
+            if len(miniGameName.contents) != 0:
+                if gameName != miniGameName.contents[0]:
+                    # print(f"{gameName} doesn't match", soup.find("span", class_="miniprofile_game_name").contents[0])
+                    break
         
         
         # find the correct entry where the rich presence is located
