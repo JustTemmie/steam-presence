@@ -180,6 +180,8 @@ and then taking the ID from that url
 
 ![ExampleImage](readmeimages/steamDB.png)
 
+**NOTE 2** the script accepts multiple steam users if you format it as "userid1,userid2" or ["userid1", "userid2"]
+
 # Discord Application ID
 the `DISCORD_APPLICATION_ID` is the discord application ID of the app you want to use.
 
@@ -307,6 +309,8 @@ navigate to your profile on steam, and download the steam cookie file, naming it
 then change WEB_SCRAPE in the config file to true
 
 **Note**: due to the names of non steam games being set by yourself, steam grid DB might have problems finding icons for the game, but if it's in their database, this script will fetch it
+
+**Note 2**: if you're using multiple steam users, steam presence will be able to fetch every user who is a friend of the cookie's user via this
 
 # Game Overwrite
 
