@@ -343,9 +343,10 @@ def getWebScrapePresence():
                 if "Last Online" not in result:
                     
                     global isPlayingLocalGame
+                    global gameName
                     
                     isPlayingLocalGame = False
-                    return result
+                    gameName = result
 
 # checks what game the user is currently playing
 def getSteamPresence():
@@ -732,7 +733,7 @@ def main():
                 getLocalPresence()
             
             if gameName == "" and doWebScraping:
-                gameName = getWebScrapePresence()
+                getWebScrapePresence()
         
             if doSteamRichPresence and not isPlayingLocalGame:
                 gameRichPresence = ""
