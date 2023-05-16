@@ -365,7 +365,8 @@ def getSteamPresence():
     
     response = r.json()
     
-    if len(response) == 0:
+    # counts how many users you're supposed to get back, and checks if you got that many back
+    if len(response["response"]["players"]) != userID.count(",") + 1:
         error("No account found, please verify that your user ID is correct")
         exit()
 
