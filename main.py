@@ -407,12 +407,13 @@ def getSteamRichPresence():
         sleep(0.2)
         
         if pageRequest.status_code != 200:
-            error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info from steam, ignoring")
+            error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info for steam user ID {i}, ignoring function")
             return
 
         # turn the page into proper html formating
         soup = BeautifulSoup(pageRequest.content, "html.parser")
         
+        global gameRichPresence       
         
         # double check if it's the correct game, yea i know we're basically fetching the game twice
         # once thru here, and once thru the API... BUT OH WELL - the api is used for other things so people would still need a steam api key
@@ -429,8 +430,11 @@ def getSteamRichPresence():
         
         # save rich presence if it exists
         if rich_presence != None:
-            global gameRichPresence
             gameRichPresence = rich_presence.contents[0]
+        
+        # set the "enhanced rich presence" information back to nothing
+        if rich_presence == None:
+            gameRichPresence = ""
     
     
 
@@ -734,7 +738,6 @@ def main():
                 gameName = getWebScrapePresence()
         
             if doSteamRichPresence and not isPlayingLocalGame:
-                gameRichPresence = ""
                 getSteamRichPresence()
             
             
