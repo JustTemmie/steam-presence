@@ -27,19 +27,19 @@ fi
 echo "Creating symlinks of necessary files..."
 
 # Create games.txt if it doesn't exist
-if [! -e "$(pwd)/games.txt" ]; then
+if [ ! -e "$(pwd)/games.txt" ]; then
   echo "creating games.txt"
   touch "$(pwd)/games.txt"
 fi
 
 # Create icons.txt if it doesn't exist
-if [! -e "$(pwd)/icons.txt" ]; then
+if [ ! -e "$(pwd)/icons.txt" ]; then
   echo "creating icons.txt"
   touch "$(pwd)/icons.txt"
 fi
 
 # Create gameIDs.json if it doesn't exist
-if [! -e "$(pwd)/customGameIDs.json" ]; then
+if [ ! -e "$(pwd)/customGameIDs.json" ]; then
   echo "creating customGameIDs.json"
   echo "{}" > "$(pwd)/customGameIDs.json"
 fi
