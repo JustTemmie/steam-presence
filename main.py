@@ -65,6 +65,7 @@ def getConfigFile():
         "DISCORD_APPLICATION_ID": "869994714093465680",
 
         "FETCH_STEAM_RICH_PRESENCE": True,
+        "FETCH_STEAM_REVIEWS": True,
         
         "WEB_SCRAPE": False,
         
@@ -202,65 +203,57 @@ def getImageFromSGDB():
     else:
         log(f"SGDB doesn't seem to have any entries for {gameName}")
 
+def getGameSteamID():
+    # fetches a list of ALL games on steam
+    r = requests.get(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+    
+    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+    sleep(0.2)
+    
+    if r.status_code == 403:
+        error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
+        exit()
+    
+    if r.status_code != 200:
+        error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
+        return
+
+    respone = r.json()
+    
+    global gameSteamID
+    
+    # loops thru every game until it finds one matching your game's name
+    for i in respone["applist"]["apps"]:
+        if gameName.lower() == i["name"].lower():
+            gameSteamID = i["appid"]
+            
+            if gameSteamID == 0:
+                log(f"steam app ID {gameSteamID} found for {gameName}")
+            return
+    
+    # if we didn't find the game at all on steam, 
+    log(f"could not find the steam app ID for {gameName}")
+    gameSteamID = 0
+
 
 def getImageFromStorepage():
     global coverImage
     global coverImageText
     
     log("getting icon from the steam store")
-    try:
-        # fetches a list of ALL games on steam
-        r = requests.get(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+    try: 
+        r = requests.get(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}")
         
         # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
         sleep(0.2)
-        
-        if r.status_code == 403:
-            error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
-            exit()
         
         if r.status_code != 200:
             error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
             return
-
+        
         respone = r.json()
         
-        steamAppID = 0
-        # loops thru every game until it finds one matching your game's name
-        for i in respone["applist"]["apps"]:
-            if gameName.lower() == i["name"].lower():
-                steamAppID = i["appid"]
-                
-                log(f"steam app ID {steamAppID} found for {gameName}")
-                break
-        
-        # if we didn't find the game at all on steam, 
-        if steamAppID == 0:
-            log(f"could not find the steam app ID for {gameName}")
-            coverImage = None
-            coverImageText = None
-            return
-
-        # then load the store page, and find the icon thru it
-        URL = f"https://store.steampowered.com/app/{steamAppID}/"
-        page = requests.get(URL, allow_redirects=True)
-        
-        # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
-        sleep(0.2)
-        
-        # if it was redirected to the main page (steam does this whenever it recieves an invalid URL), exit
-        if page.url == "https://store.steampowered.com/":
-            log(f"the app ID found for {gameName} ({steamAppID}) does not seem to be valid, ignoring")
-            return
-        
-        if r.status_code != 200:
-            error(f"error code {r.status_code} met when trying to load store page for {gameName}, ignoring")
-            return
-        
-        soup = BeautifulSoup(page.content, "html.parser")
-        img = soup.find("div", {"class": "game_header_image_ctn"}).find("img")
-        # save it to variable
-        coverImage = img["src"]
+        coverImage = respone[str(gameSteamID)]["data"]["header_image"]
         coverImageText = f"{gameName} on steam"
         # do note this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
         
@@ -272,6 +265,30 @@ def getImageFromStorepage():
         coverImageText = None
 
 
+def getGameReviews():    
+    # get the review data for the steam game
+    r = requests.get(f"https://store.steampowered.com/appreviews/{gameSteamID}?json=1")
+    
+    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+    sleep(0.2)
+    
+    if r.status_code != 200:
+        error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
+        return
+
+    # convert it to a dictionary
+    respone = r.json()
+    response = respone["query_summary"]
+    
+    global gameReviewScore
+    global gameReviewString
+    
+    gameReviewScore = round(
+        (response["total_positive"] / response["total_reviews"]) * 100
+        , 2)
+    gameReviewString = response["review_score_desc"]
+
+    
 # searches the steam grid DB or the official steam store to get cover images for games
 def getGameImage():
     global coverImage
@@ -342,10 +359,10 @@ def getWebScrapePresence():
                 # the "last online x min ago" field is the same div as the game name
                 if "Last Online" not in result:
                     
-                    global isPlayingLocalGame
+                    global isPlayingSteamGame
                     global gameName
                     
-                    isPlayingLocalGame = False
+                    isPlayingSteamGame = False
                     gameName = result
 
 # checks what game the user is currently playing
@@ -372,7 +389,7 @@ def getSteamPresence():
         exit()
 
 
-    global isPlayingLocalGame
+    global isPlayingSteamGame
 
     # sort the players based on position in the config file
     sorted_response = []
@@ -389,7 +406,7 @@ def getSteamPresence():
             game_title = sorted_response[i]["gameextrainfo"]
             if game_title != gameName:
                 log(f"found game {game_title} played by {sorted_response[i]['personaname']}")
-            isPlayingLocalGame = False
+            isPlayingSteamGame = True
             return game_title
 
     return ""
@@ -529,6 +546,7 @@ def getLocalPresence():
     global gameName
     global startTime
     global isPlayingLocalGame
+    global isPlayingSteamGame
     
     
     if exists(f"{dirname(__file__)}/games.txt"):
@@ -544,6 +562,7 @@ def getLocalPresence():
                     gameName = game[1]
                     startTime = processCreationTime
                     isPlayingLocalGame = True
+                    isPlayingSteamGame = False
                     
                     if not isPlaying:
                         log(f"found name for {gameName} on disk")
@@ -553,25 +572,21 @@ def getLocalPresence():
             
             # if there wasn't a local entry for the game
             log(f"could not find a name for {processName}, adding an entry to games.txt")
-            
             gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
             
-            isPlayingLocalGame = True
-            gameName = processName.title()
-            startTime = processCreationTime
-
-
     # if games.txt doesn't exist at all           
     else:
         log("games.txt does not exist, creating one")
         with open(f'{dirname(__file__)}/games.txt', 'a') as gamesFile:
             gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
-            
-            isPlayingLocalGame = True
-            gameName = processName.title()
-            startTime = processCreationTime
+    
+    
+    isPlayingLocalGame = True
+    isPlayingSteamGame = False
+    gameName = processName.title()
+    startTime = processCreationTime
 
     
 
@@ -598,6 +613,9 @@ def setPresenceDetails():
             
         activeRichPresence = gameRichPresence
     
+    if state == None and gameReviewScore != 0:
+        state = f"{gameReviewString} - {gameReviewScore}%"
+    
     
     log("pushing presence to Discord")
     
@@ -621,8 +639,12 @@ def main():
     global gameName
     global gameRichPresence
     global activeRichPresence
+    global gameSteamID
+    global gameReviewScore
+    global gameReviewString
     global isPlaying
     global isPlayingLocalGame
+    global isPlayingSteamGame
     
     global coverImage
     global coverImageText
@@ -657,6 +679,7 @@ def main():
     customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
     
     doSteamRichPresence = config["FETCH_STEAM_RICH_PRESENCE"]
+    fetchSteamReviews = config["FETCH_STEAM_REVIEWS"]
     
     # load these later on
     customIconURL = None
@@ -681,14 +704,19 @@ def main():
     # declare variables
     isPlaying = False
     isPlayingLocalGame = False
+    isPlayingSteamGame = False
     startTime = 0
     coverImage = None
     coverImageText = None
+    gameSteamID = 0
+    gameReviewScore = 0
+    gameReviewString = ""
     gameName = ""
     previousGameName = ""
     gameRichPresence = ""
-    # the rich presence text that's actually in the current discord presence
+    # the rich presence text that's actually in the current discord presence, set to beaver cause it can't start empty
     activeRichPresence = "beaver"
+
 
     if doCustomIcon:
         log("loading custom icon")
@@ -740,8 +768,17 @@ def main():
             if gameName == "" and doWebScraping:
                 getWebScrapePresence()
         
-            if doSteamRichPresence and not isPlayingLocalGame:
+            if doSteamRichPresence and isPlayingSteamGame:
                 getSteamRichPresence()
+        
+        if isPlayingSteamGame:
+            getGameSteamID()
+            
+        if gameName != "" and isPlayingSteamGame:
+           if fetchSteamReviews:
+              getGameReviews()  
+        
+            
             
             
         # if the game has changed
@@ -762,7 +799,8 @@ def main():
             
             # if the game has changed or a new game has been opened
             else:
-                # set the time we started playing, if the game is fetched thru local tasks the startTime has already been set
+                # save the time as the time we started playing
+                # if we're playing a localgame the time has already been set
                 if not isPlayingLocalGame:
                     startTime = round(time())
                 
