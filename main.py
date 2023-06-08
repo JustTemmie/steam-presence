@@ -637,7 +637,13 @@ def setPresenceDetails():
     
     if addSteamStoreButton and isPlayingSteamGame:
         price = getGamePrice()
-        buttons = [{"label": f"{gameName} on steam - {price} USD", "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
+        label = f"{gameName} on steam - {price} USD"
+        if len(label) > 32:
+            label = f"{gameName} - {price} USD"
+        if len(label) > 32:
+            label = f"on steam - {price} USD"
+            
+        buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
     
     
     log("pushing presence to Discord")
