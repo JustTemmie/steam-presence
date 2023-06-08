@@ -294,6 +294,12 @@ the script can also fetch the reviews of any steam game - it's very epic
 
 if you'd like to disable this, add `"FETCH_STEAM_REVIEWS": false,` to the config file
 
+# Add Steam Store Button 
+
+if you want, you can add a button to the steam page, price included (USD)
+
+add `"ADD_STEAM_STORE_BUTTON": true,` to the config file to enable this
+
 # Non Steam Games
 
 okay i'll be frank, this functionality is VERY scuffed, but - it does work.

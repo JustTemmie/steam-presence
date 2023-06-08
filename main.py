@@ -66,6 +66,7 @@ def getConfigFile():
 
         "FETCH_STEAM_RICH_PRESENCE": True,
         "FETCH_STEAM_REVIEWS": True,
+        "ADD_STEAM_STORE_BUTTON": False,
         
         "WEB_SCRAPE": False,
         
@@ -326,6 +327,22 @@ def getGameImage():
     if steamStoreCoverartBackup and coverImage == "":
         getImageFromStorepage()
 
+
+def getGamePrice():
+    r = requests.get(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}&cc=us")
+    
+    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+    sleep(0.2)
+    
+    if r.status_code != 200:
+        error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
+        return
+    
+    respone = r.json()
+    
+    return respone[str(gameSteamID)]["data"]["price_overview"]["final_formatted"]
+        
+        
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
     if not exists(f"{dirname(__file__)}/cookies.txt"):
@@ -596,6 +613,7 @@ def setPresenceDetails():
     
     details = None
     state = None
+    buttons = None
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
     if appID == defaultAppID or appID == defaultLocalAppID:
@@ -617,6 +635,11 @@ def setPresenceDetails():
         state = f"{gameReviewString} - {gameReviewScore}%"
     
     
+    if addSteamStoreButton and isPlayingSteamGame:
+        price = getGamePrice()
+        buttons = [{"label": f"{gameName} on steam - {price} USD", "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
+    
+    
     log("pushing presence to Discord")
     
     RPC.update(
@@ -624,7 +647,8 @@ def setPresenceDetails():
         details = details, state = state,
         start = startTime,
         large_image = coverImage, large_text = coverImageText,
-        small_image = customIconURL, small_text = customIconText
+        small_image = customIconURL, small_text = customIconText,
+        buttons=buttons
     )
 
 def main():
@@ -657,6 +681,8 @@ def main():
     global customIconURL
     global customIconText
     
+    global addSteamStoreButton
+    
     log("loading config file")
     config = getConfigFile()
     
@@ -680,6 +706,8 @@ def main():
     
     doSteamRichPresence = config["FETCH_STEAM_RICH_PRESENCE"]
     fetchSteamReviews = config["FETCH_STEAM_REVIEWS"]
+    addSteamStoreButton = config["ADD_STEAM_STORE_BUTTON"]
+    
     
     # load these later on
     customIconURL = None
