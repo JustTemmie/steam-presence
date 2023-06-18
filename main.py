@@ -762,14 +762,17 @@ def main():
             
             # if the game has changed or a new game has been opened
             else:
+                # set the time we started playing, if the game is fetched thru local tasks the startTime has already been set
+                if not isPlayingLocalGame:
+                    startTime = round(time())
+                
                 if doCustomGame:
                     log(f"using custom game '{customGameName}'")
+                    # set the start time to the custom game start time
+                    if customGameStartOffset != 0:
+                        startTime = round(time() - customGameStartOffset)
     
                 log(f"game changed, updating to '{gameName}'")
-                
-                if startTime == 0:
-                    startTime = round(time() - customGameStartOffset)
-
 
                 # fetch the new app ID
                 getGameDiscordID()
@@ -782,9 +785,6 @@ def main():
                     log(f"RPC for {previousGameName} still open, closing it")
                     RPC.close()
                     
-                    # if the game is fetched thru local tasks, the startTime has already been set
-                    if not isPlayingLocalGame:
-                        startTime = round(time())
                 # redefine and reconnect to the RPC object
                 log(f"creating new rich presence object for {gameName}")
                 RPC = Presence(client_id=appID)
