@@ -351,6 +351,9 @@ def getGamePrice():
     
     respone = r.json()
     
+    if "price_overview" not in respone[str(gameSteamID)]["data"]:
+        return
+    
     return respone[str(gameSteamID)]["data"]["price_overview"]["final_formatted"]
         
         
