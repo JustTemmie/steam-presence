@@ -222,14 +222,15 @@ def getGameSteamID():
     respone = r.json()
     
     global gameSteamID
-    
+        
     # loops thru every game until it finds one matching your game's name
     for i in respone["applist"]["apps"]:
         if gameName.lower() == i["name"].lower():
-            gameSteamID = i["appid"]
-            
+
             if gameSteamID == 0:
-                log(f"steam app ID {gameSteamID} found for {gameName}")
+                log(f"steam app ID {i['appid']} found for {gameName}")
+            
+            gameSteamID = i["appid"]
             return
     
     # if we didn't find the game at all on steam, 
@@ -274,12 +275,22 @@ def getGameReviews():
     sleep(0.2)
     
     if r.status_code != 200:
-        error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
+        error(f"error code {r.status_code} met when requesting the review score for {gameName}, ignoring")
         return
 
     # convert it to a dictionary
     respone = r.json()
+    
+    # sometimes instead of returning the disered dicationary steam just decides to be quirky
+    # and it returns the dictionary `{'success': 2}` - something which isn't really useful. If this happens we try again :)
+    if respone["success"] != 1:
+        getGameReviews()
+        return
+    
     response = respone["query_summary"]
+    
+    if response["total_positive"] == 0:
+        return
     
     global gameReviewScore
     global gameReviewString
