@@ -38,23 +38,29 @@ if [ ! -e "$(pwd)/customGameIDs.json" ]; then
 fi
 
 echo "Setting up virtual environment"
+mkdir venv
+cd venv
 python3 -m venv .
 ./bin/python -m pip install --upgrade pip wheel
-./bin/python -m pip install -r requirements.txt
+./bin/python -m pip install -r ../requirements.txt
+cd ..
 
 echo ""
 echo "Testing if the script works"
 echo ""
 
-timeout 2.5s ./bin/python ./main.py
+timeout 2.5s ./venv/bin/python ./main.py
 
 echo "Test might've worked, did it spit out any errors?"
 echo "Commands executed."
 
 # Replace "/home/deck" with current directory in steam-presence.service file
 echo "Setting up service file"
+# turn steam-presence/bin/python into steam-presence/venv/bin/python
+sed -i "s/steam-presence\/bin\/python/steam-presence\/venv\/bin\/python/g" "$PWD/steam-presence.service"
 mkdir -p "$HOME/.config/systemd/user"
 sed -e "s~/home/deck/steam-presence~$PWD~g" "$PWD/steam-presence.service" > $HOME/.config/systemd/user/steam-presence.service
+
 
 echo "Starting service"
 systemctl --user daemon-reload
