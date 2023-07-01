@@ -54,12 +54,10 @@ timeout 2.5s ./venv/bin/python ./main.py
 echo "Test might've worked, did it spit out any errors?"
 echo "Commands executed."
 
-# Replace "/home/deck" with current directory in steam-presence.service file
+# Turn steam-presence/bin/python into steam-presence/venv/bin/python and replace "/home/deck" with current directory in steam-presence.service file
 echo "Setting up service file"
-# turn steam-presence/bin/python into steam-presence/venv/bin/python
-sed -i "s/steam-presence\/bin\/python/steam-presence\/venv\/bin\/python/g" "$PWD/steam-presence.service"
 mkdir -p "$HOME/.config/systemd/user"
-sed -e "s~/home/deck/steam-presence~$PWD~g" "$PWD/steam-presence.service" > $HOME/.config/systemd/user/steam-presence.service
+sed -e "s~steam-presence/bin/python~steam-presence/venv/bin/python~g" -e "s~/home/deck/steam-presence~$PWD~g" "$PWD/steam-presence.service" > $HOME/.config/systemd/user/steam-presence.service
 
 
 echo "Starting service"
