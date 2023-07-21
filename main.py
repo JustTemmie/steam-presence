@@ -65,7 +65,7 @@ def getConfigFile():
         "DISCORD_APPLICATION_ID": "869994714093465680",
 
         "FETCH_STEAM_RICH_PRESENCE": True,
-        "FETCH_STEAM_REVIEWS": True,
+        "FETCH_STEAM_REVIEWS": False,
         "ADD_STEAM_STORE_BUTTON": False,
         
         "WEB_SCRAPE": False,

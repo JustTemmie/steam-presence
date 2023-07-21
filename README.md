@@ -115,7 +115,8 @@ the script will find:
  - [A custom icon in the rich presence](custom-icon)
  - [Manually adding the correct names for any game you'd like](#custom-game-ids)
  - [Disabling fetching steam's rich presence](#fetch-steam-rich-presence)
- - [Disabling steam reviews](#fetch-steam-reviews)
+ - [Enabling steam reviews](#fetch-steam-reviews)
+ - [Add a button to the steam store page](#add-steam-store-button)
 
 you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_IDS` found [here](#user-ids)
 
@@ -128,7 +129,8 @@ this is what a full config file looks like; you only need to fill in the parts t
     "DISCORD_APPLICATION_ID": "869994714093465680",
 
     "FETCH_STEAM_RICH_PRESENCE": true,
-    "FETCH_STEAM_GAME_REVIEWS": true,
+    "FETCH_STEAM_REVIEWS": false,
+    "ADD_STEAM_STORE_BUTTON": false,
 
     "WEB_SCRAPE": false,
     
@@ -292,7 +294,7 @@ but it can be disabled if you like by adding `"FETCH_STEAM_RICH_PRESENCE": false
 
 the script can also fetch the reviews of any steam game - it's very epic
 
-if you'd like to disable this, add `"FETCH_STEAM_REVIEWS": false,` to the config file
+if you'd like to enable this, add `"FETCH_STEAM_REVIEWS": true,` to the config file
 
 # Add Steam Store Button 
 
