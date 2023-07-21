@@ -55,6 +55,35 @@ def error(error):
     print(f"    ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {error}")
 
 
+def getMetaFile():
+    if exists(f"{dirname(__file__)}/data/meta.json"):
+        with open(f"{dirname(__file__)}/data/meta.json", "r") as f:
+            metaFile = json.load(f)
+    
+    elif exists(f"{dirname(__file__)}/meta.json"):
+        with open(f"{dirname(__file__)}/meta.json", "r") as f:
+            metaFile = json.load(f)
+    
+    else:
+        error("couldn't find the meta files, please refer to the v1.11 Release on github\nfound here:  https://github.com/JustTemmie/steam-presence/releases/tag/v1.11")
+        exit()
+        
+    return metaFile
+
+def writeToMetaFile(keys: list, value):
+    metaFile = getMetaFile()
+    
+    for i in range(len(keys) - 1):
+        metaFile = metaFile[keys[i]]
+    
+    metaFile[keys[-1]] = value
+    
+    with open(f"{dirname(__file__)}/data/meta.json", "w") as f:
+        json.dump(metaFile, f)
+    
+    
+    
+    
 # opens the config file and loads the data
 def getConfigFile():
     # the default settings, don't use exampleConfig.json as people might change that
@@ -112,7 +141,7 @@ def getConfigFile():
     else:
         error("Config file not found. Please read the readme and create a config file.")
         exit()
-        
+    
         
     # if something isn't speficied in the user's config file, fill it in with data from the default settings 
     settings = {**defaultSettings, **userSettings}
@@ -165,7 +194,7 @@ def getImageFromSGDB():
                     coverImageText = f"Art by {entry[4]} on SteamGrid DB"
                     log("successfully retrived icon from SGDB")
                     # saves this data to disk
-                    with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+                    with open(f'{dirname(__file__)}/data/icons.txt', 'a') as icons:
                         icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                         icons.close()
                     return
@@ -194,7 +223,7 @@ def getImageFromSGDB():
                 log("successfully retrived icon from SGDB")
 
                 # saves data to disk
-                with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+                with open(f'{dirname(__file__)}/data/icons.txt', 'a') as icons:
                     icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                     icons.close()
                 return
@@ -311,7 +340,7 @@ def getGameImage():
     log(f"fetching icon for {gameName}")
     
     # checks if there's already an existing icon saved to disk for the game 
-    with open(f'{dirname(__file__)}/icons.txt', 'r') as icons:
+    with open(f'{dirname(__file__)}/data/icons.txt', 'r') as icons:
         for i in icons:
             # cut off the new line character
             game = i.split("\n")
@@ -501,8 +530,8 @@ def getGameDiscordID():
     response = r.json()
     
     # check if the "customGameIDs.json" file exists, if so, open it
-    if exists(f"{dirname(__file__)}/customGameIDs.json"):
-        with open(f"{dirname(__file__)}/customGameIDs.json", "r") as f:
+    if exists(f"{dirname(__file__)}/data/customGameIDs.json"):
+        with open(f"{dirname(__file__)}/data/customGameIDs.json", "r") as f:
             # load the values of the file
             gameIDsFile = json.load(f)
             
@@ -580,8 +609,8 @@ def getLocalPresence():
     global isPlayingSteamGame
     
     
-    if exists(f"{dirname(__file__)}/games.txt"):
-        with open(f'{dirname(__file__)}/games.txt', 'r+') as gamesFile:
+    if exists(f"{dirname(__file__)}/data/games.txt"):
+        with open(f'{dirname(__file__)}/data/games.txt', 'r+') as gamesFile:
             for i in gamesFile:
                 # remove the new line
                 game = i.split("\n")
@@ -609,7 +638,7 @@ def getLocalPresence():
     # if games.txt doesn't exist at all           
     else:
         log("games.txt does not exist, creating one")
-        with open(f'{dirname(__file__)}/games.txt', 'a') as gamesFile:
+        with open(f'{dirname(__file__)}/data/games.txt', 'a') as gamesFile:
             gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
     
@@ -671,7 +700,93 @@ def setPresenceDetails():
         buttons=buttons
     )
 
+def verifyProjectVersion():
+    metaFile = getMetaFile()
+    if metaFile["structure-version"] == "0":
+        print("----------------------------------------------------------")
+        log("updating meta.json's structure-version to `1`")
+        try:
+            import shutil
+        except ImportError:
+            error("import error whilst importing `shutil`, exiting")
+            exit()
+        
+        if not os.path.exists(f"{dirname(__file__)}/data"):
+            os.makedirs(f"{dirname(__file__)}/data")
+        
+        expectedFiles = {
+            "icons.txt": "",
+            "games.txt": "",
+            "customGameIDs.json": "{}"
+        }
+        
+        for i in expectedFiles:
+            if not os.path.exists(i):
+                log(f"creating file `{i}` with content `{expectedFiles[i]}`")
+                with open(f"{dirname(__file__)}/{i}", "w") as f:
+                    f.write(expectedFiles[i])  
+        
+        try:
+            shutil.move(f"{dirname(__file__)}/icons.txt",           f"{dirname(__file__)}/data/icons.txt")
+            shutil.move(f"{dirname(__file__)}/games.txt",           f"{dirname(__file__)}/data/games.txt")
+            shutil.move(f"{dirname(__file__)}/customGameIDs.json",  f"{dirname(__file__)}/data/customGameIDs.json")
+            shutil.move(f"{dirname(__file__)}/meta.json",           f"{dirname(__file__)}/data/meta.json")
+            
+            writeToMetaFile(["structure-version"], "1")
+        except Exception as e:
+            error(f"error encountered whilst trying to update the config-version to version 1, exiting\nError encountered: {e}")
+            exit()
+        print("----------------------------------------------------------")
+    elif metaFile["structure-version"] == "1":
+        pass
+    else:
+        error("invalid structure-version found in meta.json, exiting")
+        exit()
+
+def checkForUpdate():
+    # this always has to match the newest release tag
+    currentVersion = "v1.11"
+    URL = f"https://api.github.com/repos/JustTemmie/steam-presence/releases/latest"
+    r = requests.get(URL)
+    
+    if r.status_code != 200:
+        error(f"status code {r.status_code} recieved when trying to find latest version of steam presence, ignoring")
+        return
+
+    # the newest current release tag name
+    newestVersion = r.json()["tag_name"]
+    
+    # make the version numbers easier to parse
+    parsableCurrentVersion = currentVersion.replace("v", "")
+    parsableNewestVersion = newestVersion.replace("v", "")
+    
+    parsableCurrentVersion = parsableCurrentVersion.split(".")
+    parsableNewestVersion = parsableNewestVersion.split(".")
+    
+    
+    # make sure both ot the version lists have 4 entries so that the zip() function below works properly
+    for i in [parsableNewestVersion, parsableCurrentVersion]:
+        while len(i) < 4:
+            i.append(0)
+    
+    # loop thru both of the version lists,
+    for new, old in zip(parsableNewestVersion, parsableCurrentVersion):
+        if int(new) > int(old):
+            print("----------------------------------------------------------")
+            print("there's a newer update available!")
+            print(f"if you wish to upload from `{currentVersion}` to `{newestVersion}` simply run `git pull` from the terminal/cmd in the same folder as main.py")
+            print(f"commits made in this time frame: https://github.com/JustTemmie/steam-presence/compare/{currentVersion}...{newestVersion}")
+            print("----------------------------------------------------------")
+            return
+        # if the current version is newer than the "newest one", just return to make sure it doesn't falsly report anything
+        # this shouldn't ever come up for most people - but it's probably a good idea to include this if statement; just in case 
+        if int(old) > int(new):
+            return
+
 def main():
+    checkForUpdate()
+    verifyProjectVersion()
+    
     global userID
     global steamAPIKey
     global localGames
