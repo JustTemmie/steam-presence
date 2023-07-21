@@ -101,7 +101,7 @@ the script will find:
  - Games running thru steam
  - Art of said games taken from the steam store
  - The rich presence will have the correct name for most games, whilst some nicher titles will be listed as "a game on steam"
- - Fetch rich presence information thru steam, for example in Hades you can be "Battling out of Elysium" or in BTD6 you can be "Broswing Menus"
+ - Fetch rich presence information thru steam, for example in Hades you can be "Battling out of Elysium" or in BTD6 you can be "Browsing Menus"
 
 
 ### Full Featureset
