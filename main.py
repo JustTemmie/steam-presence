@@ -250,6 +250,10 @@ def getGameSteamID():
 
 
 def getImageFromStorepage():
+    # if the steam game ID is known to be invalid, just return immediately
+    if gameSteamID == 0:
+        return
+    
     global coverImage
     global coverImageText
     
@@ -261,6 +265,7 @@ def getImageFromStorepage():
         sleep(0.2)
         
         if r.status_code != 200:
+            print(gameSteamID)
             error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
             return
         
