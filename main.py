@@ -582,7 +582,16 @@ def getLocalPresence():
             processCreationTime = processCreationTimes[processNames.index(game)]
             processName = game
         
-            if not isPlaying:gameNames
+            if not isPlaying:
+                log(f"found {processName} running locally")
+
+            gameFound = True
+            break
+    
+    # don't continue if it didn't find a game
+    if not gameFound:
+        return
+    
     global gameName
     global startTime
     global isPlayingLocalGame
