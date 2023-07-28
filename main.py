@@ -65,7 +65,7 @@ def getConfigFile():
         "DISCORD_APPLICATION_ID": "869994714093465680",
 
         "FETCH_STEAM_RICH_PRESENCE": True,
-        "FETCH_STEAM_REVIEWS": True,
+        "FETCH_STEAM_REVIEWS": False,
         "ADD_STEAM_STORE_BUTTON": False,
         
         "WEB_SCRAPE": False,
@@ -122,6 +122,17 @@ def getConfigFile():
             
     
     return settings
+
+def removeChars(inputString: str, ignoredChars: str) -> str:
+    # removes all characters in the ingoredChars string from the inputString
+    for ignoredChar in ignoredChars:
+        if ignoredChar in inputString:
+            for j in range(len(inputString) - 1, 0, -1):
+                if inputString[j] in ignoredChar:
+                    inputString = inputString[:j] + inputString[j+1:]
+
+    return inputString
+
 
 def getImageFromSGDB():
     global coverImage
@@ -456,7 +467,7 @@ def getSteamRichPresence():
         sleep(0.2)
         
         if pageRequest.status_code != 200:
-            error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info for steam user ID {i}, ignoring function")
+            error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info for steam user ID `{i}`, ignoring function")
             return
 
         # turn the page into proper html formating
@@ -500,6 +511,8 @@ def getGameDiscordID():
     
     response = r.json()
     
+    ignoredChars = "®©™℠"
+    
     # check if the "customGameIDs.json" file exists, if so, open it
     if exists(f"{dirname(__file__)}/customGameIDs.json"):
         with open(f"{dirname(__file__)}/customGameIDs.json", "r") as f:
@@ -517,17 +530,22 @@ def getGameDiscordID():
     
     # loop thru all games
     for i in response:
-        gameNames = []
-        gameNames.append(i["name"].lower())
+        gameNames = []                      
+        gameNames.append(i["name"])
         
         # make a list containing all the names of said game
         if "aliases" in i:
             aliases = i["aliases"]
             for alias in aliases:
-                gameNames.append(alias.lower())
+                gameNames.append(alias)
 
+        for j in range(len(gameNames)):
+            gameNames[j] = removeChars(
+                gameNames[j].lower(),
+                ignoredChars)
+        
         # if it's the same, we successfully found the discord game ID
-        if gameName.lower() in gameNames:
+        if removeChars(gameName.lower(), ignoredChars) in gameNames:
             log(f"found the discord game ID for {gameName}")
             appID = i["id"]
             return
@@ -564,16 +582,7 @@ def getLocalPresence():
             processCreationTime = processCreationTimes[processNames.index(game)]
             processName = game
         
-            if not isPlaying:
-                log(f"found {processName} running locally")
-
-            gameFound = True
-            break
-    
-    # don't continue if it didn't find a game
-    if not gameFound:
-        return
-    
+            if not isPlaying:gameNames
     global gameName
     global startTime
     global isPlayingLocalGame
@@ -622,7 +631,6 @@ def getLocalPresence():
     
 
 def setPresenceDetails():
-    
     global activeRichPresence
     
     details = None
@@ -651,11 +659,15 @@ def setPresenceDetails():
     
     if addSteamStoreButton and isPlayingSteamGame:
         price = getGamePrice()
-        label = f"{gameName} on steam - {price} USD"
+        if price == None:
+            price = "Free"
+        else:
+            price += " USD"
+        label = f"{gameName} on steam - {price}"
         if len(label) > 32:
-            label = f"{gameName} - {price} USD"
+            label = f"{gameName} - {price}"
         if len(label) > 32:
-            label = f"on steam - {price} USD"
+            label = f"on steam - {price}"
             
         buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
     
@@ -822,9 +834,11 @@ def main():
         if isPlayingSteamGame:
             getGameSteamID()
             
-        if gameName != "" and isPlayingSteamGame:
-           if fetchSteamReviews:
-              getGameReviews()  
+        if fetchSteamReviews:
+            if gameName != "" and isPlayingSteamGame:
+                getGameReviews()
+            else:
+                gameReviewScore = 0
         
             
             
@@ -893,8 +907,9 @@ def main():
 
 
 if __name__ == "__main__":
+    main()
     try:
-        main()
+        pass
     except Exception as e:
         error(f"{e}\nautomatically restarting script in 60 seconds\n")
         sleep(60)
