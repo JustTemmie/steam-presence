@@ -249,13 +249,15 @@ def getGameSteamID():
     gameSteamID = 0
 
 
-def getImageFromStorepage():
-    # if the steam game ID is known to be invalid, just return immediately
-    if gameSteamID == 0:
-        return
-    
+def getImageFromStorepage():    
     global coverImage
     global coverImageText
+    
+    # if the steam game ID is known to be invalid, just return immediately
+    if gameSteamID == 0:
+        coverImage = None
+        coverImageText = None
+        return
     
     log("getting icon from the steam store")
     try: 
@@ -265,8 +267,9 @@ def getImageFromStorepage():
         sleep(0.2)
         
         if r.status_code != 200:
-            print(gameSteamID)
             error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
+            coverImage = None
+            coverImageText = None
             return
         
         respone = r.json()
@@ -671,7 +674,7 @@ def setPresenceDetails():
         state = f"{gameReviewString} - {gameReviewScore}%"
     
     
-    if addSteamStoreButton and isPlayingSteamGame:
+    if addSteamStoreButton and gameSteamID != 0:
         price = getGamePrice()
         if price == None:
             price = "Free"
@@ -753,7 +756,6 @@ def main():
     doSteamRichPresence = config["FETCH_STEAM_RICH_PRESENCE"]
     fetchSteamReviews = config["FETCH_STEAM_REVIEWS"]
     addSteamStoreButton = config["ADD_STEAM_STORE_BUTTON"]
-    
     
     # load these later on
     customIconURL = None
@@ -843,22 +845,21 @@ def main():
                 getWebScrapePresence()
         
             if doSteamRichPresence and isPlayingSteamGame:
-                getSteamRichPresence()
-        
-        if isPlayingSteamGame:
-            getGameSteamID()
-            
-        if fetchSteamReviews:
-            if gameName != "" and isPlayingSteamGame:
-                getGameReviews()
-            else:
-                gameReviewScore = 0
-        
-            
+                getSteamRichPresence()        
             
             
         # if the game has changed
         if previousGameName != gameName:
+            # try finding the game on steam, and saving it's ID to `gameSteamID` 
+            getGameSteamID()
+            
+            # fetch the steam reviews if enabled
+            if fetchSteamReviews:
+                if gameName != "" and gameSteamID != 0:
+                    getGameReviews()
+                else:
+                    gameReviewScore = 0
+                
             # if the game has been closed
             if gameName == "":
                 # only close once
