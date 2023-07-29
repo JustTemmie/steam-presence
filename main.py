@@ -585,7 +585,7 @@ def getGameDiscordID():
         
         # if it's the same, we successfully found the discord game ID
         if removeChars(gameName.lower(), ignoredChars) in gameNames:
-            log(f"found the discord game ID for {gameName}")
+            log(f"found the discord game ID for {removeChars(gameName.lower(), ignoredChars)}")
             appID = i["id"]
             return
 
