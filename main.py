@@ -65,7 +65,10 @@ def getMetaFile():
             metaFile = json.load(f)
     
     else:
-        error("couldn't find the meta files, please refer to the v1.11 Release on github\nfound here:  https://github.com/JustTemmie/steam-presence/releases/tag/v1.11")
+        # remove in 1.12? maybe 1.13 - whenever i do anything else with the meta file
+        error("couldn't find the the meta file, creating new one")
+        with open(f"{dirname(__file__)}/meta.json", "w") as f:
+            metaFile = json.dump({"structure-version": "0"}, f)
         exit()
         
     return metaFile
@@ -80,7 +83,6 @@ def writeToMetaFile(keys: list, value):
     
     with open(f"{dirname(__file__)}/data/meta.json", "w") as f:
         json.dump(metaFile, f)
-    
     
     
     
@@ -774,8 +776,6 @@ def verifyProjectVersion():
 
 # checks if the program has any updates
 def checkForUpdate():
-    # this always has to match the newest release tag
-    currentVersion = "v1.11"
     URL = f"https://api.github.com/repos/JustTemmie/steam-presence/releases/latest"
     r = requests.get(URL)
     
@@ -787,7 +787,7 @@ def checkForUpdate():
     newestVersion = r.json()["tag_name"]
     
     # make the version numbers easier to parse
-    parsableCurrentVersion = currentVersion.replace("v", "")
+    parsableCurrentVersion = currentVersion.replace("v", "") # the `currentVersion` variable is set in the main() function so i'm less likely to forget, lol
     parsableNewestVersion = newestVersion.replace("v", "")
     
     parsableCurrentVersion = parsableCurrentVersion.split(".")
@@ -814,6 +814,10 @@ def checkForUpdate():
             return
 
 def main():
+    global currentVersion
+    # this always has to match the newest release tag
+    currentVersion = "v1.11"
+    
     # check if there's any updates for the program
     checkForUpdate()
     # does various things, such as verifying that certain files are in certain locations
@@ -850,6 +854,7 @@ def main():
     global customIconText
     
     global addSteamStoreButton
+    
     
     log("loading config file")
     config = getConfigFile()
