@@ -152,6 +152,17 @@ def getConfigFile():
     
     return settings
 
+def removeChars(inputString: str, ignoredChars: str) -> str:
+    # removes all characters in the ingoredChars string from the inputString
+    for ignoredChar in ignoredChars:
+        if ignoredChar in inputString:
+            for j in range(len(inputString) - 1, 0, -1):
+                if inputString[j] in ignoredChar:
+                    inputString = inputString[:j] + inputString[j+1:]
+
+    return inputString
+
+
 def getImageFromSGDB():
     global coverImage
     global coverImageText
@@ -267,9 +278,15 @@ def getGameSteamID():
     gameSteamID = 0
 
 
-def getImageFromStorepage():
+def getImageFromStorepage():    
     global coverImage
     global coverImageText
+    
+    # if the steam game ID is known to be invalid, just return immediately
+    if gameSteamID == 0:
+        coverImage = None
+        coverImageText = None
+        return
     
     log("getting icon from the steam store")
     try: 
@@ -280,6 +297,8 @@ def getImageFromStorepage():
         
         if r.status_code != 200:
             error(f"error code {r.status_code} met when requesting list of games in order to obtain an icon for {gameName}, ignoring")
+            coverImage = None
+            coverImageText = None
             return
         
         respone = r.json()
@@ -485,7 +504,7 @@ def getSteamRichPresence():
         sleep(0.2)
         
         if pageRequest.status_code != 200:
-            error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info for steam user ID {i}, ignoring function")
+            error(f"status code {pageRequest.status_code} returned whilst trying to fetch the enhanced rich presence info for steam user ID `{i}`, ignoring function")
             return
 
         # turn the page into proper html formating
@@ -529,6 +548,8 @@ def getGameDiscordID():
     
     response = r.json()
     
+    ignoredChars = "®©™℠"
+    
     # check if the "customGameIDs.json" file exists, if so, open it
     if exists(f"{dirname(__file__)}/data/customGameIDs.json"):
         with open(f"{dirname(__file__)}/data/customGameIDs.json", "r") as f:
@@ -546,17 +567,22 @@ def getGameDiscordID():
     
     # loop thru all games
     for i in response:
-        gameNames = []
-        gameNames.append(i["name"].lower())
+        gameNames = []                      
+        gameNames.append(i["name"])
         
         # make a list containing all the names of said game
         if "aliases" in i:
             aliases = i["aliases"]
             for alias in aliases:
-                gameNames.append(alias.lower())
+                gameNames.append(alias)
 
+        for j in range(len(gameNames)):
+            gameNames[j] = removeChars(
+                gameNames[j].lower(),
+                ignoredChars)
+        
         # if it's the same, we successfully found the discord game ID
-        if gameName.lower() in gameNames:
+        if removeChars(gameName.lower(), ignoredChars) in gameNames:
             log(f"found the discord game ID for {gameName}")
             appID = i["id"]
             return
@@ -651,7 +677,6 @@ def getLocalPresence():
     
 
 def setPresenceDetails():
-    
     global activeRichPresence
     
     details = None
@@ -678,13 +703,17 @@ def setPresenceDetails():
         state = f"{gameReviewString} - {gameReviewScore}%"
     
     
-    if addSteamStoreButton and isPlayingSteamGame:
+    if addSteamStoreButton and gameSteamID != 0:
         price = getGamePrice()
-        label = f"{gameName} on steam - {price} USD"
+        if price == None:
+            price = "Free"
+        else:
+            price += " USD"
+        label = f"{gameName} on steam - {price}"
         if len(label) > 32:
-            label = f"{gameName} - {price} USD"
+            label = f"{gameName} - {price}"
         if len(label) > 32:
-            label = f"on steam - {price} USD"
+            label = f"on steam - {price}"
             
         buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
     
@@ -847,7 +876,6 @@ def main():
     fetchSteamReviews = config["FETCH_STEAM_REVIEWS"]
     addSteamStoreButton = config["ADD_STEAM_STORE_BUTTON"]
     
-    
     # load these later on
     customIconURL = None
     customIconText = None
@@ -936,20 +964,21 @@ def main():
                 getWebScrapePresence()
         
             if doSteamRichPresence and isPlayingSteamGame:
-                getSteamRichPresence()
-        
-        if isPlayingSteamGame:
-            getGameSteamID()
-            
-        if gameName != "" and isPlayingSteamGame:
-           if fetchSteamReviews:
-              getGameReviews()  
-        
-            
+                getSteamRichPresence()        
             
             
         # if the game has changed
         if previousGameName != gameName:
+            # try finding the game on steam, and saving it's ID to `gameSteamID` 
+            getGameSteamID()
+            
+            # fetch the steam reviews if enabled
+            if fetchSteamReviews:
+                if gameName != "" and gameSteamID != 0:
+                    getGameReviews()
+                else:
+                    gameReviewScore = 0
+                
             # if the game has been closed
             if gameName == "":
                 # only close once
@@ -1012,8 +1041,9 @@ def main():
 
 
 if __name__ == "__main__":
+    main()
     try:
-        main()
+        pass
     except Exception as e:
         error(f"{e}\nautomatically restarting script in 60 seconds\n")
         sleep(60)
