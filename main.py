@@ -743,6 +743,7 @@ def verifyProjectVersion():
         error("invalid structure-version found in meta.json, exiting")
         exit()
 
+# checks if the program has any updates
 def checkForUpdate():
     # this always has to match the newest release tag
     currentVersion = "v1.11"
@@ -784,7 +785,10 @@ def checkForUpdate():
             return
 
 def main():
+    # check if there's any updates for the program
     checkForUpdate()
+    # does various things, such as verifying that certain files are in certain locations
+    # well it does 1 thing at the time of writing, but i'll probably forget to update this comment when i add more lol 
     verifyProjectVersion()
     
     global userID
