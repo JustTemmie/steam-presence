@@ -65,11 +65,12 @@ def getMetaFile():
             metaFile = json.load(f)
     
     else:
-        # remove in 1.12? maybe 1.13 - whenever i do anything else with the meta file
-        error("couldn't find the the meta file, creating new one")
+        # remove in 1.12? maybe 1.13 - whenever i do anything else with the meta file - just make this throw an error instead
+        log("couldn't find the the meta file, creating new one")
         with open(f"{dirname(__file__)}/meta.json", "w") as f:
             metaFile = json.dump({"structure-version": "0"}, f)
-        exit()
+        
+        return getMetaFile()
         
     return metaFile
 
@@ -736,6 +737,7 @@ def verifyProjectVersion():
     if metaFile["structure-version"] == "0":
         print("----------------------------------------------------------")
         log("updating meta.json's structure-version to `1`")
+        log("importing libraries for meta update")
         try:
             import shutil
         except ImportError:
@@ -743,6 +745,7 @@ def verifyProjectVersion():
             exit()
         
         if not os.path.exists(f"{dirname(__file__)}/data"):
+            log(f"creating {dirname(__file__)}/data/")
             os.makedirs(f"{dirname(__file__)}/data")
         
         expectedFiles = {
@@ -758,9 +761,13 @@ def verifyProjectVersion():
                     f.write(expectedFiles[i])  
         
         try:
+            log(f"moving {dirname(__file__)}/icons.txt")
             shutil.move(f"{dirname(__file__)}/icons.txt",           f"{dirname(__file__)}/data/icons.txt")
+            log(f"moving {dirname(__file__)}/games.txt")
             shutil.move(f"{dirname(__file__)}/games.txt",           f"{dirname(__file__)}/data/games.txt")
+            log(f"moving {dirname(__file__)}/customGameIDs.json")
             shutil.move(f"{dirname(__file__)}/customGameIDs.json",  f"{dirname(__file__)}/data/customGameIDs.json")
+            log(f"moving {dirname(__file__)}/meta.json")
             shutil.move(f"{dirname(__file__)}/meta.json",           f"{dirname(__file__)}/data/meta.json")
             
             writeToMetaFile(["structure-version"], "1")
@@ -769,7 +776,9 @@ def verifyProjectVersion():
             exit()
         print("----------------------------------------------------------")
     elif metaFile["structure-version"] == "1":
-        pass
+        print("----------------------------------------------------------")
+        log("progam's current folder structure version is up to date...")
+        print("----------------------------------------------------------")
     else:
         error("invalid structure-version found in meta.json, exiting")
         exit()
