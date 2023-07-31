@@ -6,7 +6,7 @@ from datetime import datetime
 
 # for loading the config file
 import json
-from os.path import exists, dirname
+from os.path import exists, dirname, abspath
 
 # for restarting the script on a failed run
 import sys 
@@ -99,12 +99,12 @@ def getConfigFile():
         }
     }
 
-    if exists(f"{dirname(__file__)}/config.json"):
-        with open(f"{dirname(__file__)}/config.json", "r") as f:
+    if exists(f"{dirname(abspath(__file__))}/config.json"):
+        with open(f"{dirname(abspath(__file__))}/config.json", "r") as f:
             userSettings = json.load(f)
     
-    elif exists(f"{dirname(__file__)}/exampleconfig.json"):
-        with open(f"{dirname(__file__)}/exampleconfig.json", "r") as f:
+    elif exists(f"{dirname(abspath(__file__))}/exampleconfig.json"):
+        with open(f"{dirname(abspath(__file__))}/exampleconfig.json", "r") as f:
             userSettings = json.load(f)
     
     else:
