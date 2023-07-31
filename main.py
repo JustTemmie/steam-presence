@@ -6,7 +6,7 @@ from datetime import datetime
 
 # for loading the config file
 import json
-from os.path import exists, dirname
+from os.path import exists, dirname, abspath
 
 # for restarting the script on a failed run
 import sys 
@@ -36,7 +36,7 @@ except:
     if answer.lower() == "y":
         from os import system
         print("installing required packages...")
-        system(f"python3 -m pip install -r {dirname(__file__)}/requirements.txt")
+        system(f"python3 -m pip install -r {dirname(abspath(__file__))}/requirements.txt")
         
         from pypresence import Presence
         from steamgrid import SteamGridDB
@@ -99,12 +99,12 @@ def getConfigFile():
         }
     }
 
-    if exists(f"{dirname(__file__)}/config.json"):
-        with open(f"{dirname(__file__)}/config.json", "r") as f:
+    if exists(f"{dirname(abspath(__file__))}/config.json"):
+        with open(f"{dirname(abspath(__file__))}/config.json", "r") as f:
             userSettings = json.load(f)
     
-    elif exists(f"{dirname(__file__)}/exampleconfig.json"):
-        with open(f"{dirname(__file__)}/exampleconfig.json", "r") as f:
+    elif exists(f"{dirname(abspath(__file__))}/exampleconfig.json"):
+        with open(f"{dirname(abspath(__file__))}/exampleconfig.json", "r") as f:
             userSettings = json.load(f)
     
     else:
@@ -163,7 +163,7 @@ def getImageFromSGDB():
                     coverImageText = f"Art by {entry[4]} on SteamGrid DB"
                     log("successfully retrived icon from SGDB")
                     # saves this data to disk
-                    with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+                    with open(f'{dirname(abspath(__file__))}/icons.txt', 'a') as icons:
                         icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                         icons.close()
                     return
@@ -192,7 +192,7 @@ def getImageFromSGDB():
                 log("successfully retrived icon from SGDB")
 
                 # saves data to disk
-                with open(f'{dirname(__file__)}/icons.txt', 'a') as icons:
+                with open(f'{dirname(abspath(__file__))}/icons.txt', 'a') as icons:
                     icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                     icons.close()
                 return
@@ -282,7 +282,7 @@ def getGameImage():
     log(f"fetching icon for {gameName}")
     
     # checks if there's already an existing icon saved to disk for the game 
-    with open(f'{dirname(__file__)}/icons.txt', 'r') as icons:
+    with open(f'{dirname(abspath(__file__))}/icons.txt', 'r') as icons:
         for i in icons:
             # cut off the new line character
             game = i.split("\n")
@@ -311,11 +311,11 @@ def getGameImage():
 
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
-    if not exists(f"{dirname(__file__)}/cookies.txt"):
+    if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
         print("cookie.txt not found")
         return
     
-    cj = cookielib.MozillaCookieJar(f"{dirname(__file__)}/cookies.txt")
+    cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
     cj.load()
     
     # split on ',' in case of multiple userIDs
@@ -453,8 +453,8 @@ def getGameDiscordID():
     response = r.json()
     
     # check if the "customGameIDs.json" file exists, if so, open it
-    if exists(f"{dirname(__file__)}/customGameIDs.json"):
-        with open(f"{dirname(__file__)}/customGameIDs.json", "r") as f:
+    if exists(f"{dirname(abspath(__file__))}/customGameIDs.json"):
+        with open(f"{dirname(abspath(__file__))}/customGameIDs.json", "r") as f:
             # load the values of the file
             gameIDsFile = json.load(f)
             
@@ -531,8 +531,8 @@ def getLocalPresence():
     global isPlayingLocalGame
     
     
-    if exists(f"{dirname(__file__)}/games.txt"):
-        with open(f'{dirname(__file__)}/games.txt', 'r+') as gamesFile:
+    if exists(f"{dirname(abspath(__file__))}/games.txt"):
+        with open(f'{dirname(abspath(__file__))}/games.txt', 'r+') as gamesFile:
             for i in gamesFile:
                 # remove the new line
                 game = i.split("\n")
@@ -565,7 +565,7 @@ def getLocalPresence():
     # if games.txt doesn't exist at all           
     else:
         log("games.txt does not exist, creating one")
-        with open(f'{dirname(__file__)}/games.txt', 'a') as gamesFile:
+        with open(f'{dirname(abspath(__file__))}/games.txt', 'a') as gamesFile:
             gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
             
