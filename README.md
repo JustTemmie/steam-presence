@@ -4,6 +4,14 @@
 
 a simple script to fetch a Steam user's current game and related info, and display it as a Discord rich presence
 
+![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/justtemmie/steam-presence)
+![stars](https://img.shields.io/github/stars/justTemmie/steam-presence)
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=justtemmie.steam-presence)
+
+Made with ❤
+If you liked this project, please consider starring it <3
+
+
 ### Showcase
 
 ![Playing BTD6 with the script running](readmeimages/example1.png)
