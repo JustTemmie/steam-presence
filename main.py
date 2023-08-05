@@ -208,7 +208,7 @@ def getImageFromSGDB():
                     coverImageText = f"Art by {entry[4]} on SteamGrid DB"
                     log("successfully retrived icon from SGDB")
                     # saves this data to disk
-                    with open(f'{dirname(abspath(__file__))}/icons.txt', 'a') as icons:
+                    with open(f'{dirname(abspath(__file__))}/data/icons.txt', 'a') as icons:
                         icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                         icons.close()
                     return
@@ -237,7 +237,7 @@ def getImageFromSGDB():
                 log("successfully retrived icon from SGDB")
 
                 # saves data to disk
-                with open(f'{dirname(abspath(__file__))}/icons.txt', 'a') as icons:
+                with open(f'{dirname(abspath(__file__))}/data/icons.txt', 'a') as icons:
                     icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                     icons.close()
                 return
@@ -362,7 +362,7 @@ def getGameImage():
     log(f"fetching icon for {gameName}")
     
     # checks if there's already an existing icon saved to disk for the game 
-    with open(f'{dirname(abspath(__file__))}/icons.txt', 'r') as icons:
+    with open(f'{dirname(abspath(__file__))}/data/icons.txt', 'r') as icons:
         for i in icons:
             # cut off the new line character
             game = i.split("\n")
@@ -554,8 +554,8 @@ def getGameDiscordID():
     ignoredChars = "®©™℠"
     
     # check if the "customGameIDs.json" file exists, if so, open it
-    if exists(f"{dirname(abspath(__file__))}/customGameIDs.json"):
-        with open(f"{dirname(abspath(__file__))}/customGameIDs.json", "r") as f:
+    if exists(f"{dirname(abspath(__file__))}/data/customGameIDs.json"):
+        with open(f"{dirname(abspath(__file__))}/data/customGameIDs.json", "r") as f:
             # load the values of the file
             gameIDsFile = json.load(f)
             
@@ -638,8 +638,8 @@ def getLocalPresence():
     global isPlayingSteamGame
     
     
-    if exists(f"{dirname(abspath(__file__))}/games.txt"):
-        with open(f'{dirname(abspath(__file__))}/games.txt', 'r+') as gamesFile:
+    if exists(f"{dirname(abspath(__file__))}/data/games.txt"):
+        with open(f'{dirname(abspath(__file__))}/data/games.txt', 'r+') as gamesFile:
             for i in gamesFile:
                 # remove the new line
                 game = i.split("\n")
@@ -667,7 +667,7 @@ def getLocalPresence():
     # if games.txt doesn't exist at all           
     else:
         log("games.txt does not exist, creating one")
-        with open(f'{dirname(abspath(__file__))}/games.txt', 'a') as gamesFile:
+        with open(f'{dirname(abspath(__file__))}/data/games.txt', 'a') as gamesFile:
             gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
     
