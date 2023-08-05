@@ -8,7 +8,8 @@ a simple script to fetch a Steam user's current game and related info, and displ
 ![stars](https://img.shields.io/github/stars/justTemmie/steam-presence)
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=justtemmie.steam-presence)
 
-Made with ❤
+Made with ❤ by myself and our contributors
+
 If you liked this project, please consider starring it <3
 
 
