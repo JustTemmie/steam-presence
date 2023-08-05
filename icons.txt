@@ -1,4 +1,0 @@
-hades=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fe50ae64d08d4f8245aaabc55d1baf79/32/80x80.png||Art by DIGGRID on SteamGrid DB
-deep rock galactic=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/fb508ef074ee78a0e58c68be06d8a2eb/32/256x256.png||Art by darklinkpower on SteamGrid DB
-a short hike=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/6a30e32e56fce5cf381895dfe6ca7b6f.png||Art by Julia on SteamGrid DB
-risk of rain 2=https://cdn2.steamgriddb.com/file/sgdb-cdn/icon/c4492cbe90fbdbf88a5aec486aa81ed5/32/256x256.png||Art by darklinkpower on SteamGrid DB

@@ -101,7 +101,7 @@ the script will find:
  - Games running thru steam
  - Art of said games taken from the steam store
  - The rich presence will have the correct name for most games, whilst some nicher titles will be listed as "a game on steam"
- - Fetch rich presence information thru steam, for example in Hades you can be "Battling out of Elysium" or in BTD6 you can be "Broswing Menus"
+ - Fetch rich presence information thru steam, for example in Hades you can be "Battling out of Elysium" or in BTD6 you can be "Browsing Menus"
 
 
 ### Full Featureset
@@ -115,6 +115,8 @@ the script will find:
  - [A custom icon in the rich presence](custom-icon)
  - [Manually adding the correct names for any game you'd like](#custom-game-ids)
  - [Disabling fetching steam's rich presence](#fetch-steam-rich-presence)
+ - [Enabling steam reviews](#fetch-steam-reviews)
+ - [Add a button to the steam store page](#add-steam-store-button)
 
 you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_IDS` found [here](#user-ids)
 
@@ -127,6 +129,8 @@ this is what a full config file looks like; you only need to fill in the parts t
     "DISCORD_APPLICATION_ID": "869994714093465680",
 
     "FETCH_STEAM_RICH_PRESENCE": true,
+    "FETCH_STEAM_REVIEWS": false,
+    "ADD_STEAM_STORE_BUTTON": false,
 
     "WEB_SCRAPE": false,
     
@@ -285,6 +289,18 @@ not a ton of games have this implementet, as i can speak from personal experienc
 fetching this "enhanced rich presence" is enabled by default
 
 but it can be disabled if you like by adding `"FETCH_STEAM_RICH_PRESENCE": false,` to the config file
+
+# Fetch Steam Reviews
+
+the script can also fetch the reviews of any steam game - it's very epic
+
+if you'd like to enable this, add `"FETCH_STEAM_REVIEWS": true,` to the config file
+
+# Add Steam Store Button 
+
+if you want, you can add a button to the steam page, price included (USD)
+
+add `"ADD_STEAM_STORE_BUTTON": true,` to the config file to enable this
 
 # Non Steam Games
 

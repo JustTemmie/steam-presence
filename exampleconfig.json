@@ -5,6 +5,8 @@
     "DISCORD_APPLICATION_ID": "869994714093465680",
 
     "FETCH_STEAM_RICH_PRESENCE": true,
+    "FETCH_STEAM_REVIEWS": false,
+    "ADD_STEAM_STORE_BUTTON": false,
 
     "WEB_SCRAPE": false,
     
