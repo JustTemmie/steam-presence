@@ -449,7 +449,10 @@ def getWebScrapePresence():
 
 # checks what game the user is currently playing
 def getSteamPresence():
-    r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userID}")
+    try:
+        r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userID}")
+    except Exception as e:
+        error(f"exception met whilst trying to fetch the user's steam presence, this can be ignored\nerror: {e}")
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
