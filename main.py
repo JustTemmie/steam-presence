@@ -54,6 +54,21 @@ def log(log):
 def error(error):
     print(f"    ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {error}")
 
+# i've gotten the error `requests.exceptions.ConnectionError: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))` a lot;
+# this just seems to sometimes happens if your network conection is a bit wack, this function is a replacement for requests.get() and basically just does error handling and stuff
+def makeWebRequest(URL, loops=0):
+    try:
+        r = requests.get(URL)
+        return r
+    except Exception as e:
+        if loops > 10:
+            error(f"falling back... the script got caught in a loop while fetching data from `{URL}`")
+            return "error"
+        elif "104 'Connection reset by peer'" in e:
+            return makeWebRequest(URL, loops+1)
+        else:
+            error(f"falling back... exception met whilst trying to fetch data from `{URL}`\nfull error: {e}")
+            return "error"
 
 def getMetaFile():
     if exists(f"{dirname(__file__)}/data/meta.json"):
@@ -166,7 +181,7 @@ def removeChars(inputString: str, ignoredChars: str) -> str:
     return inputString
 
 
-def getImageFromSGDB():
+def getImageFromSGDB(loops=0):
     global coverImage
     global coverImageText
     
@@ -220,7 +235,9 @@ def getImageFromSGDB():
             # makes sure image is not NSFW
             if entry[1] == False:
                 URL = f"https://www.steamgriddb.com/icon/{entry[5]}"
-                page = requests.get(URL)
+                page = makeWebRequest(URL)
+                if page == "error":
+                    return
                 
                 if page.status_code != 200:
                     error(f"status code {page.status_code} recieved when trying to web scrape SGDB, ignoring")
@@ -249,7 +266,9 @@ def getImageFromSGDB():
 
 def getGameSteamID():
     # fetches a list of ALL games on steam
-    r = requests.get(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+    r = makeWebRequest(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+    if r == "error":
+        return
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
@@ -293,7 +312,9 @@ def getImageFromStorepage():
     
     log("getting icon from the steam store")
     try: 
-        r = requests.get(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}")
+        r = makeWebRequest(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}")
+        if r == "error":
+            return
         
         # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
         sleep(0.2)
@@ -320,7 +341,9 @@ def getImageFromStorepage():
 
 def getGameReviews():    
     # get the review data for the steam game
-    r = requests.get(f"https://store.steampowered.com/appreviews/{gameSteamID}?json=1")
+    r = makeWebRequest(f"https://store.steampowered.com/appreviews/{gameSteamID}?json=1")
+    if r == "error":
+        return
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
@@ -391,7 +414,9 @@ def getGameImage():
 
 
 def getGamePrice():
-    r = requests.get(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}&cc=us")
+    r = makeWebRequest(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}&cc=us")
+    if r == "error":
+        return
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
@@ -449,10 +474,9 @@ def getWebScrapePresence():
 
 # checks what game the user is currently playing
 def getSteamPresence():
-    try:
-        r = requests.get(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userID}")
-    except Exception as e:
-        error(f"exception met whilst trying to fetch the user's steam presence, this can be ignored\nerror: {e}")
+    r = makeWebRequest(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userID}")
+    if r == "error"
+        return gameName
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
@@ -504,7 +528,9 @@ def getSteamPresence():
 def getSteamRichPresence():
     for i in userID.split(","):
         # userID type 3. <id3> = <id64> - 76561197960265728
-        pageRequest = requests.get(f"https://steamcommunity.com/miniprofile/{int(i) - 76561197960265728}")
+        pageRequest = makeWebRequest(f"https://steamcommunity.com/miniprofile/{int(i) - 76561197960265728}")
+        if pageRequest == "error":
+            return
         
         # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
         sleep(0.2)
@@ -545,9 +571,12 @@ def getSteamRichPresence():
 
 # requests a list of all games recognized internally by discord, if any of the names matches
 # the detected game, save the discord game ID associated with said title to RAM, this is used to report to discord as that game 
-def getGameDiscordID():
+def getGameDiscordID(loops=0):
     log(f"fetching the Discord game ID for {gameName}")
-    r = requests.get("https://discordapp.com/api/v8/applications/detectable")
+    r = makeWebRequest("https://discordapp.com/api/v8/applications/detectable")
+    if r == "error":
+        return
+
     
     if r.status_code != 200:
         error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
@@ -789,7 +818,11 @@ def verifyProjectVersion():
 # checks if the program has any updates
 def checkForUpdate():
     URL = f"https://api.github.com/repos/JustTemmie/steam-presence/releases/latest"
-    r = requests.get(URL)
+    try:
+        r = requests.get(URL)
+    except Exception as e:
+        error(f"failed to check if a newer version is available, falling back...\nfull error: {e}")
+        return
     
     if r.status_code != 200:
         error(f"status code {r.status_code} recieved when trying to find latest version of steam presence, ignoring")
@@ -1058,12 +1091,12 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-        pass
-    except Exception as e:
-        error(f"{e}\nautomatically restarting script in 60 seconds\n")
-        sleep(60)
-        python = sys.executable
-        log("restarting...")
-        os.execl(python, python, *sys.argv)
+    main()
+#    try:
+#        pass
+#    except Exception as e:
+#        error(f"{e}\nautomatically restarting script in 60 seconds\n")
+#        sleep(60)
+#        python = sys.executable
+#        log("restarting...")
+#        os.execl(python, python, *sys.argv)
