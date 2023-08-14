@@ -751,7 +751,9 @@ def setPresenceDetails():
         if len(label) > 32:
             label = f"{gameName} - {price}"
         if len(label) > 32:
-            label = f"on steam - {price}"
+            label = f"get it on steam! - {price}"
+        if len(label) > 32:
+            label = f"on steam! - {price}"
             
         buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
     
