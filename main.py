@@ -64,10 +64,10 @@ def makeWebRequest(URL, loops=0):
         if loops > 10:
             error(f"falling back... the script got caught in a loop while fetching data from `{URL}`")
             return "error"
-        elif "104 'Connection reset by peer'" in e:
+        elif "104 'Connection reset by peer'" in str(e):
             return makeWebRequest(URL, loops+1)
         else:
-            error(f"falling back... exception met whilst trying to fetch data from `{URL}`\nfull error: {e}")
+            # error(f"falling back... exception met whilst trying to fetch data from `{URL}`\nfull error: {e}")
             return "error"
 
 def getMetaFile():
@@ -475,11 +475,14 @@ def getWebScrapePresence():
 # checks what game the user is currently playing
 def getSteamPresence():
     r = makeWebRequest(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userID}")
-    if r == "error":
-        return gameName
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
+    
+    # if it errors out, just return the already asigned gamename
+    if r == "error":
+        return gameName
+    
         
     if r.status_code == 403:
         error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
