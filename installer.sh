@@ -75,7 +75,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.github.justtemmie.steam-presence.plist</string>
+    <string>Steam Presence</string>
     <key>ProgramArguments</key>
     <array>
         <string>$(pwd)/steam-presence</string>
