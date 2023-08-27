@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "This script is for LINUX and macOS, and it's still in testing phases. If you encounter any bugs, please open an issue."
+echo "This script is for Linux and macOS, and it's still in testing phases. If you encounter any bugs, please open an issue."
 read -p "Press the enter key to continue..."
 echo ""
 
@@ -68,14 +68,14 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   systemctl --user --now enable "steam-presence.service"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   echo "Setting up launchd plist file for macOS"
-  PLIST="$HOME/Library/LaunchAgents/com.steampresence.app.plist"
+  PLIST="$HOME/Library/LaunchAgents/com.github.justtemmie.steam-presence.plist"
   cat <<EOL > $PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.steampresence.app</string>
+    <string>com.github.justtemmie.steam-presence.plist</string>
     <key>ProgramArguments</key>
     <array>
         <string>$(pwd)/steam-presence</string>
