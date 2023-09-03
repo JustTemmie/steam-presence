@@ -405,29 +405,29 @@ if you're running either Windows or MacOS i cannot really give you any help with
 
 (if you do know a way to run this on startup on any of the mentioned systems, *please* create a pull request with an updated readme)
 
-## Steam Deck / Linux with Systemd
+# Installation to Automatically Start on Bootupt
 
-If you have a Steam Deck, it is possible to have steam-presence start automatically when your Steam Deck boots.  This method may also work on other Linux distributions that use per-user Systemd instances.  If you (as a regular user) can run the command `systemctl --user status` successfully, then this should work.
+## Automatic Installer
 
-### Automatic Installer
+Steam presence currently only supports automatically starting up on `Linux` and `MacOS`, if you know how to make it start on boot within windows, please make a PR, thanks! 
 
-simply run the `installer.sh` file
+to install steam presence, simply run the `installer.sh` file
 
-open konsole/another terminal and run this command:
+to do this, open konsole or another terminal and run this command:
 
 ```
 ./installer.sh
 ```
 
-### Manual Installation
+## Manual Installation
 
-The file `steam-presence.service` has more information and instructions.
+The file `steam-presence.service` has more information and instructions on how to install it on linux.
 
 ## Linux (not using Systemd)
 
-for those of you not running systemd
+for those of you not running systemd, you might have cron installed!
 
-create a file named `startup.sh` and paste in the code below, changing the path so it finds the main.py file.
+if you have cron setup, you can also install the `screen` application, and then create a file named `startup.sh` and paste in the code below, changing the path so it finds steam presence's main.py file.
 
 ```
 screen -dmS steamPresence bash -c 'python3 /home/USER/steam-presence/main.py'
@@ -438,5 +438,3 @@ make this script executable using `chmod +x startup.sh`
 then run `crontab -e` and add `@reboot  /home/USER/startup.sh` to the end of the crontab file.
 
 if you've done these steps the script should launch itself after your computer turns on.
-
-(this ends up using about 30MB of ram)
