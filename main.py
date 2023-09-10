@@ -716,6 +716,7 @@ def getLocalPresence():
 
 def setPresenceDetails():
     global activeRichPresence
+    global startTime
     
     details = None
     state = None
@@ -759,6 +760,11 @@ def setPresenceDetails():
     
     
     log("pushing presence to Discord")
+    
+    # sometimes startTime is 0 when it reaches this point, which results in a crash
+    # i do *NOT* know how or why it does this, adding these 2 lines of code seems to fix it
+    if startTime == 0:
+        startTime = round((time()))
     
     RPC.update(
         # state field currently unused

@@ -4,6 +4,7 @@ steam-cookies.txt
 cookies.txt
 Development/
 data/
+BrowserTest/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
