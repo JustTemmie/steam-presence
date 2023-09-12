@@ -10,7 +10,7 @@ a simple script to fetch a Steam user's current game and related info, and displ
 
 Made with ❤ by myself and our contributors
 
-If you liked this project, please consider starring it <3
+If you have any issues with the script and you can't solve it yourself, don't be ashamed to open an issue! I will typically get back to you within 0-1 days
 
 
 ### Showcase
