@@ -3,3 +3,4 @@ pypresence
 beautifulsoup4
 requests
 psutil
+browser-cookie3
