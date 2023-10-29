@@ -439,7 +439,7 @@ def getWebScrapePresence():
     if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
         print("cookie.txt not found, attempting to automatically grab cookies from browser")
         cj = browser_cookie3.firefox(domain_name="steamcommunity.com")
-    else
+    else:
         cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
         cj.load()
 
