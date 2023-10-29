@@ -11,7 +11,6 @@ from os.path import exists, dirname, abspath
 # for restarting the script on a failed run
 import sys 
 import os
-
 try:
     # requesting data from steam's API
     import requests
@@ -30,9 +29,10 @@ try:
     
     # used to load cookies for non-steam games
     import http.cookiejar as cookielib
+    import browser_cookie3
 
 except:
-    answer = input("looks like either requests, pypresence, steamgrid, psutil, or beautifulSoup is not installed, do you want to install them? (y/n) ")
+    answer = input("looks like either requests, pypresence, steamgrid, psutil, browser_cookie3 or beautifulSoup is not installed, do you want to install them? (y/n) ")
     if answer.lower() == "y":
         from os import system
         print("installing required packages...")
@@ -44,6 +44,7 @@ except:
         import psutil
         import requests
         import http.cookiejar as cookielib
+        import browser_cookie3
         
         print("\npackages installed and imported successfully!")
 
@@ -426,7 +427,7 @@ def getGamePrice():
         return
     
     respone = r.json()
-    
+
     if "price_overview" not in respone[str(gameSteamID)]["data"]:
         return
     
@@ -436,12 +437,12 @@ def getGamePrice():
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
     if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
-        print("cookie.txt not found")
-        return
-    
-    cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
-    cj.load()
-    
+        print("cookie.txt not found, attempting to automatically grab cookies from browser")
+        cj = browser_cookie3.firefox(domain_name="steamcommunity.com")
+    else
+        cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
+        cj.load()
+
     # split on ',' in case of multiple userIDs
     for i in userID.split(","):
         URL = f"https://steamcommunity.com/profiles/{i}/"
