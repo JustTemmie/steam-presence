@@ -438,7 +438,13 @@ def getGamePrice():
 def getWebScrapePresence():
     if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
         print("cookie.txt not found, attempting to automatically grab cookies from browser")
-        cj = browser_cookie3.firefox(domain_name="steamcommunity.com")
+        temppage = requests.Session()
+        temppage.cookies = browser_cookie3.load(domain_name="steamcommunity.com")
+        sleep(0.2)  # Probably don't need to do this but I want to be safe
+        temppage.post("https://steamcommunity.com/")
+        sleep(0.2)  # Probably also don't need to do this but I want to be safe
+        temppage.get("https://steamcommunity.com/") # Should hopefully grab updated login cookie :)
+        cj = temppage.cookies
     else:
         cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
         cj.load()
