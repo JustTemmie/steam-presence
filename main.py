@@ -447,6 +447,7 @@ def getSteamCookie():
             log("Grabbing from cookie.txt")
             globalCookies = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
             globalCookies.load()
+        print("----------------------------------------------------------")
         alreadyGrabbedBrowserCookie = True
 
     tempPage = requests.Session()
