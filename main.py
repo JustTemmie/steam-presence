@@ -457,7 +457,7 @@ def getSteamCookie():
     tempPage.get("https://steamcommunity.com/")  # Should hopefully grab updated login cookie :)
     if tempPage.cookies != globalCookies:
         print("Cookie has changed, using new one")
-        globalCookies = temppage.cookies
+        globalCookies = tempPage.cookies
         cookielib.MozillaCookieJar.save(globalCookies, "cookies.txt")
     return tempPage.cookies
 
