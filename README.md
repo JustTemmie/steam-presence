@@ -398,7 +398,7 @@ then run `python3 main.py`
 
 (these should hopefully be platform independent, if they're not please open an issue or pull request)
 
-## Automatic Installer
+# Automatic Installer
 
 Steam presence supports automatic startup on Windows, MacOS, and Linux. 
 
