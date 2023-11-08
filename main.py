@@ -432,22 +432,38 @@ def getGamePrice():
         return
     
     return respone[str(gameSteamID)]["data"]["price_overview"]["final_formatted"]
-        
-        
+
+
+def getSteamCookie():
+    global alreadyGrabbedBrowserCookie
+    global globalCookies
+    # Global Variables for cookie grabbing :)
+    if alreadyGrabbedBrowserCookie != True:
+        if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
+            print("Attempting to grab cookie from browser.")
+            globalCookies = browser_cookie3.load(domain_name="steamcommunity.com")
+            cookielib.MozillaCookieJar.save(globalCookies, "cookies.txt")
+        else:
+            print("Grabbing from cookie.txt")
+            globalCookies = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
+            globalCookies.load()
+        alreadyGrabbedBrowserCookie = True
+
+    tempPage = requests.Session()
+    tempPage.cookies = globalCookies
+    sleep(0.2)  # Probably don't need to do this but I want to be safe
+    tempPage.post("https://steamcommunity.com/")
+    sleep(0.2)  # Probably also don't need to do this but I want to be safe
+    tempPage.get("https://steamcommunity.com/")  # Should hopefully grab updated login cookie :)
+    if tempPage.cookies != globalCookies:
+        print("Cookie has changed, using new one")
+        globalCookies = temppage.cookies
+        cookielib.MozillaCookieJar.save(globalCookies, "cookies.txt")
+    return tempPage.cookies
+
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
-    if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
-        print("cookie.txt not found, attempting to automatically grab cookies from browser")
-        temppage = requests.Session()
-        temppage.cookies = browser_cookie3.load(domain_name="steamcommunity.com")
-        sleep(0.2)  # Probably don't need to do this but I want to be safe
-        temppage.post("https://steamcommunity.com/")
-        sleep(0.2)  # Probably also don't need to do this but I want to be safe
-        temppage.get("https://steamcommunity.com/") # Should hopefully grab updated login cookie :)
-        cj = temppage.cookies
-    else:
-        cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
-        cj.load()
+    cj = getSteamCookie()
 
     # split on ',' in case of multiple userIDs
     for i in userID.split(","):
@@ -917,6 +933,9 @@ def main():
     global customIconText
     
     global addSteamStoreButton
+
+    global globalCookies
+    global alreadyGrabbedBrowserCookie
     
     
     log("loading config file")
@@ -979,6 +998,7 @@ def main():
     gameRichPresence = ""
     # the rich presence text that's actually in the current discord presence, set to beaver cause it can't start empty
     activeRichPresence = "beaver"
+    alreadyGrabbedBrowserCookie = False
 
 
     if doCustomIcon:
