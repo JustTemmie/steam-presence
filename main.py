@@ -440,11 +440,11 @@ def getSteamCookie():
     # Global Variables for cookie grabbing :)
     if alreadyGrabbedBrowserCookie != True:
         if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
-            log("Attempting to grab cookie from browser.")
+            log("attempting to grab cookie from browser.")
             globalCookies = browser_cookie3.load(domain_name="steamcommunity.com")
             cookielib.MozillaCookieJar.save(globalCookies, "cookies.txt")
         else:
-            log("Grabbing from cookie.txt")
+            log("grabbing from cookie.txt")
             globalCookies = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
             globalCookies.load()
         print("----------------------------------------------------------")
@@ -457,9 +457,10 @@ def getSteamCookie():
     sleep(0.2)  # Probably also don't need to do this but I want to be safe
     tempPage.get("https://steamcommunity.com/")  # Should hopefully grab updated login cookie :)
     if tempPage.cookies != globalCookies:
-        log("Cookie has changed, using new one")
+        log("cookie has changed, using new one")
         globalCookies = tempPage.cookies
         cookielib.MozillaCookieJar.save(globalCookies, "cookies.txt")
+        print("----------------------------------------------------------")
     return tempPage.cookies
 
 # web scrapes the user's web page, sending the needed cookies along with the request
@@ -844,7 +845,7 @@ def verifyProjectVersion():
         print("----------------------------------------------------------")
     elif metaFile["structure-version"] == "1":
         print("----------------------------------------------------------")
-        log("progam's current folder structure version is up to date...")
+        log("program's current folder structure version is up to date...")
         print("----------------------------------------------------------")
     else:
         error("invalid structure-version found in meta.json, exiting")
