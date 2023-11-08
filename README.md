@@ -398,18 +398,11 @@ then run `python3 main.py`
 
 (these should hopefully be platform independent, if they're not please open an issue or pull request)
 
-# Run On Startup
-this script doesn't have any inherent way to run when your device starts up.
-
-if you're running either Windows or MacOS i cannot really give you any help with this.
-
-(if you do know a way to run this on startup on any of the mentioned systems, *please* create a pull request with an updated readme)
-
-# Installation to Automatically Start on Bootupt
-
 ## Automatic Installer
 
-Steam presence currently only supports automatically starting up on `Linux` and `MacOS`, if you know how to make it start on boot within windows, please make a PR, thanks! 
+Steam presence supports automatic startup on Windows, MacOS, and Linux. 
+
+to install steam presence on windows, simply run the `installer.bat` file
 
 to install steam presence, simply run the `installer.sh` file
 
