@@ -437,31 +437,27 @@ def getGamePrice():
 def getSteamCookie():
     global alreadyGrabbedBrowserCookie
     global globalCookies
+    global page
     # Global Variables for cookie grabbing :)
     if alreadyGrabbedBrowserCookie != True:
+        page = requests.Session()
         if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
             log("attempting to grab cookie from browser.")
-            globalCookies = browser_cookie3.load(domain_name="steamcommunity.com")
-            cookielib.MozillaCookieJar.save(globalCookies, "cookies.txt")
+            page.cookies = browser_cookie3.load(domain_name="steamcommunity.com")
+            cookielib.MozillaCookieJar.save(page.cookies, "cookies.txt")
         else:
             log("grabbing from cookie.txt")
-            globalCookies = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
-            globalCookies.load()
+            page.cookies = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt").load()
         print("----------------------------------------------------------")
         alreadyGrabbedBrowserCookie = True
-
-    tempPage = requests.Session()
-    tempPage.cookies = globalCookies
-    sleep(0.2)  # Probably don't need to do this but I want to be safe
-    tempPage.post("https://steamcommunity.com/")
+    previousCookies = page.Cookies # Need this to check later
     sleep(0.2)  # Probably also don't need to do this but I want to be safe
-    tempPage.get("https://steamcommunity.com/")  # Should hopefully grab updated login cookie :)
-    if tempPage.cookies != globalCookies:
+    page.get("https://steamcommunity.com/")  # Should hopefully grab updated login cookie :)
+    if page.cookies != previousCookies:
         log("cookie has changed, using new one")
-        globalCookies = tempPage.cookies
-        cookielib.MozillaCookieJar.save(globalCookies, "cookies.txt")
+        cookielib.MozillaCookieJar.save(page.cookies, "cookies.txt")
         print("----------------------------------------------------------")
-    return tempPage.cookies
+    return page.cookies
 
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
@@ -935,8 +931,6 @@ def main():
     global customIconText
     
     global addSteamStoreButton
-
-    global globalCookies
     global alreadyGrabbedBrowserCookie
     
     
