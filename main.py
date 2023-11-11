@@ -432,16 +432,42 @@ def getGamePrice():
         return
     
     return respone[str(gameSteamID)]["data"]["price_overview"]["final_formatted"]
-        
-        
+
+
+def getSteamCookie():
+    global alreadyGrabbedBrowserCookie
+    global globalCookies
+    global page
+    # Global Variables for cookie grabbing :)
+    if alreadyGrabbedBrowserCookie != True:
+        page = requests.Session()
+        if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
+            log("attempting to grab cookie from browser.")
+            page.cookies = browser_cookie3.load(domain_name="steamcommunity.com")
+            cookielib.MozillaCookieJar.save(page.cookies, "cookies.txt")
+        else:
+            log("grabbing from cookie.txt")
+            page.cookies = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
+            page.cookies.load()
+        print("----------------------------------------------------------")
+        alreadyGrabbedBrowserCookie = True
+    previousCookies = page.cookies # Need this to check later
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'  # \
+    } # Fake being the firefox browser, hopefully that'll fix it?
+    sleep(0.2) # Don't want to get permabanned from steam, would make grabbing the cookie even harder.
+    try: page.get("https://steamcommunity.com/", headers=headers) # Should grab the updated cookie, but doesn't?
+    finally:
+        # Somehow this is never triggered!? But I know it should, yet it never does?
+        if page.cookies != previousCookies:
+            log("cookie has changed, using new one")
+            cookielib.MozillaCookieJar.save(page.cookies, "cookies.txt")
+            print("----------------------------------------------------------")
+    return page.cookies
+
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
-    if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
-        print("cookie.txt not found, attempting to automatically grab cookies from browser")
-        cj = browser_cookie3.firefox(domain_name="steamcommunity.com")
-    else:
-        cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
-        cj.load()
+    cj = getSteamCookie()
 
     # split on ',' in case of multiple userIDs
     for i in userID.split(","):
@@ -821,7 +847,7 @@ def verifyProjectVersion():
         print("----------------------------------------------------------")
     elif metaFile["structure-version"] == "1":
         print("----------------------------------------------------------")
-        log("progam's current folder structure version is up to date...")
+        log("program's current folder structure version is up to date...")
         print("----------------------------------------------------------")
     else:
         error("invalid structure-version found in meta.json, exiting")
@@ -911,6 +937,7 @@ def main():
     global customIconText
     
     global addSteamStoreButton
+    global alreadyGrabbedBrowserCookie
     
     
     log("loading config file")
@@ -973,6 +1000,7 @@ def main():
     gameRichPresence = ""
     # the rich presence text that's actually in the current discord presence, set to beaver cause it can't start empty
     activeRichPresence = "beaver"
+    alreadyGrabbedBrowserCookie = False
 
 
     if doCustomIcon:
