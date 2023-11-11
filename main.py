@@ -587,6 +587,14 @@ def getGameDiscordID(loops=0):
     response = r.json()
     
     ignoredChars = "®©™℠"
+    try:
+        r = requests.get("https://raw.githubusercontent.com/superboo07/Open-source-Discord-AppIDs-for-Steam-Rich-Presence/main/customGameIDs.json")
+        listOfAppIDs = json.loads(r.text)
+        for i in listOfAppIDs:
+            response.append({
+                "name": i,
+                "id": listOfAppIDs[i]
+            })
     
     # check if the "customGameIDs.json" file exists, if so, open it
     if exists(f"{dirname(abspath(__file__))}/data/customGameIDs.json"):
@@ -595,20 +603,14 @@ def getGameDiscordID(loops=0):
             gameIDsFile = json.load(f)
             
             # load the values from the open source dictionary of app IDs
-            r = requests.get("https://raw.githubusercontent.com/superboo07/Open-source-Discord-AppIDs-for-Steam-Rich-Presence/main/customGameIDs.json")
-            listOfAppIDs = json.loads(r.text)
+
             # add the values from the file directly to the list returned by discord
             for i in gameIDsFile:
                 response.append({
                     "name": i,
                     "id": gameIDsFile[i]
                 })
-            
-            for i in listOfAppIDs:
-                response.append({
-                    "name": i,
-                    "id": listOfAppIDs[i]
-                })
+
     global appID
     
     # loop thru all games
