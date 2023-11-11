@@ -457,11 +457,12 @@ def getSteamCookie():
     } # Fake being the firefox browser, hopefully that'll fix it?
     sleep(0.2) # Don't want to get permabanned from steam, would make grabbing the cookie even harder.
     try: page.get("https://steamcommunity.com/", headers=headers) # Should grab the updated cookie, but doesn't?
-    # Somehow this is never triggered!? But I know it should, yet it never does?
-    if page.cookies != previousCookies:
-        log("cookie has changed, using new one")
-        cookielib.MozillaCookieJar.save(page.cookies, "cookies.txt")
-        print("----------------------------------------------------------")
+    finally:
+        # Somehow this is never triggered!? But I know it should, yet it never does?
+        if page.cookies != previousCookies:
+            log("cookie has changed, using new one")
+            cookielib.MozillaCookieJar.save(page.cookies, "cookies.txt")
+            print("----------------------------------------------------------")
     return page.cookies
 
 # web scrapes the user's web page, sending the needed cookies along with the request
