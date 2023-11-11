@@ -453,7 +453,7 @@ def getSteamCookie():
         alreadyGrabbedBrowserCookie = True
     previousCookies = page.cookies # Need this to check later
     sleep(0.2)  # Probably also don't need to do this but I want to be safe
-    try page.get("https://steamcommunity.com/")  # Should hopefully grab updated login cookie :)
+    try: page.get("https://steamcommunity.com/")  # Should hopefully grab updated login cookie :)
     if page.cookies != previousCookies:
         log("cookie has changed, using new one")
         cookielib.MozillaCookieJar.save(page.cookies, "cookies.txt")
