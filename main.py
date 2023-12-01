@@ -12,6 +12,9 @@ from os.path import exists, dirname, abspath
 import sys 
 import os
 
+# for general programing
+import copy
+
 try:
     # requesting data from steam's API
     import requests
@@ -295,6 +298,22 @@ def getGameSteamID():
             gameSteamID = i["appid"]
             return
     
+    
+    # for handling game demos
+    if " demo" in gameName.lower():
+        tempGameName = copy(gameName.lower())
+        tempGameName.replace(" demo", "")
+        for i in respone["applist"]["apps"]:
+            if tempGameName.lower() == i["name"].lower():
+
+                if gameSteamID == 0:
+                    log(f"steam app ID {i['appid']} found for {gameName}")
+                
+                gameSteamID = i["appid"]
+                return
+    
+    
+    
     # if we didn't find the game at all on steam, 
     log(f"could not find the steam app ID for {gameName}")
     gameSteamID = 0
@@ -497,8 +516,7 @@ def getSteamPresence():
     
     # counts how many users you're supposed to get back, and checks if you got that many back
     if len(response["response"]["players"]) != userID.count(",") + 1:
-        error("No account found, please verify that your user ID is correct")
-        exit()
+        error("There seems to be an incorrect account ID given, please verify that your user ID(s) are correct")
 
 
     global isPlayingSteamGame
@@ -607,6 +625,8 @@ def getGameDiscordID(loops=0):
     for i in response:
         gameNames = []                      
         gameNames.append(i["name"])
+        # for handling demos of games, adding it as a valid discord name because it's easier
+        gameNames.append(i["name"] + " demo")
         
         # make a list containing all the names of said game
         if "aliases" in i:
@@ -645,10 +665,13 @@ def getLocalPresence():
     gameFound = False
     # process = None
     
-    # get a list of all open applications, make a list of their creation times, and their names
-    processCreationTimes = [i.create_time() for i in psutil.process_iter()]
-    processNames = [i.name().lower() for i in psutil.process_iter()]
-    
+    try:
+        # get a list of all open applications, make a list of their creation times, and their names
+        processCreationTimes = [i.create_time() for i in psutil.process_iter()]
+        processNames = [i.name().lower() for i in psutil.process_iter()]
+    except:
+        return
+
     # loop thru all games we're supposed to look for
     for game in localGames:
         # check if that game is running locally
@@ -766,14 +789,18 @@ def setPresenceDetails():
     if startTime == 0:
         startTime = round((time()))
     
-    RPC.update(
-        # state field currently unused
-        details = details, state = state,
-        start = startTime,
-        large_image = coverImage, large_text = coverImageText,
-        small_image = customIconURL, small_text = customIconText,
-        buttons=buttons
-    )
+    try:
+        RPC.update(
+            # state field currently unused
+            details = details, state = state,
+            start = startTime,
+            large_image = coverImage, large_text = coverImageText,
+            small_image = customIconURL, small_text = customIconText,
+            buttons=buttons
+        )
+        
+    except Exception as e:
+        error(f"pushing presence failed...\nError encountered: {e}")
 
 def verifyProjectVersion():
     metaFile = getMetaFile()
