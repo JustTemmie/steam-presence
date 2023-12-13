@@ -103,6 +103,8 @@ def writeToMetaFile(keys: list, value):
     with open(f"{dirname(__file__)}/data/meta.json", "w") as f:
         json.dump(metaFile, f)
     
+    log(f"version {value} was successfully written to the metafile")
+    
     
     
 # opens the config file and loads the data
@@ -113,12 +115,6 @@ def getConfigFile():
         "USER_IDS": "USER_ID",
 
         "DISCORD_APPLICATION_ID": "869994714093465680",
-
-        "FETCH_STEAM_RICH_PRESENCE": True,
-        "FETCH_STEAM_REVIEWS": False,
-        "ADD_STEAM_STORE_BUTTON": False,
-        
-        "WEB_SCRAPE": False,
         
         "COVER_ART": {
             "STEAM_GRID_DB": {
@@ -593,18 +589,27 @@ def getSteamRichPresence():
 # requests a list of all games recognized internally by discord, if any of the names matches
 # the detected game, save the discord game ID associated with said title to RAM, this is used to report to discord as that game 
 def getGameDiscordID(loops=0):
-    log(f"fetching the Discord game ID for {gameName}")
-    r = makeWebRequest("https://discordapp.com/api/v8/applications/detectable")
-    if r == "error":
-        return
-
+    if loops == 0:
+        log(f"fetching the Discord game ID for {gameName}")
     
-    if r.status_code != 200:
-        error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
-    
-    response = r.json()
-    
+    discordIDs = []
     ignoredChars = "®©™℠"
+    
+    with open(f"{dirname(abspath(__file__))}/data/cache/discordIDs.json", "r") as f:
+        gameIDsFile = json.load(f)
+        
+        if len(gameIDsFile) == 0:
+            if loops == 0:
+                log("no cache found, updating it")
+                return getGameDiscordID(loops + 1)
+        
+        else:
+            for i in gameIDsFile:
+                discordIDs.append({
+                    "name": i,
+                    "id": gameIDsFile[i],
+                    "property": "is-cached-game-ID"
+                })
     
     # check if the "customGameIDs.json" file exists, if so, open it
     if exists(f"{dirname(abspath(__file__))}/data/customGameIDs.json"):
@@ -614,15 +619,38 @@ def getGameDiscordID(loops=0):
             
             # add the values from the file directly to the list returned by discord
             for i in gameIDsFile:
-                response.append({
+                discordIDs.append({
                     "name": i,
-                    "id": gameIDsFile[i]
+                    "id": gameIDsFile[i],
+                    "property": "is-custom-game-ID"
                 })
+    
+    if loops >= 1:
+        log("fetching discord game IDs from Discord's servers")
+        r = makeWebRequest("https://discordapp.com/api/v8/applications/detectable")
+        if r == "error":
+            return
+
+        
+        if r.status_code != 200:
+            error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
+            return
+    
+        for i in r.json():
+            discordIDs.append({
+                "name": i["name"],
+                "id": i["id"],
+                "property": "is-server-fetched-game-ID"
+            })
+        
+    
             
     global appID
     
     # loop thru all games
-    for i in response:
+    for i in discordIDs:
+        lowercaseGameName = gameName.lower()
+        
         gameNames = []                      
         gameNames.append(i["name"])
         # for handling demos of games, adding it as a valid discord name because it's easier
@@ -640,9 +668,26 @@ def getGameDiscordID(loops=0):
                 ignoredChars)
         
         # if it's the same, we successfully found the discord game ID
-        if removeChars(gameName.lower(), ignoredChars) in gameNames:
-            log(f"found the discord game ID for {removeChars(gameName.lower(), ignoredChars)}")
+        if removeChars(lowercaseGameName, ignoredChars) in lowercaseGameName:
             appID = i["id"]
+            
+            
+            if i["property"] == "is-custom-game-ID":
+                log(f"using a custom game ID for {gameName}")
+            elif i["property"] == "is-cached-game-ID":
+                log(f"found the Discord game ID for {removeChars(lowercaseGameName, ignoredChars)} stored in cache")
+            elif i["property"] == "is-server-fetched-game-ID":
+                log(f"found the Discord game ID for {removeChars(lowercaseGameName, ignoredChars)}")
+                with open(f"{dirname(abspath(__file__))}/data/cache/discordIDs.json", "r") as f:
+                    cachedGameIDs = json.load(f)
+                    
+                log(f"Discord game ID {i['id']} was added to cache for {gameName}")
+                cachedGameIDs[lowercaseGameName] = i["id"]
+                
+                with open(f"{dirname(abspath(__file__))}/data/cache/discordIDs.json", "w") as f:
+                    json.dump(cachedGameIDs, f)
+            
+                
             return
 
     # if the game was fetched using the local checker, instead of thru steam
@@ -761,7 +806,7 @@ def setPresenceDetails():
             
         activeRichPresence = gameRichPresence
     
-    if state == None and gameReviewScore != 0:
+    if state == None and gameReviewScore != 0 and enabledPlatforms["steam"]["gameReviews"]:
         state = f"{gameReviewString} - {gameReviewScore}%"
     
     
@@ -806,12 +851,12 @@ def verifyProjectVersion():
     metaFile = getMetaFile()
     if metaFile["structure-version"] == "0":
         print("----------------------------------------------------------")
-        log("updating meta.json's structure-version to `1`")
+        log("updating meta.json's structure-version to `1`...")
         log("importing libraries for meta update")
         try:
             import shutil
         except ImportError:
-            error("import error whilst importing `shutil`, exiting")
+            error(f"import error whilst importing `shutil`, exiting\n    error: {e}")
             exit()
         
         if not os.path.exists(f"{dirname(__file__)}/data"):
@@ -841,16 +886,55 @@ def verifyProjectVersion():
             shutil.move(f"{dirname(__file__)}/meta.json",           f"{dirname(__file__)}/data/meta.json")
             
             writeToMetaFile(["structure-version"], "1")
+            return verifyProjectVersion()
         except Exception as e:
             error(f"error encountered whilst trying to update the config-version to version 1, exiting\nError encountered: {e}")
             exit()
-        print("----------------------------------------------------------")
+        
     elif metaFile["structure-version"] == "1":
         print("----------------------------------------------------------")
-        log("progam's current folder structure version is up to date...")
+        log("updating meta.json's structure-version to `2`...")
+        log("importing libraries for meta update")
+        try:
+            import shutil
+        except ImportError as e:
+            error(f"import error whilst importing `shutil`, exiting\n    error: {e}")
+            exit()
+        
+        
+        if not os.path.exists(f"{dirname(__file__)}/data"):
+            error(f"couldn't find {dirname(__file__)}/data/ - exiting...")
+            exit()
+        
+        log("creating cache directory...")
+        os.makedirs(f"{dirname(__file__)}/data/cache")
+        
+        expectedFiles = {
+            "discordIDs.json": "{}",
+            "steamIDS.json": "{}",
+        }
+        
+        for i in expectedFiles:
+            if not os.path.exists(i):
+                newFile = f"{dirname(__file__)}/data/cache/{i}"
+                log(f"creating file `{newFile}` with content `{expectedFiles[i]}`")
+                with open(newFile, "w") as f:
+                    f.write(expectedFiles[i])  
+        
+        writeToMetaFile(["structure-version"], "2")
+        return verifyProjectVersion()
+        
+        
+        # TODO IMPORTANT
+        # do the fucky shit with config.json and make sure that works
+        
+        return verifyProjectVersion()
+    elif metaFile["structure-version"] == "2":
+        print("----------------------------------------------------------")
+        log("progam's current folder structure is up to date...")
         print("----------------------------------------------------------")
     else:
-        error("invalid structure-version found in meta.json, exiting")
+        error("invalid structure-version found in data/meta.json, exiting - please open an issue on the github if you're confused")
         exit()
 
 # checks if the program has any updates
@@ -896,48 +980,22 @@ def checkForUpdate():
         if int(old) > int(new):
             return
 
-def main():
-    global currentVersion
-    # this always has to match the newest release tag
-    currentVersion = "v1.12"
+def loadConfigFile():
+    config = getConfigFile()
     
-    # check if there's any updates for the program
-    checkForUpdate()
-    # does various things, such as verifying that certain files are in certain locations
-    # well it does 1 thing at the time of writing, but i'll probably forget to update this comment when i add more lol 
-    verifyProjectVersion()
-    
-    global userID
-    global steamAPIKey
-    
-    global appID
-    global startTime
-    global gameName
-    global gameRichPresence
-    global activeRichPresence
-    global gameSteamID
-    global gameReviewScore
-    global gameReviewString
-    global isPlaying
-    global isPlayingLocalGame
-    global isPlayingSteamGame
-    
-    global coverImage
-    global coverImageText
-    
-    global RPC
-    global sgdb
-    
-    global gridEnabled
-    global steamStoreCoverartBackup
-    global customIconURL
-    global customIconText
-        
     global enabledPlatforms
     
+    global steamAPIKey
     
-    log("loading config file")
-    config = getConfigFile()
+    global steamStoreCoverartBackup
+    global gridEnabled
+    global gridKey
+    
+    global doCustomIcon
+    
+    global doCustomGame
+    global customGameName
+    global customGameStartOffset
     
     enabledPlatforms = {
         "steam": {
@@ -960,17 +1018,57 @@ def main():
             "processes": config["LOCAL_GAMES"]["GAMES"]
         }
     }
+
     
-        
+    steamAPIKey = config["STEAM_API_KEY"]
+    
     steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
     gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
     gridKey = config["COVER_ART"]["STEAM_GRID_DB"]["STEAM_GRID_API_KEY"]
     
     doCustomIcon = config["CUSTOM_ICON"]["ENABLED"]
-        
+    
     doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
     customGameName = config["GAME_OVERWRITE"]["NAME"]
     customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
+        
+def main():
+    global currentVersion
+    # this always has to match the newest release tag
+    currentVersion = "v1.11"
+    
+    # check if there's any updates for the program
+    checkForUpdate()
+    # does various things, such as verifying that certain files are in certain locations
+    # well it does 1 thing at the time of writing, but i'll probably forget to update this comment when i add more lol 
+    verifyProjectVersion()
+    
+
+    global startTime
+    global gameName
+    global gameRichPresence
+    global activeRichPresence
+    global userID
+    global gameSteamID
+    global isPlaying
+    global isPlayingLocalGame
+    global isPlayingSteamGame
+    
+    global coverImage
+    global coverImageText
+    
+    global RPC
+    global sgdb
+    
+    global gridEnabled
+    global steamStoreCoverartBackup
+    global customIconURL
+    global customIconText
+    
+    
+    log("loading config file")
+    config = getConfigFile()
+    loadConfigFile()
         
     # load these later on
     customIconURL = None
@@ -1000,7 +1098,9 @@ def main():
     coverImage = None
     coverImageText = None
     gameSteamID = 0
+    global gameReviewScore
     gameReviewScore = 0
+    global gameReviewString
     gameReviewString = ""
     gameName = ""
     previousGameName = ""
@@ -1025,19 +1125,7 @@ def main():
     
     while True:
         # these values are taken from the config file every cycle, so the user can change these whilst the script is running
-        config = getConfigFile()
-        
-        steamAPIKey = config["STEAM_API_KEY"]
-        
-        steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
-        gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
-        gridKey = config["COVER_ART"]["STEAM_GRID_DB"]["STEAM_GRID_API_KEY"]
-        
-        doCustomIcon = config["CUSTOM_ICON"]["ENABLED"]
-        
-        doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
-        customGameName = config["GAME_OVERWRITE"]["NAME"]
-        customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
+        loadConfigFile()
 
 
         # set the custom game
@@ -1054,7 +1142,7 @@ def main():
             if gameName == "" and enabledPlatforms["steam"]["webscraping"]["enabled"]:
                 getWebScrapePresence()
         
-            if enabledPlatforms["steam"]["enchanedPresence"]["enabled"] and isPlayingSteamGame:
+            if isPlayingSteamGame and enabledPlatforms["steam"]["enchanedPresence"]["enabled"]:
                 getSteamRichPresence()        
             
             

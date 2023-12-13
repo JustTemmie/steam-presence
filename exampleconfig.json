@@ -5,10 +5,10 @@
     "DISCORD_APPLICATION_ID": "869994714093465680",
     
     "STEAM": {
-        "ENABLED": false,
+        "ENABLED": true,
         "FETCH_STEAM_RICH_PRESENCE": true,
-        "FETCH_STEAM_REVIEWS": false,
-        "ADD_STEAM_STORE_BUTTON": false,
+        "FETCH_STEAM_REVIEWS": true,
+        "ADD_STEAM_STORE_BUTTON": true,
         "WEB_SCRAPE": false
     },
 
