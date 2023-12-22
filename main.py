@@ -51,11 +51,17 @@ except:
         print("\npackages installed and imported successfully!")
 
 # just shorthand for logs and errors - easier to write in script
-def log(log):
-    print(f"[{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {log}")
+def log(input):
+    print(f"[{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {input}")
 
-def error(error):
-    print(f"    ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {error}")
+# a seperate log function to be used whilst you have debug mode active, a thing mostly just for developing steam presence
+def logDebug(input):
+    if debugMode:
+        print("[DEBUG] ", end="")
+        log(input)
+
+def error(input):
+    print(f"    ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {input}")
 
 # i've gotten the error `requests.exceptions.ConnectionError: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))` a lot;
 # this just seems to sometimes happens if your network conection is a bit wack, this function is a replacement for requests.get() and basically just does error handling and stuff
@@ -273,7 +279,7 @@ def getGameSteamID():
     sleep(0.2)
     
     if r.status_code == 403:
-        error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
+        error("Forbidden, Access to the steam API has been denied, please verify your steam API key\n    Steam's website for this stuff: https://steamcommunity.com/dev/apikey")
         exit()
     
     if r.status_code != 200:
@@ -500,7 +506,7 @@ def getSteamPresence():
     
         
     if r.status_code == 403:
-        error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
+        error("Forbidden, Access to the steam API has been denied, please verify your steam API key\n    Steam's website for this stuff: https://steamcommunity.com/dev/apikey")
         exit()
 
     if r.status_code != 200:
@@ -533,6 +539,7 @@ def getSteamPresence():
             if game_title != gameName:
                 log(f"found game {game_title} played by {sorted_response[i]['personaname']}")
             isPlayingSteamGame = True
+            logDebug(f"{sorted_response[i]['personaname']} is currently playing {game_title}")
             return game_title
 
     return ""
@@ -892,7 +899,6 @@ def verifyProjectVersion():
             exit()
         
     elif metaFile["structure-version"] == "1":
-        print("----------------------------------------------------------")
         log("updating meta.json's structure-version to `2`...")
         log("importing libraries for meta update")
         try:
@@ -997,6 +1003,8 @@ def loadConfigFile():
     global customGameName
     global customGameStartOffset
     
+    global debugMode
+    
     enabledPlatforms = {
         "steam": {
             "enabled":config["STEAM"]["ENABLED"],
@@ -1031,11 +1039,13 @@ def loadConfigFile():
     doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
     customGameName = config["GAME_OVERWRITE"]["NAME"]
     customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
+    
+    debugMode = config["DEBUG_MODE"]
         
 def main():
     global currentVersion
     # this always has to match the newest release tag
-    currentVersion = "v1.11"
+    currentVersion = "v1.13"
     
     # check if there's any updates for the program
     checkForUpdate()
@@ -1214,6 +1224,10 @@ def main():
         if activeRichPresence != gameRichPresence and isPlaying:
             setPresenceDetails()
             print("----------------------------------------------------------")
+        
+        if debugMode:
+            print("----------------------------------------------------------")
+            
 
         # sleep for a 20 seconds for every user we query, to avoid getting banned from the steam API
         sleep(20 * (userID.count(",") + 1))

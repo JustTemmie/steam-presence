@@ -2,6 +2,8 @@
     "STEAM_API_KEY": "STEAM_API_KEY",
     "USER_IDS": "USER_ID",
 
+    "DEBUG_MODE": false,
+
     "DISCORD_APPLICATION_ID": "869994714093465680",
     
     "STEAM": {
