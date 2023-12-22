@@ -289,32 +289,27 @@ def getGameSteamID():
     respone = r.json()
     
     global gameSteamID
-        
-    # loops thru every game until it finds one matching your game's name
-    for i in respone["applist"]["apps"]:
-        if gameName.lower() == i["name"].lower():
-
-            if gameSteamID == 0:
-                log(f"steam app ID {i['appid']} found for {gameName}")
-            
-            gameSteamID = i["appid"]
-            return
     
-    
-    # for handling game demos
-    if " demo" in gameName.lower():
-        tempGameName = copy(gameName.lower())
-        tempGameName.replace(" demo", "")
+    def handleGame(name):
+        global gameSteamID
         for i in respone["applist"]["apps"]:
-            if tempGameName.lower() == i["name"].lower():
+            if name.lower() == i["name"].lower():
 
                 if gameSteamID == 0:
                     log(f"steam app ID {i['appid']} found for {gameName}")
                 
                 gameSteamID = i["appid"]
                 return
+        
+    # loops thru every game until it finds one matching your game's name
+    handleGame(gameName)
     
-    
+    # for handling game demos
+    if " demo" in gameName.lower():
+        tempGameName = copy(gameName.lower())
+        tempGameName.replace(" demo", "")
+        handleGame(tempGameName)
+        
     
     # if we didn't find the game at all on steam, 
     log(f"could not find the steam app ID for {gameName}")
@@ -539,7 +534,7 @@ def getSteamPresence():
             if game_title != gameName:
                 log(f"found game {game_title} played by {sorted_response[i]['personaname']}")
             isPlayingSteamGame = True
-            logDebug(f"{sorted_response[i]['personaname']} is currently playing {game_title}")
+            logDebug(f"steam user {sorted_response[i]['personaname']} is currently playing {game_title}")
             return game_title
 
     return ""
@@ -675,9 +670,10 @@ def getGameDiscordID(loops=0):
                 ignoredChars)
         
         # if it's the same, we successfully found the discord game ID
-        if removeChars(lowercaseGameName, ignoredChars) in lowercaseGameName:
+        if removeChars(lowercaseGameName, ignoredChars) in gameNames:
             appID = i["id"]
             
+            logDebug(f"discord ID {i['id']} found for {gameName}, property-data: {i['property']}, loop count={loops}")
             
             if i["property"] == "is-custom-game-ID":
                 log(f"using a custom game ID for {gameName}")
