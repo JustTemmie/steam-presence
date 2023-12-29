@@ -468,7 +468,14 @@ def getWebScrapePresence():
         # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
         sleep(0.2)
         
-        page = requests.post(URL, cookies=cj)
+        try:
+            page = requests.post(URL, cookies=cj)
+        except requests.exceptions.RetryError as e:
+            log(f"failed connecting to {URL}, perhaps steam is down for maintenance?\n    error:{e}")
+            return
+        except Exception as e:
+            error(f"error caught while web scraping data from {URL}, ignoring\n    error:{e}")
+            return
         
         if page.status_code == 403:
             error("Forbidden, Access to Steam has been denied, please verify that your cookies are up to date")
@@ -549,7 +556,16 @@ def getSteamPresence():
 def getSteamRichPresence():
     for i in userID.split(","):
         # userID type 3. <id3> = <id64> - 76561197960265728
-        pageRequest = makeWebRequest(f"https://steamcommunity.com/miniprofile/{int(i) - 76561197960265728}")
+        URL = f"https://steamcommunity.com/miniprofile/{int(i) - 76561197960265728}"
+        try:
+            pageRequest = makeWebRequest(URL)
+        except requests.exceptions.RetryError as e:
+            log(f"failed connecting to {URL}, perhaps steam is down for maintenance?\n    error:{e}")
+            return
+        except Exception as e:
+            error(f"error caught while fetching enhanced RPC data from {URL}, ignoring\n    error:{e}")
+            return
+        
         if pageRequest == "error":
             return
         
@@ -791,7 +807,6 @@ def setPresenceDetails():
     
     try:
         RPC.update(
-            # state field currently unused
             details = details, state = state,
             start = startTime,
             large_image = coverImage, large_text = coverImageText,
