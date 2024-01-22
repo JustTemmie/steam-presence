@@ -148,7 +148,13 @@ def getConfigFile():
             "ENABLED": False,
             "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence/main/readmeimages/defaulticon.png",
             "TEXT": "Steam Presence on Discord"
-        }
+        },
+  
+        "BLACKLIST" : [
+            "game1",
+            "game2",
+            "game3"
+        ]
     }
 
     if exists(f"{dirname(abspath(__file__))}/config.json"):
@@ -756,10 +762,20 @@ def getLocalPresence():
 def setPresenceDetails():
     global activeRichPresence
     global startTime
+    global currentGameBlacklisted
     
     details = None
     state = None
     buttons = None
+    
+    # ignore game if it is in blacklist, case insensitive check
+    if gameName.casefold() in map(str.casefold, blacklist):
+        if not currentGameBlacklisted:
+            log(f"{gameName} is in blacklist, not creating RPC object.")
+            currentGameBlacklisted = True
+        return
+    
+    currentGameBlacklisted = False
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
     if appID == defaultAppID or appID == defaultLocalAppID:
@@ -927,6 +943,9 @@ def main():
     global localGames
     global defaultAppID
     global defaultLocalAppID
+    global blacklist
+    global currentGameBlacklisted
+    currentGameBlacklisted = False
     
     global appID
     global startTime
@@ -962,6 +981,7 @@ def main():
     defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
     doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
     localGames = config["LOCAL_GAMES"]["GAMES"]
+    blacklist = config["BLACKLIST"]
     
     steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
     gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
@@ -1039,6 +1059,7 @@ def main():
         defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
         doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
         localGames = config["LOCAL_GAMES"]["GAMES"]
+        blacklist = config["BLACKLIST"]
         
         steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
         gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
@@ -1135,7 +1156,7 @@ def main():
                 
                 print("----------------------------------------------------------")
         
-        if activeRichPresence != gameRichPresence and isPlaying:
+        if activeRichPresence != gameRichPresence and isPlaying and not currentGameBlacklisted:
             setPresenceDetails()
             print("----------------------------------------------------------")
 
