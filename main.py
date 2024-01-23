@@ -522,7 +522,7 @@ def getSteamPresence():
 
     if r.status_code != 200:
         error(f"error code {r.status_code} met when trying to fetch game, ignoring")
-        return ""
+        return gameName
     
     
     response = r.json()
