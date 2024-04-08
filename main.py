@@ -461,7 +461,7 @@ def getGamePrice():
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
     if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
-        print("cookie.txt not found")
+        print("cookie.txt not found, this is because `WEB_SCRAPE` is enabled in the config")
         return
     
     cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
