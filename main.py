@@ -275,7 +275,7 @@ def getImageFromSGDB(loops=0):
 
 def getGameSteamID():
     # fetches a list of ALL games on steam
-    r = makeWebRequest(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+    r = makeWebRequest(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={config['STEAM_API_KEY']}&format=json")
     if r == "error":
         return
     
@@ -431,10 +431,10 @@ def getGameImage():
     
     log("no image found in cache")
     
-    if gridEnabled and coverImage == "":
+    if config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"] and coverImage == "":
         getImageFromSGDB()
         
-    if steamStoreCoverartBackup and coverImage == "":
+    if config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"] and coverImage == "":
         getImageFromStorepage()
 
 
@@ -506,7 +506,7 @@ def getWebScrapePresence():
 
 # checks what game the user is currently playing
 def getSteamPresence():
-    r = makeWebRequest(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={steamAPIKey}&format=json&steamids={userID}")
+    r = makeWebRequest(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={config['STEAM_API_KEY']}&format=json&steamids={userID}")
     
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
@@ -670,18 +670,18 @@ def getGameDiscordID(loops=0):
     # if the game was fetched using the local checker, instead of thru steam
     if isPlayingLocalGame:
         log(f"could not find the discord game ID for {gameName}, defaulting to the secondary, local game ID")
-        appID = defaultLocalAppID
+        appID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
         return
 
     log(f"could not find the discord game ID for {gameName}, defaulting to well, the default game ID")
-    appID = defaultAppID
+    appID = config["DISCORD_APPLICATION_ID"]
     return
 
 # checks if any local games are running
 def getLocalPresence():
     config = getConfigFile()
     # load the custom games, all lower case
-    localGames = list(map(str.lower, config["LOCAL_GAMES"]["GAMES"]))
+    config["LOCAL_GAMES"]["GAMES"] = list(map(str.lower, config["LOCAL_GAMES"]["GAMES"]))
 
     
     gameFound = False
@@ -695,7 +695,7 @@ def getLocalPresence():
         return
 
     # loop thru all games we're supposed to look for
-    for game in localGames:
+    for game in config["LOCAL_GAMES"]["GAMES"]:
         # check if that game is running locally
         if game in processNames:
             # write down the process name and it's creation time
@@ -769,7 +769,7 @@ def setPresenceDetails():
     buttons = None
     
     # ignore game if it is in blacklist, case insensitive check
-    if gameName.casefold() in map(str.casefold, blacklist):
+    if gameName.casefold() in map(str.casefold, config["BLACKLIST"]):
         if not currentGameBlacklisted:
             log(f"{gameName} is in blacklist, not creating RPC object.")
             currentGameBlacklisted = True
@@ -778,7 +778,7 @@ def setPresenceDetails():
     currentGameBlacklisted = False
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
-    if appID == defaultAppID or appID == defaultLocalAppID:
+    if appID == config["DISCORD_APPLICATION_ID"] or appID == config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]:
         details = gameName
     
     if activeRichPresence != gameRichPresence:
@@ -797,7 +797,7 @@ def setPresenceDetails():
         state = f"{gameReviewString} - {gameReviewScore}%"
     
     
-    if addSteamStoreButton and gameSteamID != 0:
+    if config["ADD_STEAM_STORE_BUTTON"] and gameSteamID != 0:
         price = getGamePrice()
         if price == None:
             price = "Free"
@@ -939,11 +939,6 @@ def main():
     verifyProjectVersion()
     
     global userID
-    global steamAPIKey
-    global localGames
-    global defaultAppID
-    global defaultLocalAppID
-    global blacklist
     global currentGameBlacklisted
     currentGameBlacklisted = False
     
@@ -965,39 +960,12 @@ def main():
     global RPC
     global sgdb
     
-    global gridEnabled
-    global steamStoreCoverartBackup
     global customIconURL
-    global customIconText
-    
-    global addSteamStoreButton
-    
+    global customIconText    
     
     log("loading config file")
+    global config
     config = getConfigFile()
-    
-    steamAPIKey = config["STEAM_API_KEY"]
-    defaultAppID = config["DISCORD_APPLICATION_ID"]
-    defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
-    doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
-    localGames = config["LOCAL_GAMES"]["GAMES"]
-    blacklist = config["BLACKLIST"]
-    
-    steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
-    gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
-    gridKey = config["COVER_ART"]["STEAM_GRID_DB"]["STEAM_GRID_API_KEY"]
-    
-    doCustomIcon = config["CUSTOM_ICON"]["ENABLED"]
-    
-    doWebScraping = config["WEB_SCRAPE"]
-    
-    doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
-    customGameName = config["GAME_OVERWRITE"]["NAME"]
-    customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
-    
-    doSteamRichPresence = config["FETCH_STEAM_RICH_PRESENCE"]
-    fetchSteamReviews = config["FETCH_STEAM_REVIEWS"]
-    addSteamStoreButton = config["ADD_STEAM_STORE_BUTTON"]
     
     # load these later on
     customIconURL = None
@@ -1036,15 +1004,15 @@ def main():
     activeRichPresence = "beaver"
 
 
-    if doCustomIcon:
+    if config["CUSTOM_ICON"]["ENABLED"]:
         log("loading custom icon")
         customIconURL = config["CUSTOM_ICON"]["URL"]
         customIconText = config["CUSTOM_ICON"]["TEXT"]
 
     # initialize the steam grid database object
-    if gridEnabled:
+    if config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]:
         log("intializing the SteamGrid database...")
-        sgdb = SteamGridDB(gridKey)
+        sgdb = SteamGridDB(config["COVER_ART"]["STEAM_GRID_DB"]["STEAM_GRID_API_KEY"])
 
     # everything ready! 
     log("everything is ready!")
@@ -1053,41 +1021,21 @@ def main():
     while True:
         # these values are taken from the config file every cycle, so the user can change these whilst the script is running
         config = getConfigFile()
-        
-        steamAPIKey = config["STEAM_API_KEY"]
-        defaultAppID = config["DISCORD_APPLICATION_ID"]
-        defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
-        doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
-        localGames = config["LOCAL_GAMES"]["GAMES"]
-        blacklist = config["BLACKLIST"]
-        
-        steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
-        gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
-        gridKey = config["COVER_ART"]["STEAM_GRID_DB"]["STEAM_GRID_API_KEY"]
-        
-        doCustomIcon = config["CUSTOM_ICON"]["ENABLED"]
-        
-        doWebScraping = config["WEB_SCRAPE"]
-        
-        doCustomGame = config["GAME_OVERWRITE"]["ENABLED"]
-        customGameName = config["GAME_OVERWRITE"]["NAME"]
-        customGameStartOffset = config["GAME_OVERWRITE"]["SECONDS_SINCE_START"]
-
 
         # set the custom game
-        if doCustomGame:
-            gameName = customGameName
+        if config["GAME_OVERWRITE"]["ENABLED"]:
+            gameName = config["GAME_OVERWRITE"]["NAME"]
         
         else:
             gameName = getSteamPresence()
             
-            if gameName == "" and doLocalGames:
+            if gameName == "" and config["LOCAL_GAMES"]["ENABLED"]:
                 getLocalPresence()
             
-            if gameName == "" and doWebScraping:
+            if gameName == "" and config["WEB_SCRAPE"]:
                 getWebScrapePresence()
         
-            if doSteamRichPresence and isPlayingSteamGame:
+            if config["FETCH_STEAM_RICH_PRESENCE"] and isPlayingSteamGame:
                 getSteamRichPresence()        
             
             
@@ -1097,7 +1045,7 @@ def main():
             getGameSteamID()
             
             # fetch the steam reviews if enabled
-            if fetchSteamReviews:
+            if config["FETCH_STEAM_REVIEWS"]:
                 if gameName != "" and gameSteamID != 0:
                     getGameReviews()
                 else:
@@ -1124,11 +1072,11 @@ def main():
                 if not isPlayingLocalGame:
                     startTime = round(time())
                 
-                if doCustomGame:
-                    log(f"using custom game '{customGameName}'")
+                if config["GAME_OVERWRITE"]["ENABLED"]:
+                    log(f"using custom game `{config['GAME_OVERWRITE']['NAME']}`")
                     # set the start time to the custom game start time
-                    if customGameStartOffset != 0:
-                        startTime = round(time() - customGameStartOffset)
+                    if config["GAME_OVERWRITE"]["SECONDS_SINCE_START"] != 0:
+                        startTime = round(time() - config["GAME_OVERWRITE"]["SECONDS_SINCE_START"])
     
                 log(f"game changed, updating to '{gameName}'")
 
