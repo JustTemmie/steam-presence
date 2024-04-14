@@ -113,9 +113,11 @@ def getConfigFile():
         "USER_IDS": "USER_ID",
 
         "DISCORD_APPLICATION_ID": "869994714093465680",
-
-        "FETCH_STEAM_RICH_PRESENCE": True,
-        "FETCH_STEAM_REVIEWS": False,
+        
+        "RPC_LINES": [
+            "{gameRichPresence}"
+        ],
+        "PREFER_NAME_OVER_RPC_LINES": True,
         "ADD_STEAM_STORE_BUTTON": False,
         
         "WEB_SCRAPE": False,
@@ -380,7 +382,7 @@ def getGameReviews():
     # convert it to a dictionary
     respone = r.json()
     
-    # sometimes instead of returning the disered dicationary steam just decides to be quirky
+    # sometimes instead of returning the desired dicationary, steam just decides to be quirky
     # and it returns the dictionary `{'success': 2}` - something which isn't really useful. If this happens we try again :)
     if respone["success"] != 1:
         getGameReviews()
@@ -391,13 +393,10 @@ def getGameReviews():
     if response["total_positive"] == 0:
         return
     
-    global gameReviewScore
-    global gameReviewString
+    score_percentage = (response["total_positive"] / response["total_reviews"]) * 100
     
-    gameReviewScore = round(
-        (response["total_positive"] / response["total_reviews"]) * 100
-        , 2)
-    gameReviewString = response["review_score_desc"]
+    rpcRichData["gameReviewScore"] = f"{round(score_percentage, 2)}%"
+    rpcRichData["gameReviewString"] = response["review_score_desc"]
 
     
 # searches the steam grid DB or the official steam store to get cover images for games
@@ -504,6 +503,66 @@ def getWebScrapePresence():
                     isPlayingSteamGame = False
                     gameName = result
 
+def getSteamStats():
+    r = makeWebRequest(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={config['STEAM_API_KEY']}&steamid={activeSteamUserID}")
+    
+    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+    sleep(0.2)
+    
+    # if it errors out, just return the already asigned gamename
+    if r == "error":
+        return gameName
+    
+    if r.status_code == 403:
+        error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
+        exit()
+
+    if r.status_code != 200:
+        error(f"error code {r.status_code} met when trying to fetch game stats for user: {activeSteamUserID}, ignoring")
+        return gameName
+    
+    response = r.json()
+    
+    playtime = 0    
+    for i in response["response"]["games"]:
+        if i["appid"] == gameSteamID:
+            playtime = i["playtime_forever"]
+    
+    if playtime > 0:
+        rpcRichData["gamePlaytime"] = f"{round(playtime / 60, 1)}"
+
+
+def getSteamAchievements():
+    r = makeWebRequest(f"https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={gameSteamID}&key={config['STEAM_API_KEY']}&steamid={activeSteamUserID}")
+
+    # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
+    sleep(0.2)
+    
+    # if it errors out, just return the already asigned gamename
+    if r == "error":
+        return gameName
+    
+    if r.status_code == 403:
+        error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
+        exit()
+
+    if r.status_code != 200:
+        error(f"error code {r.status_code} met when trying to fetch achievements for user: {activeSteamUserID}, ignoring")
+        return gameName
+    
+    
+    response = r.json()
+    
+    unlocked_achievements = 0
+    total_achievements = 0
+    
+    for i in response["playerstats"]["achievements"]:
+        total_achievements += 1
+        # i love how the `true` boolean in python is just 1 
+        unlocked_achievements += i["achieved"]
+
+    rpcRichData["gameAchievementProgress"] = f"{unlocked_achievements}/{total_achievements}"
+
 # checks what game the user is currently playing
 def getSteamPresence():
     r = makeWebRequest(f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={config['STEAM_API_KEY']}&format=json&steamids={userID}")
@@ -546,6 +605,9 @@ def getSteamPresence():
     # loop thru every user in the response, if they're playing a game, save it
     for i in range(0, len(sorted_response)):
         if "gameextrainfo" in sorted_response[i]:
+            global activeSteamUserID
+            
+            activeSteamUserID = sorted_response[i]["steamid"]
             game_title = sorted_response[i]["gameextrainfo"]
             if game_title != gameName:
                 log(f"found game {game_title} played by {sorted_response[i]['personaname']}")
@@ -757,45 +819,40 @@ def getLocalPresence():
     gameName = processName.title()
     startTime = processCreationTime
 
-    
 
-def setPresenceDetails():
-    global activeRichPresence
-    global startTime
-    global currentGameBlacklisted
+def updatePresenceDetails():
+    rpcRichData["gameRichPresence"] = gameRichPresence
     
-    details = None
-    state = None
-    buttons = None
+    lines = []
     
-    # ignore game if it is in blacklist, case insensitive check
-    if gameName.casefold() in map(str.casefold, config["BLACKLIST"]):
-        if not currentGameBlacklisted:
-            log(f"{gameName} is in blacklist, not creating RPC object.")
-            currentGameBlacklisted = True
-        return
-    
-    currentGameBlacklisted = False
-    
-    # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
     if appID == config["DISCORD_APPLICATION_ID"] or appID == config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]:
-        details = gameName
+        lines.append(gameName)
     
-    if activeRichPresence != gameRichPresence:
-        if gameRichPresence != "":
-            if details == None:
-                log(f"setting the details for {gameName} to `{gameRichPresence}`")
-                details = gameRichPresence
-            elif state == None:
-                log(f"setting the state for {gameName} to `{gameRichPresence}`")
-                state = gameRichPresence
-        
-            
-        activeRichPresence = gameRichPresence
+    for i in config["RPC_LINES"]:
+        try:
+            lines.append(i.format(**rpcRichData))
+        except Exception as e:
+            log(f"Exception {e} met whilst trying to add the RPC line: {e}, ignoring")
+
+    # only return the lines that actually have data in them, then we append `None` twice in case there's not enough entries
+    return_lines = []
+    for i in lines:
+        if len(i) >= 2:
+            if len(i) > 128:
+                error(f"the status `{i}` is over 128 characters, splicing off the padding :p")
+                i = i[:128]
+                print(i)
+                
+            return_lines.append(i)
     
-    if state == None and gameReviewScore != 0:
-        state = f"{gameReviewString} - {gameReviewScore}%"
+    return_lines.append(None)
+    return_lines.append(None)
     
+    return [return_lines[0], return_lines[1]]
+
+def getButtons():
+    
+    buttons = []
     
     if config["ADD_STEAM_STORE_BUTTON"] and gameSteamID != 0:
         price = getGamePrice()
@@ -811,7 +868,45 @@ def setPresenceDetails():
         if len(label) > 32:
             label = f"on steam! - {price}"
             
-        buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
+        buttons.append({"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"})
+    
+    if buttons == []:
+        return None
+    
+    return buttons
+
+def setPresenceDetails():
+    global activeRichPresence
+    global startTime
+    global currentGameBlacklisted
+    
+    details, state = updatePresenceDetails()
+    buttons = getButtons()
+    
+    # ignore game if it is in blacklist, case insensitive check
+    if gameName.casefold() in map(str.casefold, config["BLACKLIST"]):
+        if not currentGameBlacklisted:
+            log(f"{gameName} is in blacklist, not creating RPC object.")
+            currentGameBlacklisted = True
+        return
+    
+    currentGameBlacklisted = False
+    
+    # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
+    # if appID == config["DISCORD_APPLICATION_ID"] or appID == config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]:
+    #     details = gameName
+    
+    # if activeRichPresence != gameRichPresence:
+    #     if gameRichPresence != "":
+    #         if details == None:
+    #             log(f"setting the details for {gameName} to `{gameRichPresence}`")
+    #             details = gameRichPresence
+    #         elif state == None:
+    #             log(f"setting the state for {gameName} to `{gameRichPresence}`")
+                # state = gameRichPresence
+        
+            
+    activeRichPresence = gameRichPresence
     
     
     log("pushing presence to Discord")
@@ -948,8 +1043,6 @@ def main():
     global gameRichPresence
     global activeRichPresence
     global gameSteamID
-    global gameReviewScore
-    global gameReviewString
     global isPlaying
     global isPlayingLocalGame
     global isPlayingSteamGame
@@ -962,6 +1055,9 @@ def main():
     
     global customIconURL
     global customIconText    
+    
+    global rpcRichData
+    global activeSteamUserID
     
     log("loading config file")
     global config
@@ -995,8 +1091,7 @@ def main():
     coverImage = None
     coverImageText = None
     gameSteamID = 0
-    gameReviewScore = 0
-    gameReviewString = ""
+    activeSteamUserID = 0
     gameName = ""
     previousGameName = ""
     gameRichPresence = ""
@@ -1021,10 +1116,12 @@ def main():
     while True:
         # these values are taken from the config file every cycle, so the user can change these whilst the script is running
         config = getConfigFile()
+        activeSteamUserID = 0
 
         # set the custom game
         if config["GAME_OVERWRITE"]["ENABLED"]:
             gameName = config["GAME_OVERWRITE"]["NAME"]
+            activeSteamUserID = userID.split(",")[0]
         
         else:
             gameName = getSteamPresence()
@@ -1034,22 +1131,22 @@ def main():
             
             if gameName == "" and config["WEB_SCRAPE"]:
                 getWebScrapePresence()
-        
-            if config["FETCH_STEAM_RICH_PRESENCE"] and isPlayingSteamGame:
-                getSteamRichPresence()        
+            
+            if isPlayingSteamGame:
+                getSteamRichPresence()  
             
             
         # if the game has changed
         if previousGameName != gameName:
+            rpcRichData = {}
+            
+            
             # try finding the game on steam, and saving it's ID to `gameSteamID` 
             getGameSteamID()
             
-            # fetch the steam reviews if enabled
-            if config["FETCH_STEAM_REVIEWS"]:
-                if gameName != "" and gameSteamID != 0:
-                    getGameReviews()
-                else:
-                    gameReviewScore = 0
+            # fetch the steam reviews
+            if gameName != "" and gameSteamID != 0:
+                getGameReviews()
                 
             # if the game has been closed
             if gameName == "":
@@ -1077,7 +1174,7 @@ def main():
                     # set the start time to the custom game start time
                     if config["GAME_OVERWRITE"]["SECONDS_SINCE_START"] != 0:
                         startTime = round(time() - config["GAME_OVERWRITE"]["SECONDS_SINCE_START"])
-    
+                
                 log(f"game changed, updating to '{gameName}'")
 
                 # fetch the new app ID
@@ -1085,6 +1182,10 @@ def main():
                 
                 # get cover image
                 getGameImage()
+                
+                # get steam stats and achievements
+                getSteamStats()
+                getSteamAchievements()
                 
                 # checks to make sure the old RPC has been closed
                 if isPlaying:

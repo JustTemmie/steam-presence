@@ -3,9 +3,11 @@
     "USER_IDS": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
-
-    "FETCH_STEAM_RICH_PRESENCE": true,
-    "FETCH_STEAM_REVIEWS": false,
+    
+    "RPC_LINES": [
+        "{gameRichPresence}"
+    ],
+    "PREFER_NAME_OVER_RPC_LINES": true,
     "ADD_STEAM_STORE_BUTTON": false,
 
     "WEB_SCRAPE": false,
