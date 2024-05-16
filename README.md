@@ -126,6 +126,7 @@ the script will find:
  - [Disabling fetching steam's rich presence](#fetch-steam-rich-presence)
  - [Enabling steam reviews](#fetch-steam-reviews)
  - [Add a button to the steam store page](#add-steam-store-button)
+ - [Ability to blacklist games from showing up on discord rich presence](#blacklist) 
 
 you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_IDS` found [here](#user-ids)
 
@@ -172,7 +173,13 @@ this is what a full config file looks like; you only need to fill in the parts t
         "ENABLED": false,
         "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence/main/readmeimages/defaulticon.png",
         "TEXT": "Steam Presence on Discord"
-    }
+    },
+
+    "BLACKLIST": [
+    	"game1",
+    	"game2",
+    	"game3"
+    ]
 }
 ```
 # Steam web API
@@ -388,6 +395,20 @@ template:
     "Beaver Clicker": 1065249144853254245
 }
 ```
+
+# Blacklist
+
+Here you can add games that are not supposed to show up in Discord's rich presence. please fill in the games field according to the full name of the games, these are not case sensitive.
+
+Example:
+```
+"BLACKLIST" : [
+    "Hades",
+    "Deep Rock Galactic",
+    "Risk of Rain 2"
+]
+```
+
 
 # Python
 only tested on python3.8 and higher.
