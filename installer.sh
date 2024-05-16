@@ -59,7 +59,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # Detect OS and perform OS-specific tasks
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "linux" ]]; then
   echo "Setting up service file for Linux"
   mkdir -p "$HOME/.config/systemd/user"
   sed -e "s~steam-presence/bin/python~steam-presence/venv/bin/python~g" -e "s~/home/deck/steam-presence~$PWD~g" "$PWD/steam-presence.service" > $HOME/.config/systemd/user/steam-presence.service

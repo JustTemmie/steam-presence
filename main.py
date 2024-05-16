@@ -11,6 +11,10 @@ from os.path import exists, dirname, abspath
 # for restarting the script on a failed run
 import sys 
 import os
+
+# for general programing
+import copy
+
 try:
     # requesting data from steam's API
     import requests
@@ -146,7 +150,13 @@ def getConfigFile():
             "ENABLED": False,
             "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence/main/readmeimages/defaulticon.png",
             "TEXT": "Steam Presence on Discord"
-        }
+        },
+  
+        "BLACKLIST" : [
+            "game1",
+            "game2",
+            "game3"
+        ]
     }
 
     if exists(f"{dirname(abspath(__file__))}/config.json"):
@@ -295,6 +305,22 @@ def getGameSteamID():
             
             gameSteamID = i["appid"]
             return
+    
+    
+    # for handling game demos
+    if " demo" in gameName.lower():
+        tempGameName = copy(gameName.lower())
+        tempGameName.replace(" demo", "")
+        for i in respone["applist"]["apps"]:
+            if tempGameName.lower() == i["name"].lower():
+
+                if gameSteamID == 0:
+                    log(f"steam app ID {i['appid']} found for {gameName}")
+                
+                gameSteamID = i["appid"]
+                return
+    
+    
     
     # if we didn't find the game at all on steam, 
     log(f"could not find the steam app ID for {gameName}")
@@ -467,8 +493,13 @@ def getSteamCookie():
 
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
-    cj = getSteamCookie()
-
+    if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
+        print("cookie.txt not found, this is because `WEB_SCRAPE` is enabled in the config")
+        return
+    
+    cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
+    cj.load()
+    
     # split on ',' in case of multiple userIDs
     for i in userID.split(","):
         URL = f"https://steamcommunity.com/profiles/{i}/"
@@ -476,7 +507,14 @@ def getWebScrapePresence():
         # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
         sleep(0.2)
         
-        page = requests.post(URL, cookies=cj)
+        try:
+            page = requests.post(URL, cookies=cj)
+        except requests.exceptions.RetryError as e:
+            log(f"failed connecting to {URL}, perhaps steam is down for maintenance?\n    error:{e}")
+            return
+        except Exception as e:
+            error(f"error caught while web scraping data from {URL}, ignoring\n    error:{e}")
+            return
         
         if page.status_code == 403:
             error("Forbidden, Access to Steam has been denied, please verify that your cookies are up to date")
@@ -517,15 +555,14 @@ def getSteamPresence():
 
     if r.status_code != 200:
         error(f"error code {r.status_code} met when trying to fetch game, ignoring")
-        return ""
+        return gameName
     
     
     response = r.json()
     
     # counts how many users you're supposed to get back, and checks if you got that many back
     if len(response["response"]["players"]) != userID.count(",") + 1:
-        error("No account found, please verify that your user ID is correct")
-        exit()
+        error("There seems to be an incorrect account ID given, please verify that your user ID(s) are correct")
 
 
     global isPlayingSteamGame
@@ -558,7 +595,16 @@ def getSteamPresence():
 def getSteamRichPresence():
     for i in userID.split(","):
         # userID type 3. <id3> = <id64> - 76561197960265728
-        pageRequest = makeWebRequest(f"https://steamcommunity.com/miniprofile/{int(i) - 76561197960265728}")
+        URL = f"https://steamcommunity.com/miniprofile/{int(i) - 76561197960265728}"
+        try:
+            pageRequest = makeWebRequest(URL)
+        except requests.exceptions.RetryError as e:
+            log(f"failed connecting to {URL}, perhaps steam is down for maintenance?\n    error:{e}")
+            return
+        except Exception as e:
+            error(f"error caught while fetching enhanced RPC data from {URL}, ignoring\n    error:{e}")
+            return
+        
         if pageRequest == "error":
             return
         
@@ -634,6 +680,8 @@ def getGameDiscordID(loops=0):
     for i in response:
         gameNames = []                      
         gameNames.append(i["name"])
+        # for handling demos of games, adding it as a valid discord name because it's easier
+        gameNames.append(i["name"] + " demo")
         
         # make a list containing all the names of said game
         if "aliases" in i:
@@ -672,10 +720,13 @@ def getLocalPresence():
     gameFound = False
     # process = None
     
-    # get a list of all open applications, make a list of their creation times, and their names
-    processCreationTimes = [i.create_time() for i in psutil.process_iter()]
-    processNames = [i.name().lower() for i in psutil.process_iter()]
-    
+    try:
+        # get a list of all open applications, make a list of their creation times, and their names
+        processCreationTimes = [i.create_time() for i in psutil.process_iter()]
+        processNames = [i.name().lower() for i in psutil.process_iter()]
+    except:
+        return
+
     # loop thru all games we're supposed to look for
     for game in localGames:
         # check if that game is running locally
@@ -744,10 +795,20 @@ def getLocalPresence():
 def setPresenceDetails():
     global activeRichPresence
     global startTime
+    global currentGameBlacklisted
     
     details = None
     state = None
     buttons = None
+    
+    # ignore game if it is in blacklist, case insensitive check
+    if gameName.casefold() in map(str.casefold, blacklist):
+        if not currentGameBlacklisted:
+            log(f"{gameName} is in blacklist, not creating RPC object.")
+            currentGameBlacklisted = True
+        return
+    
+    currentGameBlacklisted = False
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
     if appID == defaultAppID or appID == defaultLocalAppID:
@@ -793,14 +854,17 @@ def setPresenceDetails():
     if startTime == 0:
         startTime = round((time()))
     
-    RPC.update(
-        # state field currently unused
-        details = details, state = state,
-        start = startTime,
-        large_image = coverImage, large_text = coverImageText,
-        small_image = customIconURL, small_text = customIconText,
-        buttons=buttons
-    )
+    try:
+        RPC.update(
+            details = details, state = state,
+            start = startTime,
+            large_image = coverImage, large_text = coverImageText,
+            small_image = customIconURL, small_text = customIconText,
+            buttons=buttons
+        )
+        
+    except Exception as e:
+        error(f"pushing presence failed...\nError encountered: {e}")
 
 def verifyProjectVersion():
     metaFile = getMetaFile()
@@ -899,7 +963,7 @@ def checkForUpdate():
 def main():
     global currentVersion
     # this always has to match the newest release tag
-    currentVersion = "v1.12"
+    currentVersion = "v1.12.1"
     
     # check if there's any updates for the program
     checkForUpdate()
@@ -912,6 +976,9 @@ def main():
     global localGames
     global defaultAppID
     global defaultLocalAppID
+    global blacklist
+    global currentGameBlacklisted
+    currentGameBlacklisted = False
     
     global appID
     global startTime
@@ -948,6 +1015,7 @@ def main():
     defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
     doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
     localGames = config["LOCAL_GAMES"]["GAMES"]
+    blacklist = config["BLACKLIST"]
     
     steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
     gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
@@ -1026,6 +1094,7 @@ def main():
         defaultLocalAppID = config["LOCAL_GAMES"]["LOCAL_DISCORD_APPLICATION_ID"]
         doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
         localGames = config["LOCAL_GAMES"]["GAMES"]
+        blacklist = config["BLACKLIST"]
         
         steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
         gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
@@ -1122,7 +1191,7 @@ def main():
                 
                 print("----------------------------------------------------------")
         
-        if activeRichPresence != gameRichPresence and isPlaying:
+        if activeRichPresence != gameRichPresence and isPlaying and not currentGameBlacklisted:
             setPresenceDetails()
             print("----------------------------------------------------------")
 
