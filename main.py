@@ -509,9 +509,8 @@ def getSteamStats():
     # sleep for 0.2 seconds, this is done after every steam request, to avoid getting perma banned (yes steam is scuffed)
     sleep(0.2)
     
-    # if it errors out, just return the already asigned gamename
     if r == "error":
-        return gameName
+        return
     
     if r.status_code == 403:
         error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
@@ -519,14 +518,42 @@ def getSteamStats():
 
     if r.status_code != 200:
         error(f"error code {r.status_code} met when trying to fetch game stats for user: {activeSteamUserID}, ignoring")
-        return gameName
+        return
     
     response = r.json()
     
-    playtime = 0    
+    playtime = None
     for i in response["response"]["games"]:
         if i["appid"] == gameSteamID:
             playtime = i["playtime_forever"]
+    
+    # incase the user doesn't actually own the game, for example if they got it thru family sharing
+    if playtime == None:
+        recentGamesRequest = makeWebRequest(f"https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={config['STEAM_API_KEY']}&steamid={activeSteamUserID}")
+        if recentGamesRequest == "error":
+            return
+        
+        if recentGamesRequest.status_code == 403:
+            error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
+            exit()
+
+        if recentGamesRequest.status_code != 200:
+            error(f"error code {recentGamesRequest.status_code} met when trying to fetch game stats for user: {activeSteamUserID}, ignoring")
+            return
+    
+        recentGames = recentGamesRequest.json()
+
+        if r == "error": return
+        
+        if r.status_code == 200:
+            for i in recentGames["response"]["games"]:
+                if i["appid"] == gameSteamID:
+                    playtime = i["playtime_forever"]
+    
+    if playtime == None:
+        if "gamePlaytime" in rpcRichData:
+            del rpcRichData["gamePlaytime"]
+        return
     
     if playtime > 0:
         rpcRichData["gamePlaytime"] = f"{round(playtime / 60, 1)}"
@@ -545,10 +572,14 @@ def getSteamAchievements():
     if r.status_code == 403:
         error("Forbidden, Access to the steam API has been denied, please verify your steam API key")
         exit()
+    
+    if r.status_code == 400:
+        rpcRichData["gameAchievementProgress"] = f"0/0"
+        return
 
-    if r.status_code != 200:
+    elif r.status_code != 200:
         error(f"error code {r.status_code} met when trying to fetch achievements for user: {activeSteamUserID}, ignoring")
-        return gameName
+        return
     
     
     response = r.json()
@@ -560,7 +591,7 @@ def getSteamAchievements():
         total_achievements += 1
         # i love how the `true` boolean in python is just 1 
         unlocked_achievements += i["achieved"]
-
+        
     rpcRichData["gameAchievementProgress"] = f"{unlocked_achievements}/{total_achievements}"
 
 # checks what game the user is currently playing
@@ -1097,6 +1128,7 @@ def main():
     gameRichPresence = ""
     # the rich presence text that's actually in the current discord presence, set to beaver cause it can't start empty
     activeRichPresence = "beaver"
+    lastStatFetch = 0
 
 
     if config["CUSTOM_ICON"]["ENABLED"]:
@@ -1186,6 +1218,7 @@ def main():
                 # get steam stats and achievements
                 getSteamStats()
                 getSteamAchievements()
+                lastStatFetch = time()
                 
                 # checks to make sure the old RPC has been closed
                 if isPlaying:
@@ -1205,6 +1238,13 @@ def main():
                 
                 print("----------------------------------------------------------")
         
+        if lastStatFetch < time() - 360 and isPlaying and not currentGameBlacklisted:
+            getSteamStats()
+            getSteamAchievements()
+            setPresenceDetails()
+            # print(f"new playtime: {rpcRichData['gamePlaytime']}")
+            lastStatFetch = time()
+            
         if activeRichPresence != gameRichPresence and isPlaying and not currentGameBlacklisted:
             setPresenceDetails()
             print("----------------------------------------------------------")
