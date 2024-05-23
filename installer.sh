@@ -66,6 +66,7 @@ if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "linux" ]]; then
   echo "Starting service"
   systemctl --user daemon-reload
   systemctl --user --now enable "steam-presence.service"
+
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   echo "Setting up launchd plist file for macOS"
   PLIST="$HOME/Library/LaunchAgents/com.github.justtemmie.steam-presence.plist"

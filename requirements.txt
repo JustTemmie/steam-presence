@@ -1,4 +1,4 @@
-python-steamgriddb
+python-
 pypresence
 beautifulsoup4
 requests
