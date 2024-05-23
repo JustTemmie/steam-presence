@@ -353,7 +353,7 @@ def getImageFromStorepage():
         respone = r.json()
         
         coverImage = respone[str(gameSteamID)]["data"]["header_image"]
-        coverImageText = f"{gameName} on steam"
+        coverImageText = f"{gameName} on Steam"
         # do note this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
         
         log(f"successfully found steam's icon for {gameName}")
@@ -430,9 +430,12 @@ def getGameImage():
                 return
     
     log("no image found in cache")
-    
+
     if gridEnabled and coverImage == "":
         getImageFromSGDB()
+
+    if appID != defaultAppID and appID != defaultLocalAppID and coverImage == "":
+        getImageFromDiscord()
         
     if steamStoreCoverartBackup and coverImage == "":
         getImageFromStorepage()
@@ -676,6 +679,36 @@ def getGameDiscordID(loops=0):
     log(f"could not find the discord game ID for {gameName}, defaulting to well, the default game ID")
     appID = defaultAppID
     return
+
+# get game's icon straight from Discord's CDN
+def getImageFromDiscord():
+    global coverImage
+    global coverImageText
+
+    log("getting icon from Discord")
+
+    try: 
+        r = makeWebRequest(f"https://discordapp.com/api/v8/applications/{appID}/rpc")
+        if r == "error":
+            return
+        
+        if r.status_code != 200:
+            error(f"status code {r.status_code} returned when requesting more info about {gameName} from Discord, ignoring")
+            coverImage = None
+            coverImageText = None
+            return
+        
+        respone = r.json()
+        
+        coverImage = f"https://cdn.discordapp.com/app-icons/{appID}/{respone["icon"]}.webp"
+        coverImageText = f"{respone["name"]}"
+        
+        log(f"successfully found Discord icon for {gameName}")
+
+    except Exception as e:
+        error(f"Exception {e} raised when trying to fetch {gameName}'s icon from Discord, ignoring")
+        coverImage = None
+        coverImageText = None
 
 # checks if any local games are running
 def getLocalPresence():
