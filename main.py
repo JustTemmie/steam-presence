@@ -353,7 +353,7 @@ def getImageFromStorepage():
         respone = r.json()
         
         coverImage = respone[str(gameSteamID)]["data"]["header_image"]
-        coverImageText = f"{gameName}"
+        coverImageText = f"{gameName} on Steam"
         # do note this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
         
         log(f"successfully found steam's icon for {gameName}")
