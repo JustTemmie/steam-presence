@@ -1,4 +1,3 @@
-python-
 pypresence
 beautifulsoup4
 requests

@@ -24,6 +24,9 @@ class Core():
     def get_current_game(self, SteamUserIDs = []):
         results = {}
         
+        config = getConfigFile()
+        large_image_sources = config["LARGE_IMAGE_SOURCES"]
+        
         steamGame = self.steam.get_game(SteamUserIDs)
         if steamGame:
             if steamGame["gameID"] == 0:
@@ -54,20 +57,20 @@ class Core():
                 "steam_store_page": lambda: self.steam.get_image_url_from_store_page(gameID)
             }
             
-            image_preferences = ["file_cache", "steam_grid_db", "steam_store_page"]
             
-            data["image"] = None
-            
-            for service in image_preferences:
-                service = service.lower()
-                if service in image_fetchers:
-                    print(f"trying to fetch image using {service}")
-                    image = image_fetchers[service]()
-                    if image:
-                        data["image"] = image
-                        break
+            data["image"] = self.get_image(image_fetchers, large_image_sources)
             
             
             results["steam"] = data
 
         return results
+
+    
+    def get_image(self, image_fetchers, image_preferences):
+        for service in image_preferences:
+            service = service.lower()
+            if service in image_fetchers:
+                print(f"trying to fetch image using {service}")
+                image = image_fetchers[service]()
+                if image:
+                    return image

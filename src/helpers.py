@@ -80,6 +80,9 @@ def getConfigFile():
             }
         },
         
+        "LARGE_IMAGE_SOURCES": ["file_cache", "steam_grid_db", "steam_store_page"],
+        
+        
         "RPC_LINES": [
             "{playtime} Hours | {achievement_count} Achievements",
             "{rich_presence}",
