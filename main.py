@@ -700,8 +700,8 @@ def getImageFromDiscord():
         
         respone = r.json()
         
-        coverImage = f"https://cdn.discordapp.com/app-icons/{appID}/{respone["icon"]}.webp"
-        coverImageText = f"{respone["name"]}"
+        coverImage = f"https://cdn.discordapp.com/app-icons/{appID}/{respone['icon']}.webp"
+        coverImageText = f"{respone['name']}"
         
         log(f"successfully found Discord icon for {gameName}")
 
