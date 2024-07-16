@@ -97,12 +97,12 @@ create a file named `config.json` in the same directory as main.py and fill in t
 ```json
 {
     "STEAM_API_KEY": "STEAM_API_KEY",
-    "USER_IDS": "USER_ID"
+    "USER_ID": "USER_ID"
 }
 ```
 
 instructions for the `STEAM_API_KEY` can be found [here](#steam-web-api)
-and the `USER_IDS` field can be found [here](#user-ids)
+and the `USER_ID` field can be found [here](#user-ids)
 
 
 this will lead to some of the features not being able to work, but it does an alright job,
@@ -128,13 +128,13 @@ the script will find:
  - [Add a button to the steam store page](#add-steam-store-button)
  - [Ability to blacklist games from showing up on discord rich presence](#blacklist) 
 
-you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_IDS` found [here](#user-ids)
+you will still need to fill out the `STEAM_API_KEY` found [here](#steam-web-api) and the `USER_ID` found [here](#user-id)
 
 this is what a full config file looks like; you only need to fill in the parts that you want to change for this default
 ```json
 {
     "STEAM_API_KEY": "STEAM_API_KEY",
-    "USER_IDS": "USER_ID",
+    "USER_ID": "USER_ID",
 
     "DISCORD_APPLICATION_ID": "869994714093465680",
 
@@ -189,8 +189,8 @@ this you can obtain by registering here https://steamcommunity.com/dev/apikey wh
 
 the `domain` asked for does not matter in the slightest, just write something like 127.0.0.1 or github.com 
 
-# User IDs
-the `USER_IDS` is the steam user id of the user you want to track.
+# User ID
+the `USER_ID` is the steam user id of the user you want to track.
 
 **NOTE** this is not the same as the display URL of the user.
 
@@ -199,8 +199,6 @@ the easiest way i've found to get the ID is by throwing your url into the steamD
 and then taking the ID from that url
 
 ![ExampleImage](readmeimages/steamDB.png)
-
-**NOTE 2** the script accepts multiple steam users if you format it as "userid1,userid2" or ["userid1", "userid2"]
 
 # Discord Application ID
 the `DISCORD_APPLICATION_ID` is the discord application ID of the app you want to use.

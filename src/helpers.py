@@ -7,19 +7,20 @@ import json
 import time
 import functools
 
-project_root = os.path.abspath(os.path.dirname(sys.argv[0]))
-
-
 # just shorthand for logs and errors - easier to write in script
-def log(log):
-    print(f"[{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {log}")
+def debug(data):
+    if True:
+        print(f"DEBUG: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {data}")
 
-def error(error):
-    print(f"    ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {error}")
+def log(data):
+    print(f"[{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {data}")
+
+def error(data):
+    print(f"    ERROR: [{datetime.now().strftime('%b %d %Y - %H:%M:%S')}] {data}")
 
 
 # a wrapper for funcstools.lru_cache() that only holds data for x seconds
-def time_cache(maxAge, maxSize=128):
+def time_cache(maxAgeSeconds, maxSize=128):
     def _decorator(func):
         @functools.lru_cache(maxsize=maxSize)
         def _new(*args, __time_salt, **kwargs):
@@ -27,7 +28,7 @@ def time_cache(maxAge, maxSize=128):
 
         @functools.wraps(func)
         def _wrapped(*args, **kwargs):
-            return _new(*args, **kwargs, __time_salt=int(time.time() / maxAge))
+            return _new(*args, **kwargs, __time_salt=int(time.time() / maxAgeSeconds))
 
         return _wrapped
 
@@ -60,7 +61,7 @@ def getConfigFile():
             "STEAM": {
                 "ENABLED": True,
                 "API_KEY": "API_KEY",
-                "USER_IDS": "USER_ID",
+                "USER_ID": "USER_ID",
                 "DISCORD_APPLICATION_ID": "869994714093465680",
                 "STORE_BUTTON": True
             },
@@ -106,12 +107,12 @@ def getConfigFile():
     }
 
 
-    if os.path.exists(f"{project_root}/config.json"):
-        with open(f"{project_root}/config.json", "r") as f:
+    if os.path.exists(f"config.json"):
+        with open(f"config.json", "r") as f:
             userSettings = json.load(f)
     
-    elif os.path.exists(f"{project_root}/exampleconfig.json"):
-        with open(f"{project_root}/exampleconfig.json", "r") as f:
+    elif os.path.exists(f"exampleconfig.json"):
+        with open(f"exampleconfig.json", "r") as f:
             userSettings = json.load(f)
     
     else:

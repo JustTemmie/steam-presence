@@ -53,6 +53,10 @@ class SGDB():
             return
         
         icons = r.json()["data"]
+        
+        if len(icons) == 0:
+            return
+        
         contenders = []
         for icon in icons:
             if icon["style"] == "official":

@@ -2,9 +2,9 @@
 config.json
 steam-cookies.txt
 cookies.txt
-Development/
 data/
 BrowserTest/
+development/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

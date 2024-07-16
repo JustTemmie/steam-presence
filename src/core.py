@@ -4,7 +4,7 @@ import json
 import time
 
 
-import src.platforms.steam as steam_service
+import src.platforms.steam_platform as steam_service
 
 import src.file_system.cache as cache
 
@@ -18,45 +18,38 @@ project_root = os.path.abspath(os.path.dirname(sys.argv[0]))
 
 class Core():
     def __init__(self, APIKeys):
-        self.steam =  steam_service.Steam(APIKeys["steam"])
+        self.steam =  steam_service.SteamPlatform(APIKeys["steam"])
         self.SGDB =  sgdb_service.SGDB(APIKeys["sgdb"])
 
-    def get_current_game(self, SteamUserIDs = []):
+    def get_current_game(self, SteamUserID: int):
         results = {}
         
         config = getConfigFile()
         large_image_sources = config["LARGE_IMAGE_SOURCES"]
         
-        steamGame = self.steam.get_game(SteamUserIDs)
-        if steamGame:
-            if steamGame["gameID"] == 0:
-                log("no game is being played")
-                return {}
-            
-            gameID = steamGame["gameID"]
-            userID = steamGame["userID"]
+        steamGameID = self.steam.get_current_game_ID(SteamUserID)
+        if steamGameID:
+    
             
             data = {}
-            data["gameName"] = steamGame["name"]
-            data["gameID"] = steamGame["gameID"]
-            data["userID"] = steamGame["userID"]
+            data["gameID"] = steamGameID
 
             # semi cached
-            data["price"] = self.steam.get_game_price(gameID)
-            data["reviews"] = self.steam.get_game_reviews(gameID)
-            data["playtime"] = self.steam.get_playtime(userID, gameID)
-            data["achievement_count"] = self.steam.get_achievement_progress(userID, gameID)
+            data["gameName"] = self.steam.get_game_name(steamGameID)
+            data["price"] = self.steam.get_game_price(steamGameID)
+            data["reviews"] = self.steam.get_game_review_rating(steamGameID)
+            data["playtime"] = self.steam.get_game_playtime(SteamUserID, steamGameID)
+            data["achievement_count"] = self.steam.get_game_achievement_progress(SteamUserID, steamGameID)
             
             # not cached
-            data["rich_presence"] = self.steam.get_rich_presence(SteamUserIDs, data["gameName"])
+            data["rich_presence"] = self.steam.get_current_rich_presence(SteamUserID, steamGameID)
             
             image_fetchers = {
                 "file_cache": lambda: cache.get_image_from_cache(data["gameName"]),
-                "steam_grid_db": lambda: self.SGDB.get_icon_url_from_steam_id(gameID),
+                "steam_grid_db": lambda: self.SGDB.get_icon_url_from_steam_id(steamGameID),
                 "discord_cdn": lambda: 0,
-                "steam_store_page": lambda: self.steam.get_image_url_from_store_page(gameID)
+                "steam_store_page": lambda: self.steam.get_image_url_from_store_page(steamGameID)
             }
-            
             
             data["image"] = self.get_image(image_fetchers, large_image_sources)
             

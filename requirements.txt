@@ -2,3 +2,4 @@ pypresence
 beautifulsoup4
 requests
 psutil
+steam[client]

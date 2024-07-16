@@ -9,6 +9,19 @@ import src.core as core
 
 from src.helpers import *
 
+import psutil
+
+# list of ports used by discord RPC, https://github.com/discord/discord-api-docs/blob/main/docs/topics/RPC.md#rpc-server-ports
+discord_RPC_ports = [i for i in range(6463, 6473)]
+
+# connections = psutil.net_connections()
+# for conn in connections:
+#     if conn.laddr and conn.laddr.ip == '127.0.0.1' and conn.laddr.port in discord_RPC_ports:
+#         print(f"Local address: {conn.laddr}, Remote address: {conn.raddr}, PID: {conn.pid}")
+#     # if conn.laddr.port in discord_RPC_ports:
+
+# exit()
+
 
 def main():
     # this always has to match the newest release tag
@@ -21,7 +34,7 @@ def main():
     
     log("loading config file")
     config = getConfigFile()
-    steamUserIDs = config["SERVICES"]["STEAM"]["USER_IDS"].split(",")
+    steamUserID = config["SERVICES"]["STEAM"]["USER_ID"]
     APIKeys = {
         "steam": config["SERVICES"]["STEAM"]["API_KEY"],
         "sgdb": config["SERVICES"]["STEAM_GRID_DB"]["API_KEY"]
@@ -35,7 +48,7 @@ def main():
     print("----------------------------------------------------------")
     
     while True:
-        current_game = CORE.get_current_game(steamUserIDs)
+        current_game = CORE.get_current_game(steamUserID)
 
         for platform in current_game:
             discord_app_id = discord.get_game_ID(current_game[platform]["gameName"])
@@ -44,8 +57,8 @@ def main():
         
         RPC.update_presence_details(current_game)
 
-        # sleep for a 20 seconds for every user we query, to avoid getting banned from the steam API
-        time.sleep(20 * len(steamUserIDs))
+        # sleep for a 20 seconds, to avoid getting banned from the steam API
+        time.sleep(20)
 
 
 if __name__ == "__main__":
