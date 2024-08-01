@@ -80,6 +80,10 @@ class SGDB():
     def get_icon_url_from_steam_id(self, steamAppID) -> str:
         ID = self.get_ID_by_steam_ID(steamAppID)
         return self.get_icon_url(ID)
+    
+    def get_icon_url_from_game_name(self, gameName) -> str:
+        ID = self.get_ID_by_name(gameName)
+        return self.get_icon_url(ID)
         
 
 

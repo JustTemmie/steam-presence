@@ -64,7 +64,6 @@ class RPC():
                     print(f"deleting RPC for {platform}")
                     self.RPCs[platform]["presence"].close()
                     del self.RPCs[platform]
-                    
         
         
         except Exception as e:
@@ -104,7 +103,7 @@ class Platform_Specific():
         RPCData["presence"].update(
             details = RPCLines[0], state = RPCLines[1],
             start = RPCData["start_time"],
-            large_image = platformData["image"], large_text = None,
+            large_image = platformData["image"], large_text = platformData["image"],
             # small_image = customIconURL, small_text = customIconText,
             # buttons=buttons
         )

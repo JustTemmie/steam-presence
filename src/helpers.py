@@ -81,7 +81,14 @@ def getConfigFile():
             }
         },
         
-        "LARGE_IMAGE_SOURCES": ["file_cache", "steam_grid_db", "steam_store_page"],
+        "LARGE_IMAGE_SOURCES": [
+            "file_cache",
+            "discord_cdn",
+            "steam_grid_db_game_name",
+            "steam_grid_db_steam_id",
+            "steam_cdn",
+            "steam_store_page"
+        ],
         
         
         "RPC_LINES": [
@@ -138,3 +145,13 @@ def removeChars(inputString: str, ignoredChars: str) -> str:
                     inputString = inputString[:j] + inputString[j+1:]
 
     return inputString
+
+def ensure_lowercase_dictionary_keys(input_dict: dict[str, any]) -> dict[str, any]:
+    """
+        a function that ensures that every key in the icons dict is lowercase
+        this is done to reduce confusion by manually entered entries
+    """
+    new_dict = {}
+    for key, value in input_dict.items():
+        new_dict[key.casefold()] = value
+    return new_dict

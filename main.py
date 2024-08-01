@@ -48,7 +48,7 @@ def main():
     print("----------------------------------------------------------")
     
     while True:
-        current_game = CORE.get_current_game(steamUserID)
+        current_game = CORE.get_current_games(steamUserID)
 
         for platform in current_game:
             discord_app_id = discord.get_game_ID(current_game[platform]["gameName"])

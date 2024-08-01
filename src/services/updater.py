@@ -65,7 +65,7 @@ def verifyProjectVersion():
         
     elif metaFile["structure-version"] == "2":
         print("----------------------------------------------------------")
-        log("progam's current folder structure version is up to date...")
+        log("program's current folder structure version is up to date...")
         print("----------------------------------------------------------")
     else:
         error("invalid structure-version found in meta.json, exiting")

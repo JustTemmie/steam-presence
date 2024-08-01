@@ -1,0 +1,2 @@
+detect device name with steam private link data / game_device_name
+potentially switch out "a game on steam" with "a game on steam deck"?

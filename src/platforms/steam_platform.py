@@ -7,7 +7,10 @@ import vdf
 import re
 
 from steam.client import SteamClient
+from steam.guard import SteamAuthenticator
+from steam.enums.emsg import EMsg
 from steam import webapi
+
 
 # for development purposes
 if __name__ == "__main__":
@@ -22,19 +25,20 @@ anonymous_client.anonymous_login()
 class SteamPlatform():
     def __init__(self, APIKey):
         self.APIKey = APIKey
+        self.current_game_ID = 0
 
     @steam_presence.time_cache(180)
     def get_game_achievement_progress(self, userID, gameID):
-        r = webapi.get("ISteamUserStats", "GetPlayerAchievements",  params={
-            "appid": gameID,
-            "key": self.APIKey,
-            "steamid": userID
-        })
-        
-        unlocked_achievements = 0
-        total_achievements = 0
-
         try:
+            r = webapi.get("ISteamUserStats", "GetPlayerAchievements",  params={
+                "appid": gameID,
+                "key": self.APIKey,
+                "steamid": userID
+            })
+            
+            unlocked_achievements = 0
+            total_achievements = 0
+
             for i in r["playerstats"]["achievements"]:
                 total_achievements += 1
                 if i["achieved"]:
@@ -49,14 +53,13 @@ class SteamPlatform():
     
     @steam_presence.time_cache(3600)
     def get_game_review_rating(self, gameID) -> str | None:
-        # get the review data for the steam game
-        r = webapi.webapi_request(f"https://store.steampowered.com/appreviews/{gameID}?json=1")
-        
-        if r["success"] != 1:
-            self.get_game_review_rating(gameID)
-            return
-        
         try:
+            r = webapi.webapi_request(f"https://store.steampowered.com/appreviews/{gameID}?json=1")
+            
+            if r["success"] != 1:
+                self.get_game_review_rating(gameID)
+                return
+        
             response = r["query_summary"]
             
             # if there aren't any reviews, just return early
@@ -118,13 +121,21 @@ class SteamPlatform():
         
         return rpc_status_string
 
-    @steam_presence.time_cache(7200)
+    @steam_presence.time_cache(86400)
+    def get_image_url_from_steam_CDN(self, gameID) -> str | None:
+        try:
+            return f"https://cdn.cloudflare.steamstatic.com/steam/apps/{gameID}/hero_capsule.jpg?t={round(time.time())}"
+        except Exception as e:
+            steam_presence.error(f"get_image_url_from_steam_CDN throwed error {e}")
+            
+    
+    
+    @steam_presence.time_cache(86400)
     # do note this is NOT saved to disk, just in case someone ever adds an entry to the SGDB later on
     def get_image_url_from_store_page(self, gameID) -> str | None:
-        steam_presence.log("getting icon from the steam store")
-        r = webapi.webapi_request(f"https://store.steampowered.com/api/appdetails?appids={gameID}")
-        
         try:
+            r = webapi.webapi_request(f"https://store.steampowered.com/api/appdetails?appids={gameID}")
+        
             steam_presence.log(f"successfully fetched image from steam")
             return r[str(gameID)]["data"]["header_image"]
         except KeyError:
@@ -136,20 +147,35 @@ class SteamPlatform():
     def get_current_game_ID(self, userID) -> int:
         try:
             link_details = self.get_private_player_link_details(userID)
-            return int(link_details["game_id"])
+            if link_details == False:
+                return self.current_game_ID
+            
+            self.current_game_ID = int(link_details["game_id"])
+            return self.current_game_ID
+        
         except KeyError:
             steam_presence.debug(f"user {userID} does not seem to be playing anything")
         except Exception as e:
             steam_presence.error(f"get_current_game_ID throwed error {e}")
         
         return 0
-
-    @steam_presence.time_cache(7200)
+    
+    @steam_presence.time_cache(3600)
     def get_game_name(self, gameID) -> str | None:
+        if gameID > 100000000:
+            steam_presence.debug(f"tried fetching name for ID {gameID}, this seems to be a custom game")
+            return
         try:
-            
-            product_info = self.get_product_info(gameID)
-            return product_info["apps"][gameID]["common"]["name"]
+            steamApps = webapi.get("ISteamApps", "GetAppList", version=2)
+            if steamApps:
+                result = [d for d in steamApps["applist"]["apps"] if d.get("appid") == gameID]
+                if result:
+                    return result[0]["name"]
+                else:
+                    return None                
+            else:
+                return None
+        
         except KeyError:
             steam_presence.debug(f"couldn't fetch name for {gameID}")
         except Exception as e:
@@ -197,9 +223,9 @@ class SteamPlatform():
     
     
     def get_game_price(self, gameID, countryCode = "us") -> str | None:
-        r = webapi.webapi_request(f"https://store.steampowered.com/api/appdetails?appids={gameID}&cc={countryCode}")
-        
         try:
+            r = webapi.webapi_request(f"https://store.steampowered.com/api/appdetails?appids={gameID}&cc={countryCode}")
+        
             return r[str(gameID)]["data"]["price_overview"]["final_formatted"]
         except KeyError:
             steam_presence.debug(f"couldn't find a price for {gameID} using the country code: {countryCode}")
@@ -210,6 +236,8 @@ class SteamPlatform():
         language = "english"
         
         product_info = self.get_product_info(gameID)
+        if not product_info:
+            return
         try:
             return product_info["apps"][gameID]["localization"]["richpresence"][language]["tokens"]
         except KeyError:
@@ -224,8 +252,19 @@ class SteamPlatform():
             return vdf.loads(rpc_string)["rp"]
 
     @steam_presence.time_cache(3600)
-    def get_product_info(self, gameID):
-        return anonymous_client.get_product_info(apps=[gameID])
+    def get_product_info(self, gameID) -> dict[str, dict] | bool:
+        try:
+            product_info = anonymous_client.get_product_info(apps=[gameID])
+            if product_info:
+                return product_info
+        except TimeoutError as e:
+            pass
+        except Exception as e:
+            steam_presence.error(f"whilst calling `get_product_info`:\n{e}")
+        except:
+            steam_presence.error("timed out :pensive:")
+        
+        return False
     
     @steam_presence.time_cache(15)
     def get_player_link_details(self, userID):
@@ -236,7 +275,7 @@ class SteamPlatform():
         })
         
     
-    def get_private_player_link_details(self, userID):
+    def get_private_player_link_details(self, userID) -> dict[str, any]:
         """
             should return something like this
             ```
@@ -255,9 +294,12 @@ class SteamPlatform():
             }
             ```
         """
+        
         player_link_details = self.get_player_link_details(userID)
         return player_link_details["response"]["accounts"][0]["private_data"]
 
+
+        
 if __name__ == "__main__":
     config = steam_presence.getConfigFile()
     steam_API_key = config["SERVICES"]["STEAM"]["API_KEY"]
@@ -271,21 +313,11 @@ if __name__ == "__main__":
         print("user is not playing anything, exiting")
         exit()
 
-    print(steamPlatform.get_game_achievement_progress(steam_user_ID, current_game_ID))
+    # print(steamPlatform.get_game_achievement_progress(steam_user_ID, current_game_ID))
     current_game_info = steamPlatform.get_product_info(current_game_ID)
     
     current_game_rpc_tokens = steamPlatform.get_game_RPC_tokens(current_game_ID)
+    print(current_game_ID)
+    # print(logged_in_client.get_user(steam_user_ID).get_ps("game_name")) # this adds support for non-steam games, but requires a logged in account
+    print(steamPlatform.get_game_name(current_game_ID))
     
-    with open("development/current_game_info.json", "w") as f:
-        json.dump(current_game_info, f)
-    
-    with open("development/current_game_rpc_localization_keys_info.json", "w") as f:
-        json.dump(current_game_rpc_tokens, f)
-
-    # print(current_game_rpc_tokens)
-    # print(rich_presence_info)
-
-    print(steamPlatform.get_current_rich_presence(steam_user_ID, current_game_ID))
-    print(steamPlatform.get_game_review_rating(current_game_ID))
-    print(steamPlatform.get_game_playtime(steam_user_ID, current_game_ID))
-    print(steamPlatform.get_game_price(current_game_ID))
