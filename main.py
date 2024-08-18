@@ -954,6 +954,10 @@ def checkForUpdate():
             print(f"if you wish to upload from `{currentVersion}` to `{newestVersion}` simply run `git pull` from the terminal/cmd in the same folder as main.py")
             print(f"commits made in this time frame: https://github.com/JustTemmie/steam-presence/compare/{currentVersion}...{newestVersion}")
             print("----------------------------------------------------------")
+            # untested, but it should work
+            if int(parsableNewestVersion[0]) == 2:
+                print("DO NOTE, UPDATING TO VERSION 2 OF STEAM PRESENCE WILL REQUIRE YOU TO COMPLETELY REDO YOUR CONFIG FILE
+                print("----------------------------------------------------------")
             return
         # if the current version is newer than the "newest one", just return to make sure it doesn't falsly report anything
         # this shouldn't ever come up for most people - but it's probably a good idea to include this if statement; just in case 
