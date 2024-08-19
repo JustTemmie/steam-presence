@@ -41,7 +41,7 @@ class SGDB():
         r = self.sgdb_request(f"search/autocomplete/{gameName}")
         
         if r.status_code != 200:
-            return
+            raise Exception('')
         
         return r.json()["data"][0]["id"]
     
@@ -50,7 +50,7 @@ class SGDB():
         r = self.sgdb_request(f"icons/game/{gridAppID}")
         
         if r.status_code != 200:
-            return
+            raise Exception('')
         
         icons = r.json()["data"]
         

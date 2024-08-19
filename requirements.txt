@@ -1,6 +1,7 @@
-pypresence
-beautifulsoup4
-requests
-psutil
-steam[client]
-pillow
+pypresence      # handles RPC connections with python
+beautifulsoup4  # parses HTML data
+requests        # makes web requests
+psutil          # fetches local process for local game support
+steam[client]   # fetches data only available to steam clients
+pillow          # checks image resolutions to ensure a minimum quality
+plyer           # sends system notifications to inform about new releases if the user has enabled it

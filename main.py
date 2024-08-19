@@ -25,30 +25,36 @@ discord_RPC_ports = [i for i in range(6463, 6473)]
 
 def main():
     # this always has to match the newest release tag
-    currentVersion = "v1.12.1"
+    current_version = "v2.0 dev build"
     
     # check if there's any updates for the program
-    updater.checkForUpdate(currentVersion)
+    updater.checkForUpdate(current_version)
     # does various things, such as verifying that certain files are in certain locations
     updater.verifyProjectVersion()
     
-    log("loading config file")
+    print("-" * 50)
+    print("loading config file")
     config = getConfigFile()
-    steamUserID = config["SERVICES"]["STEAM"]["USER_ID"]
+    
+    steamUserIDs = config["SERVICES"]["STEAM"]["USER_IDS"]
+    if isinstance(steamUserIDs, str):
+        steamUserIDs = [steamUserIDs]
+    
     APIKeys = {
         "steam": config["SERVICES"]["STEAM"]["API_KEY"],
         "sgdb": config["SERVICES"]["STEAM_GRID_DB"]["API_KEY"]
     }
     
-    RPC =  discord_RPC.RPC()
+    RPC =  discord_RPC.RPC(current_version)
     CORE = core.Core(APIKeys)
 
     # everything ready! 
-    log("everything is ready!")
-    print("----------------------------------------------------------")
+    print("-" * 50)
+    print("everything is ready!")
     
     while True:
-        current_game = CORE.get_current_games(steamUserID)
+        print("-" * 50)
+        current_game = CORE.get_current_games(steamUserIDs)
 
         for platform in current_game:
             discord_app_id = discord.get_game_ID(current_game[platform]["gameName"])

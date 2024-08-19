@@ -13,9 +13,9 @@ project_root = os.path.abspath(os.path.dirname(sys.argv[0]))
 
 
 class RPC():
-    def __init__(self):
+    def __init__(self, current_version):        
         self.RPCs = {}
-        self.platformSpecific = Platform_Specific()
+        self.platformSpecific = Platform_Specific(current_version)
     
     def get_discord_ID_for_platform(self, platform):
         config = getConfigFile()
@@ -31,7 +31,7 @@ class RPC():
             and self.RPCs[platform]["app_ID"] == appID:
                 return
 
-        log("creating RPC")
+        log(f"creating RPC for {platform}")
         
         if appID == 0:
             presence = Presence(client_id=self.get_discord_ID_for_platform(platform))
@@ -52,6 +52,7 @@ class RPC():
     def update_presence_details(self, gameInfo): 
         try:
             for platform in copy.copy(self.RPCs):
+                print(f"updating RPC presence details for {platform}")
                 if platform in gameInfo:
                     RPCData = self.RPCs[platform]
                     platformData = gameInfo[platform]
@@ -71,7 +72,10 @@ class RPC():
 
 
 class Platform_Specific():
-    def steam(self, RPCData, platformData):
+    def __init__(self, current_version):
+        self.current_version = current_version
+    
+    def steam(self, RPCData: Presence, platformData: dict):
         lines = []
         config = getConfigFile()
         
@@ -100,10 +104,19 @@ class Platform_Specific():
         
         print(RPCLines)
         
+        # advertise the steam page if desired
+        buttons = []
+        if config["SERVICES"]["STEAM"]["STORE_BUTTON"]:
+            if platformData["price"] and platformData["gameID"]:
+                buttons.append({
+                    "label": f'Get it for {platformData["price"]} on Steam',
+                    "url": f'https://store.steampowered.com/app/{platformData["gameID"]}'
+                })
+        
         RPCData["presence"].update(
             details = RPCLines[0], state = RPCLines[1],
             start = RPCData["start_time"],
-            large_image = platformData["image"], large_text = platformData["image"],
+            large_image = platformData["image"], large_text = f"steam-presence {self.current_version}",
             # small_image = customIconURL, small_text = customIconText,
-            # buttons=buttons
+            buttons=buttons
         )

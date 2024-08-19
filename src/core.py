@@ -28,18 +28,20 @@ class Core():
         self.steam =  steam_service.SteamPlatform(APIKeys["steam"])
         self.SGDB =  sgdb_service.SGDB(APIKeys["sgdb"])
 
-    def get_current_games(self, SteamUserID: int):
+    def get_current_games(self, SteamUserIDs: list[int]):
         results = {}
         
         config = steam_presence.getConfigFile()
         
-        steamGameID = self.steam.get_current_game_ID(SteamUserID)
-        steam_presence.debug(f"currently playing game: {steamGameID}")
-        if steamGameID:
-            steamResponse = self.get_steam_game_info(config, SteamUserID, steamGameID)
-            print(f"gameinfo: {steamResponse}")
-            if steamResponse:
-                results["steam"] = steamResponse
+        for SteamUserID in SteamUserIDs:
+            steamGameID = self.steam.get_current_game_ID(SteamUserID)
+            steam_presence.debug(f"currently playing game: {steamGameID}")
+            if steamGameID:
+                steamResponse = self.get_steam_game_info(config, SteamUserID, steamGameID)
+                print(f"gameinfo: {steamResponse}")
+                if steamResponse:
+                    results["steam"] = steamResponse
+                    break
 
         return results
 
