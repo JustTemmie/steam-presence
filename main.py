@@ -956,7 +956,7 @@ def checkForUpdate():
             print("----------------------------------------------------------")
             # untested, but it should work
             if int(parsableNewestVersion[0]) == 2:
-                print("DO NOTE, UPDATING TO VERSION 2 OF STEAM PRESENCE WILL REQUIRE YOU TO COMPLETELY REDO YOUR CONFIG FILE
+                print("DO NOTE, UPDATING TO VERSION 2 OF STEAM PRESENCE WILL REQUIRE YOU TO COMPLETELY REDO YOUR CONFIG FILE")
                 print("----------------------------------------------------------")
             return
         # if the current version is newer than the "newest one", just return to make sure it doesn't falsly report anything
