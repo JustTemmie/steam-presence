@@ -402,9 +402,9 @@ then run `python3 main.py`
 
 Steam presence supports automatic startup on Windows, MacOS, and Linux. 
 
-to install steam presence on windows, simply run the `installer.bat` file
+to install steam presence on windows, simply run the `installer.bat` file 
 
-to install steam presence, simply run the `installer.sh` file
+to install steam presence, on linux or mac OS simply run the `installer.sh` file
 
 to do this, open konsole or another terminal and run this command:
 
