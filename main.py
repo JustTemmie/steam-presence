@@ -620,14 +620,21 @@ def getSteamRichPresence():
 def getGameDiscordID(loops=0):
     log(f"fetching the Discord game ID for {gameName}")
     r = makeWebRequest("https://discordapp.com/api/v8/applications/detectable")
-    if r == "error":
-        return
-
     
     if r.status_code != 200:
         error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
+
+    response = []
+    if r == "error":)
+        if loops > 3: 
+            error("failed to fetch the list of discord's game IDs")
+            
+        else:
+            getGameDiscordID(loops + 1)
+            return
     
-    response = r.json()
+    else:
+        response = r.json()
     
     ignoredChars = "®©™℠"
     
@@ -636,6 +643,8 @@ def getGameDiscordID(loops=0):
         with open(f"{dirname(abspath(__file__))}/data/customGameIDs.json", "r") as f:
             # load the values of the file
             gameIDsFile = json.load(f)
+
+            log(f"loaded {len(gameIDsFile)} custom discord game IDs from disk")
             
             # add the values from the file directly to the list returned by discord
             for i in gameIDsFile:
