@@ -625,7 +625,7 @@ def getGameDiscordID(loops=0):
         error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
 
     response = []
-    if r == "error":)
+    if r == "error":
         if loops > 3: 
             error("failed to fetch the list of discord's game IDs")
             
