@@ -1,5 +1,8 @@
-python-steamgriddb
+# python-steamgriddb
 pypresence
 beautifulsoup4
 requests
-psutil
+# psutil
+steam[client]
+
+browser-cookie3

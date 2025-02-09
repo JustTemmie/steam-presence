@@ -1,0 +1,44 @@
+{
+    "discord": {  
+        "default_app_id": "1062648118375616594",
+        "rpc_lines": [
+            "{rich_presence}",
+            "{playtime} Hours | {achievement_count} Achievements",
+            "{review_score_percentage} positive reviews"
+        ],
+        "large_image_source": [
+            "file_cache",
+            "steam_grid_db",
+            "steam_store_page"
+        ],
+        "buttons": [
+            {
+                "name": "dynamic",
+                "url": "dynamic"
+            }
+        ]
+    },
+    "steam": {
+        "enabled": false,
+        "api_key": "",
+        "user_id": [],
+        "fallback_discord_app_id": "869994714093465680",
+        "web_scrape": false,
+        "auto_fetch_cookies": false,
+        "cookie_browser": "auto",
+        "blacklist": [
+            "factorio"
+        ]
+    },
+    "steam_grid_db": {
+        "enabled": false,
+        "api_key": ""
+    },
+    "local_games": {
+        "enabled": false,
+        "processes": [
+            "Celeste64",
+            "godot.linuxbsd.editor.x86_64"
+        ]
+    }
+}
