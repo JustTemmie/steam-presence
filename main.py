@@ -1206,8 +1206,8 @@ def main():
             setPresenceDetails()
             print("----------------------------------------------------------")
 
-        # sleep for a 20 seconds for every user we query, to avoid getting banned from the steam API
-        sleep(20 * (userID.count(",") + 1))
+        # sleep for a 30 seconds for every user we query, to avoid getting banned from the steam API
+        sleep(30 * (userID.count(",") + 1))
 
 
 if __name__ == "__main__":
