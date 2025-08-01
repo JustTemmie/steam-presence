@@ -1,4 +1,5 @@
 from src.steam_presence.config import Config
+from src.steam_presence.DataClasses import DiscordDataPayload
 
 import requests
 import json
@@ -7,7 +8,7 @@ from typing import Union
 from dataclasses import dataclass
 
 
-def getAppId(app_name: str, app_exe: str = "") -> int | None:
+def getAppId(app_name: str) -> int | None:
     r = requests.get("https://discordapp.com/api/v8/applications/detectable")
 
     if r.status_code != 200:
@@ -58,4 +59,19 @@ def getAppInfo(app_id: Union[str | int]) -> getAppInfoPayload | None:
         steam_app_id=steam_app_id,
         name=response.get("name")
     )
-    
+
+def fetchData(app_name: str) -> DiscordDataPayload | None:
+    app_id = getAppId(app_name)
+
+    if not app_id:
+        return None
+
+    app_info = getAppInfo(app_id)
+
+    return DiscordDataPayload(
+        app_id,
+
+        app_info.image_url,
+        app_info.steam_app_id,
+        app_info.name,
+    )

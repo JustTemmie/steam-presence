@@ -2,8 +2,18 @@ from dataclasses import dataclass
 
 # ID: "discord"
 @dataclass
-class DiscordFetchPayload:
+class DiscordDataPayload:
+    app_id: int | None = None
+    image_url: str | None = None
+    steam_app_id: str | None = None
+    name: str | None = None
+
+# ID: "steam_grid_db"
+@dataclass
+class SteamGridDBDataPayload:
     pass
+
+
 
 # ID: "epic_games_store"
 @dataclass
@@ -54,8 +64,3 @@ class SteamFetchPayload:
     platform_linux: bool | None = None
     achievement_count: int | None = None
     release_date: str | None = None
-
-# ID: "steam_grid_db"
-@dataclass
-class SteamGridDBFetchPayload:
-    pass

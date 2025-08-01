@@ -1,6 +1,6 @@
 from src.steam_presence.config import Config
 import src.apis.discord as discordAPI
-from src.steam_presence.DataClasses import LocalGameFetchPayload, SteamFetchPayload
+from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload
 
 from time import time
 from pypresence import Presence, ActivityType
@@ -38,13 +38,13 @@ class DiscordRPC:
 
         self.steam_payload: SteamFetchPayload = None
         self.local_payload: LocalGameFetchPayload = None
-        self.discord_payload = None
+        self.discord_payload: DiscordDataPayload = None
         self.steam_grid_db_payload = None
         self.epic_games_store_payload = None
 
     def _get_RPC_data(self) -> dict:
         return {
-            # "discord": self.discord_payload,
+            "discord": self.discord_payload,
             # "epic_games_store": self.epic_games_store_payload,
             "local": self.local_payload,
             # "steam_grid_db": self.steam_grid_db_payload,
@@ -59,6 +59,9 @@ class DiscordRPC:
         
         self.app_name = name
 
+        # this is only inteded to be used by rich presence data
+        self.discord_payload = discordAPI.fetchData(self.app_name)
+
         # figure out the correct app ID
         app_ID = discordAPI.getAppId(name)
         if app_ID:
@@ -70,10 +73,9 @@ class DiscordRPC:
                 app_ID = self.config.discord.fallback_app_id
         
         self.discord_app_id = app_ID
-        self.discord_image_url = discordAPI.getAppInfo(app_ID).image_url
         
         # only connect if discord is enabled
-        # this checks exists to allow development without having discord running
+        # this check exists to allow development without having discord running
         if self.config.discord.enabled:
             self.discord_RPC = Presence(client_id=self.discord_app_id)
             self.discord_RPC.connect()

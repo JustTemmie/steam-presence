@@ -81,5 +81,5 @@ while True:
         logging.info(f"Deleting connection to {ID}")
         RPC_connections.pop(ID)
     
-    logging.info("----- Cycle complete -----")
+    logging.debug("----- Cycle complete -----")
     time.sleep(20)
