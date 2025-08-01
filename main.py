@@ -1,9 +1,10 @@
 import src.steam_presence.logger # just need to initialize it
 
-from src.steam_presence.config import Config, SteamUser
+from src.fetchers.steamgriddb import SteamGridDB
 from src.getters.Local import LocalGetter
 from src.getters.Steam import SteamGetter
 from src.setters.Discord import DiscordRPC
+from src.steam_presence.config import Config, SteamUser
 
 import time
 import logging
@@ -14,6 +15,8 @@ logging.info("Starting setup!")
 
 config = Config()
 config.load()
+
+SGDB = SteamGridDB(config)
 
 localGetter = LocalGetter(config)
 steamGetters: list[SteamGetter] = []
@@ -39,7 +42,7 @@ while True:
     for process in processes:
         RPC_ID = process.process_name
         if not RPC_connections.get(RPC_ID):
-            RPC_connections[RPC_ID] = DiscordRPC(config)
+            RPC_connections[RPC_ID] = DiscordRPC(config, SGDB)
             RPC_connections[RPC_ID].instanciate(
                 process.display_name,
                 config.local_games.discord_fallback_app_id
@@ -56,7 +59,7 @@ while True:
             RPC_ID = steam_game.app_id
 
             if not RPC_connections.get(RPC_ID):
-                RPC_connections[RPC_ID] = DiscordRPC(config)
+                RPC_connections[RPC_ID] = DiscordRPC(config, SGDB)
                 RPC_connections[RPC_ID].instanciate(
                     steam_game.app_name,
                     config.steam.discord_fallback_app_id

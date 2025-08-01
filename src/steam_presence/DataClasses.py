@@ -10,10 +10,8 @@ class DiscordDataPayload:
 
 # ID: "steam_grid_db"
 @dataclass
-class SteamGridDBDataPayload:
-    pass
-
-
+class SteamGridDBFetchPayload:
+    icon: str | None = None
 
 # ID: "epic_games_store"
 @dataclass

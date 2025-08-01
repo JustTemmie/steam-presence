@@ -60,11 +60,11 @@ def getAppInfo(app_id: Union[str | int]) -> getAppInfoPayload | None:
         name=response.get("name")
     )
 
-def fetchData(app_name: str) -> DiscordDataPayload | None:
+def fetchData(app_name: str) -> DiscordDataPayload:
     app_id = getAppId(app_name)
 
     if not app_id:
-        return None
+        return DiscordDataPayload()
 
     app_info = getAppInfo(app_id)
 

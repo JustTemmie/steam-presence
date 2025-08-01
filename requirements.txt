@@ -10,6 +10,3 @@ steam[client]
 
 # local games
 psutil
-
-# steam grid db
-python-steamgriddb

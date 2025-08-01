@@ -1,5 +1,6 @@
-from src.steam_presence.config import Config
 import src.apis.discord as discordAPI
+from src.fetchers.steamgriddb import SteamGridDB
+from src.steam_presence.config import Config
 from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload
 
 from time import time
@@ -9,15 +10,16 @@ import logging
 import string
 
 class DiscordRPC:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, SGDB: SteamGridDB):
         self.config = config
 
-        self.last_update: float = time()
+        self.SGDB = SGDB
 
         self.discord_RPC: Presence = None
         self.discord_app_id: int = 0
         self.app_name: str = ""
         self.app_id_is_name: bool = False
+        self.last_update: float = 0
         self.activity_type: ActivityType = ActivityType.PLAYING
         # all activity types display details and state, in addition to text on image hovers
         # the listening, competing, and streaming activities also displays the large image URL
@@ -47,7 +49,7 @@ class DiscordRPC:
             "discord": self.discord_payload,
             # "epic_games_store": self.epic_games_store_payload,
             "local": self.local_payload,
-            # "steam_grid_db": self.steam_grid_db_payload,
+            "steam_grid_db": self.steam_grid_db_payload,
             "steam": self.steam_payload,
         }
 
@@ -59,7 +61,6 @@ class DiscordRPC:
         
         self.app_name = name
 
-        # this is only inteded to be used by rich presence data
         self.discord_payload = discordAPI.fetchData(self.app_name)
 
         # figure out the correct app ID
@@ -82,7 +83,19 @@ class DiscordRPC:
 
         return True
     
+    def firstUpdate(self) -> None:
+        if self.steam_payload or self.discord_payload.steam_app_id:
+            if self.steam_payload:
+                steam_app_id = self.steam_payload.app_id
+            else:
+                steam_app_id = self.discord_payload.steam_app_id
+            
+            self.steam_grid_db_payload = self.SGDB.fetch(steam_app_id, "steam")
+
     def update(self) -> None:
+        if self.last_update == 0:
+            self.firstUpdate()
+        
         self.last_update = time()
 
         logging.debug("Updating presence")
@@ -102,7 +115,11 @@ class DiscordRPC:
         
         def formatRpcData(line) -> str | None:
             try:
-                return line.format(**self._get_RPC_data())
+                formatted_line = line.format(**self._get_RPC_data())
+                if "None" in formatted_line:
+                    return None
+                
+                return formatted_line
             except:
                 return None
 
@@ -119,7 +136,8 @@ class DiscordRPC:
         for large_image_url, large_image_text in RPC_lines.get("large_images", {}).items():
             image_url = formatRpcData(large_image_url)
             image_text = formatRpcData(large_image_text)
-            if image_url and image_text:
+            # Continue if large_image_text was explicitly set to None
+            if image_url and (image_text or large_image_text == None):
                 self.large_image_url = image_url
                 self.large_image_text = image_text
                 break
@@ -127,7 +145,7 @@ class DiscordRPC:
         for small_image_url, small_image_text in RPC_lines.get("small_images", {}).items():
             image_url = formatRpcData(small_image_url)
             image_text = formatRpcData(small_image_text)
-            if image_url and image_text:
+            if image_url and (image_text or small_image_text == None):
                 self.small_image_url = image_url
                 self.small_image_text = image_text
                 break
@@ -140,11 +158,6 @@ class DiscordRPC:
                 self.discord_RPC.close()
             
             return False
-
-        # self.details = "a"
-        # self.state = "b"
-        # self.small_image_text = "c"
-        # self.large_image_text = "d"
         
         if self.config.discord.enabled:
             self.discord_RPC.update(
