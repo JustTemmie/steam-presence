@@ -104,11 +104,8 @@ class SteamGridDB:
         app_id: Union[str, int],
         platform: SteamGridPlatforms
     ) -> SteamGridDBFetchPayload | None:
-        icon = self.getIconExternalPlatform(app_id, platform)
-        print(f"icon: {icon}")
-        
         return SteamGridDBFetchPayload(
-            icon
+            self.getIconExternalPlatform(app_id, platform)
         )
         
 
