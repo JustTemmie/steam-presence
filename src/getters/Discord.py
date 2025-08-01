@@ -1,0 +1,2 @@
+class DiscordGetter:
+    pass

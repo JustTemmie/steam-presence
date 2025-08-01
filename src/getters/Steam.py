@@ -1,0 +1,225 @@
+from src.steam_presence.config import Config, SteamUser
+from src.steam_presence.DataClasses import SteamFetchPayload
+
+import steam
+import requests
+import logging
+
+from steam.webapi import WebAPI
+from steam.client import SteamClient
+from dataclasses import dataclass
+from bs4 import BeautifulSoup
+from typing import Union
+
+
+@dataclass
+class getCurrentStateResponse:
+    app_name: str
+    app_id: int
+    avatar_url: str | None = None
+    display_name: str | None = None
+    profile_url: str | None = None
+
+@dataclass
+class fetchMiniProfileDataResponse:
+    rich_presence: str | None = None
+    background_url: str | None = None
+    profile_level: str | None = None
+    profile_badge_url: str | None = None
+    profile_badge_name: str | None = None
+
+@dataclass
+class fetchAppDetailsResponse:
+    required_age: int | None = None
+    header_image: str | None = None
+    capsule_image: str | None = None
+    website: str | None = None
+    developers: str | None = None
+    publishers: str | None = None
+    price_currency: str | None = None
+    price_initial: int | None = None
+    price_current: int | None = None
+    price_discount_percent: int | None = None
+    price_formatted: str | None = None
+    platform_windows: bool | None = None
+    platform_mac: bool | None = None
+    platform_linux: bool | None = None
+    achievement_count: int | None = None
+    release_date: str | None = None
+
+class MySteamAPI:
+    def __init__(self, config: Config, user: SteamUser):
+        self.config = config
+        self.user = user
+        
+        self.api_key = user.api_key
+        self.api = WebAPI(key=user.api_key)
+
+    def getCurrentState(self) -> getCurrentStateResponse | None:
+        player_summaries = self.api.call("ISteamUser.GetPlayerSummaries", steamids = self.user.user_id)
+
+        if not player_summaries: return None
+        players = player_summaries.get("response", {}).get("players", [])
+        if len(players) == 0: return None
+
+        player_summary = players[0]
+        if not player_summary.get("gameid"): return None
+
+        return getCurrentStateResponse(
+            app_name=player_summary.get("gameextrainfo"),
+            app_id=player_summary.get("gameid"),
+            avatar_url=player_summary.get("avatarfull"),
+            display_name=player_summary.get("personaname"),
+            profile_url=player_summary.get("profileurl")
+        )
+    
+    # returns html data or None
+    def fetchMiniProfileData(self) -> fetchMiniProfileDataResponse | None:
+        # convert steam ID 64 to steam ID 3, yes, really
+        URL = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
+        r = requests.get(URL)
+
+        if r.status_code != 200:
+            logging.error(f"failed to fetch mini profile, status code {r.status_code} met")
+            return None
+
+        mini_profile = r.content
+
+        soup = BeautifulSoup(mini_profile, "html.parser")
+        
+        rich_presence_span = soup.find("span", class_="rich_presence")
+        rich_presence = rich_presence_span.text.strip() if rich_presence_span else None
+
+        profile_level_span = soup.find("span", class_="friendPlayerLevelNum")
+        profile_level = profile_level_span.text.strip() if profile_level_span else None
+
+        profile_badge_url = soup.find("img", class_="badge_icon").get("src")
+
+        video = soup.find('video', class_='miniprofile_nameplate')
+        background_source = video.find('source', type='video/webm')
+        background_url = background_source.get("src")
+
+        badge_container = soup.find('div', class_='miniprofile_featuredcontainer')
+        badge_name = badge_container.find('div', class_='name').text.strip() if badge_container else None
+        
+        return fetchMiniProfileDataResponse(
+            rich_presence = rich_presence,
+            background_url = background_url,
+            profile_level = profile_level,
+            profile_badge_url = profile_badge_url,
+            profile_badge_name = badge_name,
+        )
+    
+    def fetchAppDetails(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse | None:
+        URL = f"https://store.steampowered.com/api/appdetails?appids={app_ID}&cc={currency}"
+        r = requests.get(URL)
+
+        if r.status_code != 200:
+            logging.error(f"failed to fetch app details for {app_ID}, status code {r.status_code} met")
+            return None
+
+        data = r.json()
+        if data:
+            data = data.get(f"{app_ID}", {}).get("data", {})
+
+        required_age: int = data.get("required_age")
+        header_image: str = data.get("header_image")
+        capsule_image: str = data.get("capsule_image")
+        website: str = data.get("website")
+        developers: str = ", ".join(data.get("developers"))
+        publishers: str = ", ".join(data.get("publishers"))
+
+        price_currency: str = data.get("price_overview", {}).get("currency")
+        # do note a price of $4.99 would have an initial price of 499
+        price_initial: int = data.get("price_overview", {}).get("initial")
+        price_current: int = data.get("price_overview", {}).get("final")
+        price_discount_percent: int = data.get("price_overview", {}).get("discount_percent")
+        price_formatted: str = data.get("price_overview", {}).get("final_formatted")
+
+        platform_windows: bool = data.get("platforms", {}).get("windows")
+        platform_mac: bool = data.get("platforms", {}).get("mac")
+        platform_linux: bool = data.get("platforms", {}).get("linux")
+
+        achievement_count: int = data.get("achievements", {}).get("total")
+        release_date: str = data.get("release_date", {}).get("date")
+
+        return fetchAppDetailsResponse(
+            required_age,
+            header_image,
+            capsule_image,
+            website,
+            developers,
+            publishers,
+            price_currency,
+            price_initial,
+            price_current,
+            price_discount_percent,
+            price_formatted,
+            platform_windows,
+            platform_mac,
+            platform_linux,
+            achievement_count,
+            release_date,
+        )
+        
+
+
+
+class MySteamClient:
+    def __init__(self, config: Config, user: SteamUser):
+        self.config = config
+        self.user = user
+        
+        self.client = SteamClient()
+        self.client.anonymous_login()
+
+class SteamGetter:
+    def __init__(self, config: Config, user: SteamUser):
+        self.config = config
+        self.user = user
+
+        self.api = MySteamAPI(config, user)
+        self.client = MySteamClient(config, user)
+    
+    def fetch(self) -> SteamFetchPayload | None:
+
+        current_game_info: getCurrentStateResponse | None = self.api.getCurrentState()
+
+        if not current_game_info: return None
+
+        current_app_ID = current_game_info.app_id
+
+        mini_profile_data: fetchMiniProfileDataResponse = self.api.fetchMiniProfileData()
+        app_details_data: fetchMiniProfileDataResponse = self.api.fetchAppDetails(current_app_ID)
+
+        # surely there's a better way to pass this much data
+        return SteamFetchPayload(
+            app_name = current_game_info.app_name,
+            app_id = current_game_info.app_id,
+            avatar_url = current_game_info.avatar_url,
+            display_name = current_game_info.display_name,
+            profile_url = current_game_info.profile_url,
+
+            rich_presence = mini_profile_data.rich_presence,
+            mini_profile_background_url = mini_profile_data.background_url,
+            profile_level = mini_profile_data.profile_level,
+            profile_badge_url = mini_profile_data.profile_badge_url,
+            profile_badge_name = mini_profile_data.profile_badge_name,
+
+            required_age = app_details_data.required_age,
+            header_image = app_details_data.header_image,
+            capsule_image = app_details_data.capsule_image,
+            website = app_details_data.website,
+            developers = app_details_data.developers,
+            publishers = app_details_data.publishers,
+            price_currency = app_details_data.price_currency,
+            price_initial = app_details_data.price_initial,
+            price_current = app_details_data.price_current,
+            price_discount_percent = app_details_data.price_discount_percent,
+            price_formatted = app_details_data.price_formatted,
+            platform_windows = app_details_data.platform_windows,
+            platform_mac = app_details_data.platform_mac,
+            platform_linux = app_details_data.platform_linux,
+            achievement_count = app_details_data.achievement_count,
+            release_date = app_details_data.release_date,
+        )

@@ -1,5 +1,15 @@
-python-steamgriddb
-pypresence
 beautifulsoup4
 requests
+
+# discord, we're using the git version due to the last release being from 2023
+git+https://github.com/qwertyquerty/pypresence
+
+# steam
+steam[client]
+# browser-cookie3 # fetching browser cookies
+
+# local games
 psutil
+
+# steam grid db
+python-steamgriddb
