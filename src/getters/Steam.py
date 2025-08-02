@@ -47,6 +47,14 @@ class fetchAppDetailsResponse:
     achievement_count: int | None = None
     release_date: str | None = None
 
+@dataclass
+class fetchAppReviewsResponse:
+    total_positive_reviews: int | None = None
+    total_negative_reviews: int | None = None
+    total_reviews: int | None = None
+    review_percent: int | None = None
+    review_description: str | None = None
+
 class MySteamAPI:
     def __init__(self, config: Config, user: SteamUser):
         self.config = config
@@ -74,14 +82,14 @@ class MySteamAPI:
         )
     
     # returns html data or None
-    def fetchMiniProfileData(self) -> fetchMiniProfileDataResponse | None:
+    def fetchMiniProfileData(self) -> fetchMiniProfileDataResponse:
         # convert steam ID 64 to steam ID 3, yes, really
         URL = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
         r = requests.get(URL)
 
         if r.status_code != 200:
             logging.error(f"failed to fetch mini profile, status code {r.status_code} met")
-            return None
+            return fetchMiniProfileDataResponse()
 
         mini_profile = r.content
 
@@ -110,17 +118,19 @@ class MySteamAPI:
             profile_badge_name = badge_name,
         )
     
-    def fetchAppDetails(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse | None:
-        URL = f"https://store.steampowered.com/api/appdetails?appids={app_ID}&cc={currency}"
+    def fetchAppDetails(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
+        URL = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
         r = requests.get(URL)
 
         if r.status_code != 200:
             logging.error(f"failed to fetch app details for {app_ID}, status code {r.status_code} met")
-            return None
+            return fetchAppDetailsResponse()
 
         data = r.json()
-        if data:
-            data = data.get(f"{app_ID}", {}).get("data", {})
+        if not data:
+            return fetchAppDetailsResponse()
+
+        data = data.get(f"{app_ID}", {}).get("data", {})
 
         required_age: int = data.get("required_age")
         header_image: str = data.get("header_image")
@@ -161,8 +171,38 @@ class MySteamAPI:
             achievement_count,
             release_date,
         )
-        
+    
+    def fetchAppReviews(self, app_ID: Union[str, int]) -> fetchAppReviewsResponse:
+        URL = f"https://store.steampowered.com/appreviews/{app_ID}?json=1"
 
+        r = requests.get(URL)
+
+        if r.status_code != 200:
+            logging.error(f"failed to fetch app details for {app_ID}, status code {r.status_code} met")
+            return fetchAppReviewsResponse()
+
+        data = r.json()
+        if not data:
+            return fetchAppReviewsResponse()
+
+        data = data.get("query_summary", {})
+
+        total_positive_reviews = data.get("total_positive", None)
+        total_negative_reviews = data.get("total_negative", None)
+        total_reviews = data.get("total_reviews", None)
+        review_percent = None
+        review_description = data.get("review_score_desc", None)
+
+        if total_reviews and total_positive_reviews:
+            review_percent = round((total_positive_reviews / total_reviews) * 100)
+        
+        return fetchAppReviewsResponse(
+            total_positive_reviews,
+            total_negative_reviews,
+            total_reviews,
+            review_percent,
+            review_description,
+        )
 
 
 class MySteamClient:
@@ -193,6 +233,7 @@ class SteamGetter:
 
         mini_profile_data: fetchMiniProfileDataResponse = self.api.fetchMiniProfileData()
         app_details_data: fetchMiniProfileDataResponse = self.api.fetchAppDetails(current_app_ID)
+        app_reviews: fetchAppReviewsResponse = self.api.fetchAppReviews(current_app_ID)
 
         # surely there's a better way to pass this much data
         return SteamFetchPayload(
@@ -224,4 +265,10 @@ class SteamGetter:
             platform_linux = app_details_data.platform_linux,
             achievement_count = app_details_data.achievement_count,
             release_date = app_details_data.release_date,
+
+            total_positive_reviews = app_reviews.total_positive_reviews,
+            total_negative_reviews = app_reviews.total_negative_reviews,
+            total_reviews = app_reviews.total_reviews,
+            review_percent = app_reviews.review_percent,
+            review_description = app_reviews.review_description,
         )

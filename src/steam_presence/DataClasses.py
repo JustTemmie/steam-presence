@@ -62,3 +62,11 @@ class SteamFetchPayload:
     platform_linux: bool | None = None
     achievement_count: int | None = None
     release_date: str | None = None
+
+    # Review Data
+    # example: https://store.steampowered.com/appreviews/218620
+    total_positive_reviews: int | None = None
+    total_negative_reviews: int | None = None
+    total_reviews: int | None = None
+    review_percent: int | None = None
+    review_description: str | None = None

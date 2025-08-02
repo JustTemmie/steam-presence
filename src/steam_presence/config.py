@@ -66,7 +66,7 @@ class ConfigDiscord(GenericConfig):
         self.playing: DiscordData = {
             "status_lines": [
                 "{steam.rich_presence}",
-                "{steam.review_score}% positive reviews"
+                "{steam.review_description} reviews ({steam.review_percent}%)"
             ],
             "small_images": {
                 "{steam.profile_badge_url}": "{steam.profile_badge_name}"

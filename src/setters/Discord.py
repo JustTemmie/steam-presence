@@ -162,7 +162,6 @@ class DiscordRPC:
 
     
     def refresh(self) -> bool:
-        print("refresh!!")
         # close the connection if it's been more than a minute since the last update
         if self.last_update + self.config.app.timeout < time():
             if self.config.discord.enabled:

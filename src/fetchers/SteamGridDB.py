@@ -49,6 +49,7 @@ class SteamGridDB:
         self,
         app_name: str
     ) -> int | None:
+        # i love undocumented endpoints
         r = self._ApiFetch(f"search/autocomplete/{app_name}")
 
         if r and len(r) >= 1:
