@@ -16,54 +16,64 @@ logging.info("Starting setup!")
 config = Config()
 config.load()
 
-SGDB = SteamGridDB(config)
-
-localGetter = LocalGetter(config)
-steamGetters: list[SteamGetter] = []
-
 logging.info("Generating getters...")
 
-for user in config.steam.users:
-    # convert user dict into dataclass
-    user = SteamUser(**user)
-    steamGetters.append(SteamGetter(config, user))
+SgdbFetcher = None
+localGetter = None
+steamGetters: list[SteamGetter] = []
 
 # key is just a generic identifier such as process ID or steam ID
 RPC_connections: dict[Union[int, str], DiscordRPC] = {}
 
+if config.steam_grid_db.enabled:
+    SgdbFetcher = SteamGridDB(config)
+
+if config.local_games.enabled:
+    localGetter = LocalGetter(config)
+
+if config.steam.enabled:
+    for user in config.steam.users:
+        # convert user dict into dataclass
+        user = SteamUser(**user)
+        steamGetters.append(SteamGetter(config, user))
+
 logging.info("Setup complete!")
 
 while True:
-    logging.debug("Fetching data from getters...")
-    steam_games = [getter.fetch() for getter in steamGetters]
-    processes = localGetter.fetch()
-    logging.debug("Fetching complete, starting processing")
+    if localGetter:
+        processes = localGetter.fetch()
 
-    for process in processes:
-        RPC_ID = process.process_name
-        if not RPC_connections.get(RPC_ID):
-            RPC_connections[RPC_ID] = DiscordRPC(config, SGDB)
-            RPC_connections[RPC_ID].instanciate(
-                process.display_name,
-                config.local_games.discord_fallback_app_id
-            )
-            
-        game = RPC_connections[RPC_ID]
+        for process in processes:
+            RPC_ID = process.process_name
+            if not RPC_connections.get(RPC_ID):
+                if process.display_name:
+                    RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
+                    RPC_connections[RPC_ID].instanciate(
+                        process.display_name,
+                        config.local_games.discord_fallback_app_id
+                    )
+                else:
+                    break
+                
+            game = RPC_connections[RPC_ID]
 
-        game.local_payload = process
+            game.local_payload = process
 
-        game.update()
+            game.update()
 
-    for steam_game in steam_games:
+    for steam_game in [getter.fetch() for getter in steamGetters]:
         if steam_game:
             RPC_ID = steam_game.app_id
 
             if not RPC_connections.get(RPC_ID):
-                RPC_connections[RPC_ID] = DiscordRPC(config, SGDB)
-                RPC_connections[RPC_ID].instanciate(
-                    steam_game.app_name,
-                    config.steam.discord_fallback_app_id
-                )
+                if steam_game.app_name:
+                    RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
+                    RPC_connections[RPC_ID].instanciate(
+                        steam_game.app_name,
+                        config.steam.discord_fallback_app_id
+                    )
+                else:
+                    break
             
             game = RPC_connections[RPC_ID]
 
@@ -76,7 +86,7 @@ while True:
 
     expired_IDs: list[Union[int, str]] = []
     for ID, connection in RPC_connections.items():
-        logging.info(f"Refreshing connection for {ID}")
+        logging.debug(f"Refreshing connection for {ID}")
         if not connection.refresh():
             expired_IDs.append(ID)
 

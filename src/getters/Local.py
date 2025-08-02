@@ -1,10 +1,11 @@
 from src.steam_presence.config import Config
 from src.steam_presence.DataClasses import LocalGameFetchPayload
 
-from dataclasses import dataclass
-
 import psutil
 import getpass
+import logging
+
+from dataclasses import dataclass
 
 current_user = getpass.getuser()
 
@@ -13,6 +14,8 @@ class LocalGetter:
         self.config = config
     
     def fetch(self) -> list[LocalGameFetchPayload]:
+        logging.debug("Fetching local process information")
+        
         return_payloads: list[LocalGameFetchPayload] = []
 
         desired_processes: list[psutil.Process] = {}

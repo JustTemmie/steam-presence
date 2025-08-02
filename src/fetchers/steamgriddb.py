@@ -24,7 +24,7 @@ class SteamGridPlatforms(Enum):
 
 class SteamGridDB:
     def __init__(self, config):
-        self.config = config
+        self.config = config        
         self.api_key = config.steam_grid_db.api_key
 
         self.base_url = "https://www.steamgriddb.com/api/v2"
@@ -103,7 +103,7 @@ class SteamGridDB:
         self,
         app_id: Union[str, int],
         platform: SteamGridPlatforms
-    ) -> SteamGridDBFetchPayload | None:
+    ) -> SteamGridDBFetchPayload:        
         return SteamGridDBFetchPayload(
             self.getIconExternalPlatform(app_id, platform)
         )

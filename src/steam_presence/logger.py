@@ -6,7 +6,7 @@ import logging
 import os
 import datetime
 
-log_level = logging.WARN
+log_level = logging.INFO
 
 if args.log_level:
     log_level = args.log_level
@@ -34,5 +34,5 @@ else:
         ]
     )
 
-logging.info("Info logging enabled")
-logging.debug("Debug logging enabled")
+logging.info("Logging enabled")
+logging.debug("Logging enabled")

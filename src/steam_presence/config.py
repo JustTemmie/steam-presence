@@ -72,9 +72,9 @@ class ConfigDiscord(GenericConfig):
                 "{steam.profile_badge_url}": "{steam.profile_badge_name}"
             },
             "large_images": {
-                "{discord.image_url}": None,
-                "{steam_grid_db.icon}": None,
-                "{steam.avatar_url}": "{steam.display_name}",
+                "{discord.image_url}": "Discord Image",
+                "{steam_grid_db.icon}": "SGDB Image",
+                "{steam.avatar_url}": "Steam Avatar",
             }
         }
 

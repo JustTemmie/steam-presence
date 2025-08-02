@@ -10,10 +10,10 @@ import logging
 import string
 
 class DiscordRPC:
-    def __init__(self, config: Config, SGDB: SteamGridDB):
+    def __init__(self, config: Config, SgdbFetcher: SteamGridDB | None):
         self.config = config
 
-        self.SGDB = SGDB
+        self.SgdbFetcher = SgdbFetcher
 
         self.discord_RPC: Presence = None
         self.discord_app_id: int = 0
@@ -90,9 +90,12 @@ class DiscordRPC:
             else:
                 steam_app_id = self.discord_payload.steam_app_id
             
-            self.steam_grid_db_payload = self.SGDB.fetch(steam_app_id, "steam")
+            if self.SgdbFetcher:
+                self.steam_grid_db_payload = self.SgdbFetcher.fetch(steam_app_id, "steam")
 
     def update(self) -> None:
+        logging.info(f"Updating data for {self.app_name}")
+        
         if self.last_update == 0:
             self.firstUpdate()
         

@@ -31,8 +31,8 @@ class LocalGameFetchPayload:
 @dataclass
 class SteamFetchPayload:
     # Current account state
-    app_name: str
-    app_id: int
+    app_name: str | None = None
+    app_id: int | None = None
     avatar_url: str | None = None
     display_name: str | None = None
     profile_url: str | None = None

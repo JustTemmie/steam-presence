@@ -126,8 +126,8 @@ class MySteamAPI:
         header_image: str = data.get("header_image")
         capsule_image: str = data.get("capsule_image")
         website: str = data.get("website")
-        developers: str = ", ".join(data.get("developers"))
-        publishers: str = ", ".join(data.get("publishers"))
+        developers: str = ", ".join(data.get("developers", []))
+        publishers: str = ", ".join(data.get("publishers", []))
 
         price_currency: str = data.get("price_overview", {}).get("currency")
         # do note a price of $4.99 would have an initial price of 499
@@ -181,11 +181,13 @@ class SteamGetter:
         self.api = MySteamAPI(config, user)
         self.client = MySteamClient(config, user)
     
-    def fetch(self) -> SteamFetchPayload | None:
+    def fetch(self) -> SteamFetchPayload:
+        logging.debug(f"Fetching steam information for {self.user}")
 
         current_game_info: getCurrentStateResponse | None = self.api.getCurrentState()
 
-        if not current_game_info: return None
+        if not current_game_info:
+            return SteamFetchPayload()
 
         current_app_ID = current_game_info.app_id
 
