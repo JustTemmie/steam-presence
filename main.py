@@ -1,6 +1,6 @@
 import src.steam_presence.logger # just need to initialize it
 
-from src.fetchers.steamgriddb import SteamGridDB
+from src.fetchers.SteamGridDB import SteamGridDB
 from src.getters.Local import LocalGetter
 from src.getters.Steam import SteamGetter
 from src.setters.Discord import DiscordRPC

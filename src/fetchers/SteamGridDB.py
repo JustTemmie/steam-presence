@@ -14,6 +14,7 @@ from typing import Union
 import requests
 
 class SteamGridPlatforms(Enum):
+    INTERNAL = None
     STEAM = "steam"
     ORIGIN = "origin"
     EGS = "egs"
@@ -44,7 +45,18 @@ class SteamGridDB:
         
         return r.json()
     
-    def getIconExternalPlatform(
+    def getIdWithName(
+        self,
+        app_name: str
+    ) -> int | None:
+        r = self._ApiFetch(f"search/autocomplete/{app_name}")
+
+        if r and len(r) >= 1:
+            games = r.get("data", [])
+            if len(games) >= 1:
+                return games[0].get("id", None)
+
+    def getIconWithId(
         self,
         app_id: Union[str, int],
         platform: SteamGridPlatforms
@@ -79,7 +91,17 @@ class SteamGridDB:
                 "types": "static,animated"
             },
         ]
+        
+        # why are enums like this?
+        if isinstance(platform, SteamGridPlatforms):
+            platform = platform.value
 
+        # search using SGDBs IDs if no platform is given
+        # "/icons/games/{app_id}" is internal
+        # "/icons/{platform}/{app_id}" is external
+        if platform == None:
+            platform = "game"
+        
         for data in datas:
             r = self._ApiFetch(f"icons/{platform}/{app_id}", data=data)
             
@@ -101,12 +123,21 @@ class SteamGridDB:
     
     def fetch(
         self,
-        app_id: Union[str, int],
-        platform: SteamGridPlatforms
+        app_id: Union[str, int] | None = None,
+        platform: SteamGridPlatforms | None = None,
+        app_name: str | None = None,
     ) -> SteamGridDBFetchPayload:        
-        return SteamGridDBFetchPayload(
-            self.getIconExternalPlatform(app_id, platform)
-        )
+        if app_name:
+            app_id = self.getIdWithName(app_name)
+            platform = SteamGridPlatforms.INTERNAL
+        
+        if app_id:
+            return SteamGridDBFetchPayload(
+                self.getIconWithId(app_id, platform)
+            )
+        
+        else:
+            return SteamGridDBFetchPayload()
         
 
 if __name__ == "__main__":
@@ -117,7 +148,11 @@ if __name__ == "__main__":
 
     sgdb = SteamGridDB(config)
 
-    icon = sgdb.getIconExternalPlatform(1086940, "steam")
+    # icon = sgdb.getIconExternalPlatform(1086940, "steam")
 
-    # for icon in icons:
+    id = sgdb.getIdWithName("The Legend of Zelda: Majora's Mask")
+    print(id)
+
+    icon = sgdb.getIconWithId(id, SteamGridPlatforms.INTERNAL)
     print(icon)
+

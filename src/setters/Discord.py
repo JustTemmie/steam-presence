@@ -1,5 +1,5 @@
 import src.apis.discord as discordAPI
-from src.fetchers.steamgriddb import SteamGridDB
+from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
 from src.steam_presence.config import Config
 from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload
 
@@ -84,14 +84,21 @@ class DiscordRPC:
         return True
     
     def firstUpdate(self) -> None:
-        if self.steam_payload or self.discord_payload.steam_app_id:
-            if self.steam_payload:
-                steam_app_id = self.steam_payload.app_id
+        if self.SgdbFetcher:
+            if self.steam_payload or self.discord_payload.steam_app_id:
+                if self.steam_payload:
+                    steam_app_id = self.steam_payload.app_id
+                else:
+                    steam_app_id = self.discord_payload.steam_app_id
+                
+                self.steam_grid_db_payload = self.SgdbFetcher.fetch(
+                    app_id = steam_app_id,
+                    platform = SteamGridPlatforms.STEAM
+                )
+
             else:
-                steam_app_id = self.discord_payload.steam_app_id
-            
-            if self.SgdbFetcher:
-                self.steam_grid_db_payload = self.SgdbFetcher.fetch(steam_app_id, "steam")
+                self.steam_grid_db_payload = self.SgdbFetcher.fetch(app_name=self.app_name)
+
 
     def update(self) -> None:
         logging.info(f"Updating data for {self.app_name}")
@@ -155,6 +162,7 @@ class DiscordRPC:
 
     
     def refresh(self) -> bool:
+        print("refresh!!")
         # close the connection if it's been more than a minute since the last update
         if self.last_update + self.config.app.timeout < time():
             if self.config.discord.enabled:
@@ -177,7 +185,9 @@ class DiscordRPC:
             print(f"state = {self.state}")
             print(f"start_time = {self.start_time}")
             print(f"large_image_text = {self.large_image_text}")
+            print(f"large_image_url = {self.large_image_url}")
             print(f"small_image_text = {self.small_image_text}")
+            print(f"small_image_url = {self.small_image_url}")
             print(f"buttons = {self.discord_buttons}")
 
         return True
