@@ -1,15 +1,12 @@
 from src.steam_presence.config import Config, SteamUser
 from src.steam_presence.DataClasses import SteamFetchPayload
-
-import steam
-import requests
-import logging
-
-from steam.webapi import WebAPI
-from steam.client import SteamClient
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 from typing import Union
+
+import requests
+import logging
+import json
 
 
 @dataclass
@@ -55,16 +52,24 @@ class fetchAppReviewsResponse:
     review_percent: int | None = None
     review_description: str | None = None
 
-class MySteamAPI:
+class SteamAPI:
     def __init__(self, config: Config, user: SteamUser):
         self.config = config
         self.user = user
         
         self.api_key = user.api_key
-        self.api = WebAPI(key=user.api_key)
 
     def getCurrentState(self) -> getCurrentStateResponse | None:
-        player_summaries = self.api.call("ISteamUser.GetPlayerSummaries", steamids = self.user.user_id)
+        URL = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
+        # URL = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
+        r = requests.get(URL)
+
+        if r.status_code != 200:
+            logging.error(f"failed to fetch mini profile, status code {r.status_code} met")
+            return fetchMiniProfileDataResponse()
+        
+        player_summaries = r.json()
+        print(player_summaries)
 
         if not player_summaries: return None
         players = player_summaries.get("response", {}).get("players", [])
@@ -205,22 +210,13 @@ class MySteamAPI:
         )
 
 
-class MySteamClient:
-    def __init__(self, config: Config, user: SteamUser):
-        self.config = config
-        self.user = user
-        
-        self.client = SteamClient()
-        self.client.anonymous_login()
-
 class SteamGetter:
     def __init__(self, config: Config, user: SteamUser):
         self.config = config
         self.user = user
 
-        self.api = MySteamAPI(config, user)
-        self.client = MySteamClient(config, user)
-    
+        self.api = SteamAPI(config, user)
+
     def fetch(self) -> SteamFetchPayload:
         logging.debug(f"Fetching steam information for {self.user}")
 
