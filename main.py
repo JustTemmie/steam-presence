@@ -94,10 +94,14 @@ while True:
     if defaultGame and len(RPC_connections) == 0:
         logging.info("Switching to displaying the default game.")
         RPC_connections["DEFAULT"] = defaultGame
+        RPC_connections["DEFAULT"].default_game_payload = config.default_game
         RPC_connections["DEFAULT"].instanciate(config.default_game.name)
 
-    if RPC_connections.get("DEFAULT") and len(RPC_connections) == 1:
-        RPC_connections["DEFAULT"].update()
+    if RPC_connections.get("DEFAULT"):
+        if len(RPC_connections) == 1:
+            RPC_connections["DEFAULT"].update()
+        else:
+            RPC_connections.pop("DEFAULT")
 
 
     expired_IDs: list[Union[int, str]] = []

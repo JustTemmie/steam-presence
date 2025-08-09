@@ -43,8 +43,8 @@ class DiscordRPC:
         self.discord_payload: DiscordDataPayload = None
         self.steam_grid_db_payload = None
         self.epic_games_store_payload = None
-        self.default_game_payload = config.default_game
-
+        self.default_game_payload = None
+        
     def _get_RPC_data(self) -> dict:
         return {
             "discord": self.discord_payload,
