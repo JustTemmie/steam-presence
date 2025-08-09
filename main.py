@@ -53,6 +53,7 @@ while True:
         for process in processes:
             RPC_ID = process.process_name
             if not RPC_connections.get(RPC_ID):
+                config.load() # reload the config on new RPC connection
                 if process.display_name:
                     RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
                     RPC_connections[RPC_ID].instanciate(
@@ -73,6 +74,7 @@ while True:
             RPC_ID = steam_game.app_id
 
             if not RPC_connections.get(RPC_ID):
+                config.load() # reload the config
                 if steam_game.app_name:
                     RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
                     RPC_connections[RPC_ID].instanciate(
@@ -92,6 +94,7 @@ while True:
     logging.debug("Processing complete!")
 
     if defaultGame and len(RPC_connections) == 0:
+        config.load() # reload the config
         logging.info("Switching to displaying the default game.")
         RPC_connections["DEFAULT"] = defaultGame
         RPC_connections["DEFAULT"].default_game_payload = config.default_game

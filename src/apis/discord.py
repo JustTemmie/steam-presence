@@ -7,27 +7,49 @@ import json
 from typing import Union
 from dataclasses import dataclass
 
-
-def getAppId(app_name: str) -> int | None:
+def getAppId(app_name: str, config: Config | None = None) -> int | None:
     r = requests.get("https://discordapp.com/api/v8/applications/detectable")
 
     if r.status_code != 200:
         logging.error(f"failed to fetch discord app ID, status code {r.status_code} met")
         return None
 
-    games = json.loads(r.content)
+    games = []
+    if config:
+        for key, value in config.discord.steam_presence_app_ids.items():
+            games.append({
+                "name": key,
+                "id": value
+            })
+        for key, value in config.discord.custom_app_ids.items():
+            games.append({
+                "name": key,
+                "id": value
+            })
+
+    games += json.loads(r.content)
 
     # these chars will be ignored in comparisons
     trans_table = str.maketrans('', '', "®©™℠")
 
     app_name = app_name.translate(trans_table).casefold()
+    app_ID = None
 
     for game in games:
         game_name = game.get("name", "").translate(trans_table).casefold()
         
         if game_name == app_name:
             app_ID = game.get("id", None)
-            if app_ID: return int(app_ID)
+
+        for alias in game.get("aliases", []):
+            alias_name = alias.translate(trans_table).casefold()
+
+            if alias_name == app_name:
+                app_ID = game.get("id", None)
+
+        if app_ID: return int(app_ID)
+        
+
 
 @dataclass
 class getAppInfoPayload:

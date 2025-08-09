@@ -64,10 +64,20 @@ class ConfigDiscord(GenericConfig):
     def __init__(self):
         self.enabled: bool = True
         self.fallback_app_id: int = 1400019956321620069
+        self.custom_app_ids: dict[str, int] = {
+            "App name here": 141471589572411256163
+        }
+        self.steam_presence_app_ids: dict[str, int] = {
+            # "official" custom app IDs, overwrite custom_app_ids instead
+            # i will _NOT_ merge a PR adding more of these
+            # as the creator could delete them in the future, sorry :p
+            "The Legend of Zelda: Majora's Mask": 1403714141734309980,
+            "Rift Riff": 1403716067821490206,
+        }
         self.playing: DiscordData = {
             "status_lines": [
-                "{default.details}", # used by the fallback game
-                "{default.state}", # used by the fallback game
+                "{default.details}", # used by the default game
+                "{default.state}", # used by the default game
                 "{steam.rich_presence}",
                 "{steam.review_description} reviews ({steam.review_percent}%)",
             ],
@@ -75,9 +85,19 @@ class ConfigDiscord(GenericConfig):
                 "{steam.profile_badge_url}": "{steam.profile_badge_name}",
             },
             "large_images": {
-                "{discord.image_url}": "Discord Image",
-                "{steam_grid_db.icon}": "SGDB Image",
-                "{steam.avatar_url}": "Steam Avatar",
+                "{discord.image_url}": None,
+                "{steam_grid_db.icon}": None,
+                "{steam.capsule_vertical_image}": None,
+                "{steam.capsule_header_image}": None,
+            },
+        }
+        # the discord trackmania icon SUCKS due to being super blurry
+        # so it's a good example of a per app config
+        self.per_app: dict[str, DiscordData] = {
+            "Trackmania": { # case-insensitive name
+                "large_images": {
+                    "https://img.icons8.com/?size=256&id=LJEz2yMtDm2f": None,
+                },
             }
         }
 
@@ -127,8 +147,12 @@ class Config:
             with open(config_path, "r") as f:
                 config = json.load(f)
         except FileNotFoundError as e:
-            logging.error(f"could not find a config path at '{config_path}' - exiting\n{e}")
-            exit()
+            if self.app:
+                logging.warn(f"couldn't find config, skipping reload")
+                return
+            else:
+                logging.error(f"could not find a config path at '{config_path}' - exiting\n{e}")
+                exit()
         
         self.app.load(config.get("app", {}))
         self.discord.load(config.get("discord", {}))
@@ -137,6 +161,14 @@ class Config:
         self.epic_games_store.load(config.get("epic_games_store", {}))
         self.local_games.load(config.get("local_games", {}))
         self.default_game.load(config.get("default_game", {}))
+
+        # ensure the app name checks are case-insensitive
+        case_insensitive_per_app = {}
+        for key, value in self.discord.per_app.items():
+            case_insensitive_per_app[key.casefold()] = value
+        
+        self.discord.per_app = case_insensitive_per_app
+
 
 
 if __name__ == "__main__":

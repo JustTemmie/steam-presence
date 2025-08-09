@@ -1,5 +1,6 @@
 from src.steam_presence.config import Config, SteamUser
 from src.steam_presence.DataClasses import SteamFetchPayload
+
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 from typing import Union
@@ -28,8 +29,8 @@ class fetchMiniProfileDataResponse:
 @dataclass
 class fetchAppDetailsResponse:
     required_age: int | None = None
-    header_image: str | None = None
-    capsule_image: str | None = None
+    capsule_header_image: str | None = None
+    capsule_main_image: str | None = None
     website: str | None = None
     developers: str | None = None
     publishers: str | None = None
@@ -137,8 +138,8 @@ class SteamAPI:
         data = data.get(f"{app_ID}", {}).get("data", {})
 
         required_age: int = data.get("required_age")
-        header_image: str = data.get("header_image")
-        capsule_image: str = data.get("capsule_image")
+        capsule_header_image: str = data.get("header_image")
+        capsule_main_image: str = data.get("capsule_image")
         website: str = data.get("website")
         developers: str = ", ".join(data.get("developers", []))
         publishers: str = ", ".join(data.get("publishers", []))
@@ -159,8 +160,8 @@ class SteamAPI:
 
         return fetchAppDetailsResponse(
             required_age,
-            header_image,
-            capsule_image,
+            capsule_header_image,
+            capsule_main_image,
             website,
             developers,
             publishers,
@@ -232,6 +233,8 @@ class SteamGetter:
 
         # surely there's a better way to pass this much data
         return SteamFetchPayload(
+            capsule_vertical_image = f"https://steamcdn-a.akamaihd.net/steam/apps/{current_game_info.app_id}/library_600x900_2x.jpg",
+
             app_name = current_game_info.app_name,
             app_id = current_game_info.app_id,
             avatar_url = current_game_info.avatar_url,
@@ -245,8 +248,8 @@ class SteamGetter:
             profile_badge_name = mini_profile_data.profile_badge_name,
 
             required_age = app_details_data.required_age,
-            header_image = app_details_data.header_image,
-            capsule_image = app_details_data.capsule_image,
+            capsule_header_image = app_details_data.capsule_header_image,
+            capsule_main_image = app_details_data.capsule_main_image,
             website = app_details_data.website,
             developers = app_details_data.developers,
             publishers = app_details_data.publishers,

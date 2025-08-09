@@ -1,6 +1,6 @@
 import src.apis.discord as discordAPI
 from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
-from src.steam_presence.config import Config
+from src.steam_presence.config import Config, DiscordData
 from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload
 
 from time import time
@@ -66,7 +66,7 @@ class DiscordRPC:
         self.discord_payload = discordAPI.fetchData(self.app_name)
 
         # figure out the correct app ID
-        app_ID = discordAPI.getAppId(name)
+        app_ID = discordAPI.getAppId(name, self.config)
         if app_ID:
             self.app_id_is_name = True
         else:
@@ -113,12 +113,14 @@ class DiscordRPC:
 
         logging.debug("Updating presence")
 
+        app_config_data: DiscordData = self.config.discord.playing
+        # overwrite config data with per app config data if applicable
+        for key, value in self.config.discord.per_app.get(self.app_name.casefold(), {}).items():
+            app_config_data[key] = value
+
         self.details = None
         self.state = None
         self.discord_buttons = []
-
-        # technically support other activity types
-        RPC_lines = self.config.discord.playing
 
         status_lines: list[str] = []
 
@@ -136,7 +138,7 @@ class DiscordRPC:
             except:
                 return None
 
-        for status_line in RPC_lines.get("status_lines", []):
+        for status_line in app_config_data.get("status_lines", []):
             formatted_line = formatRpcData(status_line)
             if formatted_line:
                 status_lines.append(formatted_line)
@@ -146,7 +148,7 @@ class DiscordRPC:
         if len(status_lines) >= 2:
             self.state = status_lines[1]
         
-        for large_image_url, large_image_text in RPC_lines.get("large_images", {}).items():
+        for large_image_url, large_image_text in app_config_data.get("large_images", {}).items():
             image_url = formatRpcData(large_image_url)
             image_text = formatRpcData(large_image_text)
             # Continue if large_image_text was explicitly set to None
@@ -155,7 +157,7 @@ class DiscordRPC:
                 self.large_image_text = image_text
                 break
         
-        for small_image_url, small_image_text in RPC_lines.get("small_images", {}).items():
+        for small_image_url, small_image_text in app_config_data.get("small_images", {}).items():
             image_url = formatRpcData(small_image_url)
             image_text = formatRpcData(small_image_text)
             if image_url and (image_text or small_image_text == None):

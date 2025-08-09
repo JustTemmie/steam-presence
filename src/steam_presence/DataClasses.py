@@ -30,6 +30,8 @@ class LocalGameFetchPayload:
 # ID: "steam"
 @dataclass
 class SteamFetchPayload:
+    capsule_vertical_image: str = None
+
     # Current account state
     app_name: str | None = None
     app_id: int | None = None
@@ -47,8 +49,8 @@ class SteamFetchPayload:
     # App details
     # example: https://store.steampowered.com/api/appdetails?appids=218620
     required_age: int | None = None
-    header_image: str | None = None
-    capsule_image: str | None = None
+    capsule_header_image: str | None = None
+    capsule_main_image: str | None = None
     website: str | None = None
     developers: str = None
     publishers: str = None
