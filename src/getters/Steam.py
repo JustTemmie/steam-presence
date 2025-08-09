@@ -222,7 +222,7 @@ class SteamGetter:
 
         current_game_info: getCurrentStateResponse | None = self.api.getCurrentState()
 
-        if not current_game_info:
+        if not current_game_info or not current_game_info.app_id:
             return SteamFetchPayload()
 
         current_app_ID = current_game_info.app_id
