@@ -69,7 +69,6 @@ class SteamAPI:
             return fetchMiniProfileDataResponse()
         
         player_summaries = r.json()
-        print(player_summaries)
 
         if not player_summaries: return None
         players = player_summaries.get("response", {}).get("players", [])

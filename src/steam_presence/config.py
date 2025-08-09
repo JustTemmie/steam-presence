@@ -65,11 +65,13 @@ class ConfigDiscord(GenericConfig):
         self.fallback_app_id: int = 1400019956321620069
         self.playing: DiscordData = {
             "status_lines": [
+                "{default.details}", # used by the fallback game
+                "{default.state}", # used by the fallback game
                 "{steam.rich_presence}",
-                "{steam.review_description} reviews ({steam.review_percent}%)"
+                "{steam.review_description} reviews ({steam.review_percent}%)",
             ],
             "small_images": {
-                "{steam.profile_badge_url}": "{steam.profile_badge_name}"
+                "{steam.profile_badge_url}": "{steam.profile_badge_name}",
             },
             "large_images": {
                 "{discord.image_url}": "Discord Image",
@@ -101,11 +103,13 @@ class ConfigLocalGames(GenericConfig):
         self.discord_fallback_app_id: int = 1400019956321620069
         self.processes: list[LocalProcess] = []
 
-class ConfigOverwriteGame(GenericConfig):
+class ConfigDefaultGame(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
         self.discord_app_id: int | None = None
         self.name: str = "Breath of the Wild"
+        self.details: str = "Fighting a Stalnox."
+        self.state: str = "15 Hearts, 7/10 Stamina Vessels."
 
 class Config:
     def __init__(self):
@@ -115,7 +119,7 @@ class Config:
         self.steam = ConfigSteam()
         self.epic_games_store = ConfigEpicGamesStore()
         self.local_games = ConfigLocalGames()
-        self.overwrite_game = ConfigOverwriteGame()
+        self.default_game = ConfigDefaultGame()
     
     def load(self, config_path="config.json"):
         try:
@@ -131,7 +135,7 @@ class Config:
         self.steam.load(config.get("steam", {}))
         self.epic_games_store.load(config.get("epic_games_store", {}))
         self.local_games.load(config.get("local_games", {}))
-        self.overwrite_game.load(config.get("overwrite_game", {}))
+        self.default_game.load(config.get("default_game", {}))
 
 
 if __name__ == "__main__":

@@ -22,14 +22,21 @@ SgdbFetcher = None
 localGetter = None
 steamGetters: list[SteamGetter] = []
 
+defaultGame: DiscordRPC = None
+
 # key is just a generic identifier such as process ID or steam ID
 RPC_connections: dict[Union[int, str], DiscordRPC] = {}
+
 
 if config.steam_grid_db.enabled:
     SgdbFetcher = SteamGridDB(config)
 
 if config.local_games.enabled:
     localGetter = LocalGetter(config)
+
+if config.default_game.enabled:
+    defaultGame = DiscordRPC(config, SgdbFetcher)
+    defaultGame.instanciate(config.default_game.name)
 
 if config.steam.enabled:
     for user in config.steam.users:
@@ -83,6 +90,15 @@ while True:
             game.updateSteamData()
 
     logging.debug("Processing complete!")
+
+    if defaultGame and len(RPC_connections) == 0:
+        logging.info("Switching to displaying the default game.")
+        RPC_connections["DEFAULT"] = defaultGame
+        RPC_connections["DEFAULT"].instanciate(config.default_game.name)
+
+    if RPC_connections.get("DEFAULT") and len(RPC_connections) == 1:
+        RPC_connections["DEFAULT"].update()
+
 
     expired_IDs: list[Union[int, str]] = []
     for ID, connection in RPC_connections.items():

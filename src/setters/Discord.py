@@ -26,7 +26,7 @@ class DiscordRPC:
 
         self.details: str = ""
         self.state: str = ""
-        self.start_time: int = round(time())
+        self.start_time: int = 0
         self.end_time: int = 0
 
         self.large_image_url: str | None = None
@@ -43,6 +43,7 @@ class DiscordRPC:
         self.discord_payload: DiscordDataPayload = None
         self.steam_grid_db_payload = None
         self.epic_games_store_payload = None
+        self.default_game_payload = config.default_game
 
     def _get_RPC_data(self) -> dict:
         return {
@@ -51,6 +52,7 @@ class DiscordRPC:
             "local": self.local_payload,
             "steam_grid_db": self.steam_grid_db_payload,
             "steam": self.steam_payload,
+            "default": self.default_game_payload,
         }
 
     def instanciate(self, name: str, platform_fallback_app_id: int = None) -> bool:
@@ -74,6 +76,7 @@ class DiscordRPC:
                 app_ID = self.config.discord.fallback_app_id
         
         self.discord_app_id = app_ID
+        self.start_time = round(time())
         
         # only connect if discord is enabled
         # this check exists to allow development without having discord running
