@@ -113,6 +113,7 @@ class ConfigSteam(GenericConfig):
         self.discord_fallback_app_id: int = 1400020030565122139
         self.steam_store_button: bool = True
 
+# TODO, not implemented
 class ConfigEpicGamesStore(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
@@ -130,7 +131,7 @@ class ConfigDefaultGame(GenericConfig):
         self.discord_app_id: int | None = None
         self.name: str = "Breath of the Wild"
         self.details: str = "Fighting a Stalnox."
-        self.state: str = "15 Hearts, 7/10 Stamina Vessels."
+        self.state: str = None
 
 class Config:
     def __init__(self):

@@ -61,6 +61,7 @@ class DiscordRPC:
             logging.info(f"{gameName} is in the blacklist, skipping RPC object creation.")
             return False
         
+        logging.info(f"instanciating Discord RPC connection for {name}")
         self.app_name = name
 
         self.discord_payload = discordAPI.fetchData(self.app_name)
@@ -104,14 +105,12 @@ class DiscordRPC:
 
 
     def update(self) -> None:
-        logging.info(f"Updating data for {self.app_name}")
+        logging.debug(f"Updating data for {self.app_name}")
         
         if self.last_update == 0:
             self.firstUpdate()
         
         self.last_update = time()
-
-        logging.debug("Updating presence")
 
         app_config_data: DiscordData = self.config.discord.playing
         # overwrite config data with per app config data if applicable

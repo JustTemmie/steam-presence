@@ -36,7 +36,6 @@ if config.local_games.enabled:
 
 if config.default_game.enabled:
     defaultGame = DiscordRPC(config, SgdbFetcher)
-    defaultGame.instanciate(config.default_game.name)
 
 if config.steam.enabled:
     for user in config.steam.users:
