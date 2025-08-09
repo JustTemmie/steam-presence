@@ -1,0 +1,1 @@
+https://www.steamgriddb.com/profile/preferences/api
