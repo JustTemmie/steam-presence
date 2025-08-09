@@ -13,9 +13,9 @@ def get_terminal_width() -> int:
     return width
 
 
-def fetch(url: str) -> requests.Response | None:
+def fetch(url: str, data: dict = {}, headers: dict = {}) -> requests.Response | None:
     try:
-        r = requests.get(url)
+        r = requests.get(url, data = data, headers = headers)
 
         if r.status_code != 200:
             return
