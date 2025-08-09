@@ -111,4 +111,4 @@ while True:
         RPC_connections.pop(ID)
     
     logging.debug("----- Cycle complete -----")
-    time.sleep(20)
+    time.sleep(config.app.cycle_interval)

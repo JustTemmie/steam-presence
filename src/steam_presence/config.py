@@ -57,6 +57,7 @@ class LocalProcess:
 class ConfigApp(GenericConfig):
     def __init__(self):
         self.timeout: int = 60 # seconds required to determine a connection as inactive
+        self.cycle_interval: int = 20 # seconds between running checks, setting this too low to low may lead to API bans
         self.blacklist: list[str] = []
 
 class ConfigDiscord(GenericConfig):
