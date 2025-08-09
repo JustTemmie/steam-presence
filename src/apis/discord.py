@@ -1,6 +1,8 @@
 from src.steam_presence.config import Config
 from src.steam_presence.DataClasses import DiscordDataPayload
 
+import src.steam_presence.misc as steam_presence
+
 from typing import Union
 from dataclasses import dataclass
 from PIL import Image
@@ -11,10 +13,11 @@ import json
 
 
 def getAppId(app_name: str, config: Config | None = None) -> int | None:
-    r = requests.get("https://discordapp.com/api/v8/applications/detectable")
+    URL = "https://discordapp.com/api/v8/applications/detectable"
+    r = steam_presence.fetch(URL)
 
-    if r.status_code != 200:
-        logging.error(f"failed to fetch discord app ID, status code {r.status_code} met")
+    if not r:
+        logging.error(f"failed to fetch discord app ID")
         return None
 
     games = []
@@ -61,18 +64,18 @@ class getAppInfoPayload:
     name: str | None = None
 
 def getAppInfo(app_id: Union[str | int]) -> getAppInfoPayload | None:
-    r = requests.get(f"https://discordapp.com/api/v8/applications/{app_id}/rpc")
+    r = steam_presence.fetch(f"https://discordapp.com/api/v8/applications/{app_id}/rpc")
     
-    if r.status_code != 200:
-        logging.error(f"failed to fetch image from discord, status code {r.status_code} met")
+    if not r:
+        logging.error(f"failed to fetch image from discord")
         return None
     
     response = r.json()
 
     if response.get("icon"):
         image_url = f"https://cdn.discordapp.com/app-icons/{app_id}/{response.get('icon')}.webp"
-        r = requests.get(image_url)
-        if r.status_code == 200:
+        r = steam_presence.fetch(image_url)
+        if r:
             image = Image.open(BytesIO(r.content))
             # discard images under 64p, they just look super bad
             if image.size[0] < 64:

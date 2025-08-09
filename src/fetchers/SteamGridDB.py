@@ -6,6 +6,8 @@ if __name__ == "__main__":
 
 from src.steam_presence.DataClasses import SteamGridDBFetchPayload
 
+import src.steam_presence.misc as steam_presence
+
 from dataclasses import dataclass
 from enum import Enum
 import logging
@@ -31,7 +33,7 @@ class SteamGridDB:
         self.base_url = "https://www.steamgriddb.com/api/v2"
     
     def _ApiFetch(self, endpoint: str, data: dict = {}) -> dict | None:
-        r = requests.get(
+        r = steam_presence.fetch(
             f"{self.base_url}/{endpoint}",
             data = data,
             headers =  {
@@ -39,8 +41,8 @@ class SteamGridDB:
             }
         )
 
-        if r.status_code < 200 or r.status_code >= 300:
-            logging.error(f"failed to fetch {endpoint}, status code {r.status_code} met")
+        if not r:
+            logging.error(f"failed to fetch {endpoint}")
             return None
         
         return r.json()

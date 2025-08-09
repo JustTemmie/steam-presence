@@ -1,6 +1,8 @@
 from src.steam_presence.config import Config, SteamUser
 from src.steam_presence.DataClasses import SteamFetchPayload
 
+import src.steam_presence.misc as steam_presence
+
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
 from typing import Union
@@ -62,11 +64,10 @@ class SteamAPI:
 
     def getCurrentState(self) -> getCurrentStateResponse | None:
         URL = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
-        # URL = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
-        r = requests.get(URL)
+        r = steam_presence.fetch(URL)
 
-        if r.status_code != 200:
-            logging.error(f"failed to fetch mini profile, status code {r.status_code} met")
+        if not r:
+            logging.error(f"failed to fetch current state")
             return fetchMiniProfileDataResponse()
         
         player_summaries = r.json()
@@ -90,10 +91,10 @@ class SteamAPI:
     def fetchMiniProfileData(self) -> fetchMiniProfileDataResponse:
         # convert steam ID 64 to steam ID 3, yes, really
         URL = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
-        r = requests.get(URL)
+        r = steam_presence.fetch(URL)
 
-        if r.status_code != 200:
-            logging.error(f"failed to fetch mini profile, status code {r.status_code} met")
+        if not r:
+            logging.error(f"failed to fetch mini profile")
             return fetchMiniProfileDataResponse()
 
         mini_profile = r.content
@@ -125,10 +126,10 @@ class SteamAPI:
     
     def fetchAppDetails(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
         URL = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
-        r = requests.get(URL)
+        r = steam_presence.fetch(URL)
 
-        if r.status_code != 200:
-            logging.error(f"failed to fetch app details for {app_ID}, status code {r.status_code} met")
+        if not r:
+            logging.error(f"failed to fetch app details for {app_ID}")
             return fetchAppDetailsResponse()
 
         data = r.json()
@@ -179,11 +180,10 @@ class SteamAPI:
     
     def fetchAppReviews(self, app_ID: Union[str, int]) -> fetchAppReviewsResponse:
         URL = f"https://store.steampowered.com/appreviews/{app_ID}?json=1"
+        r = steam_presence.fetch(URL)
 
-        r = requests.get(URL)
-
-        if r.status_code != 200:
-            logging.error(f"failed to fetch app details for {app_ID}, status code {r.status_code} met")
+        if not r:
+            logging.error(f"failed to fetch app reviews for {app_ID}")
             return fetchAppReviewsResponse()
 
         data = r.json()
