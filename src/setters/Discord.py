@@ -1,4 +1,6 @@
 import src.apis.discord as discordAPI
+import src.steam_presence.misc as steam_presence
+
 from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
 from src.steam_presence.config import Config, DiscordData
 from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload
@@ -61,7 +63,8 @@ class DiscordRPC:
             logging.info(f"{gameName} is in the blacklist, skipping RPC object creation.")
             return False
         
-        logging.info(f"instanciating Discord RPC connection for {name}")
+        logging.info(f"Instanciating Discord RPC connection for {name}")
+        print("–" * steam_presence.get_terminal_width())
         self.app_name = name
 
         self.discord_payload = discordAPI.fetchData(self.app_name)

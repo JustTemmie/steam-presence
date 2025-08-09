@@ -82,13 +82,12 @@ class ConfigDiscord(GenericConfig):
                 "{steam.review_description} reviews ({steam.review_percent}%)",
             ],
             "small_images": {
-                "{steam.profile_badge_url}": "{steam.profile_badge_name}",
             },
             "large_images": {
                 "{discord.image_url}": None,
                 "{steam_grid_db.icon}": None,
-                "{steam.capsule_vertical_image}": None,
                 "{steam.capsule_header_image}": None,
+                "{steam.capsule_vertical_image}": None,
             },
         }
         # the discord trackmania icon SUCKS due to being super blurry
@@ -98,7 +97,7 @@ class ConfigDiscord(GenericConfig):
                 "large_images": {
                     "https://img.icons8.com/?size=256&id=LJEz2yMtDm2f": None,
                 },
-            }
+            },
         }
 
 class ConfigSteamGridDB(GenericConfig):
@@ -144,6 +143,8 @@ class Config:
         self.default_game = ConfigDefaultGame()
     
     def load(self, config_path="config.json"):
+        logging.info("Loading config file")
+        
         try:
             with open(config_path, "r") as f:
                 config = json.load(f)

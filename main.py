@@ -1,4 +1,5 @@
 import src.steam_presence.logger # just need to initialize it
+import src.steam_presence.misc as steam_presence
 
 from src.fetchers.SteamGridDB import SteamGridDB
 from src.getters.Local import LocalGetter
@@ -44,6 +45,7 @@ if config.steam.enabled:
         steamGetters.append(SteamGetter(config, user))
 
 logging.info("Setup complete!")
+print("–" * steam_presence.get_terminal_width())
 
 while True:
     if localGetter:
@@ -52,8 +54,8 @@ while True:
         for process in processes:
             RPC_ID = process.process_name
             if not RPC_connections.get(RPC_ID):
-                config.load() # reload the config on new RPC connection
                 if process.display_name:
+                    config.load() # reload the config on new RPC connection
                     RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
                     RPC_connections[RPC_ID].instanciate(
                         process.display_name,
@@ -73,8 +75,8 @@ while True:
             RPC_ID = steam_game.app_id
 
             if not RPC_connections.get(RPC_ID):
-                config.load() # reload the config
                 if steam_game.app_name:
+                    config.load() # reload the config
                     RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
                     RPC_connections[RPC_ID].instanciate(
                         steam_game.app_name,
@@ -114,6 +116,7 @@ while True:
 
     for ID in expired_IDs:
         logging.info(f"Deleting connection to {ID}")
+        print("–" * steam_presence.get_terminal_width())
         RPC_connections.pop(ID)
     
     logging.debug("----- Cycle complete -----")

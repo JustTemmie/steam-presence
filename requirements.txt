@@ -1,6 +1,9 @@
 beautifulsoup4
 requests
 
+# used to check the resolution of images
+pillow
+
 # discord, we're using the git version due to the last release being from 2023
 git+https://github.com/qwertyquerty/pypresence
 

@@ -1,11 +1,14 @@
 from src.steam_presence.config import Config
 from src.steam_presence.DataClasses import DiscordDataPayload
 
+from typing import Union
+from dataclasses import dataclass
+from PIL import Image
+from io import BytesIO
+
 import requests
 import json
 
-from typing import Union
-from dataclasses import dataclass
 
 def getAppId(app_name: str, config: Config | None = None) -> int | None:
     r = requests.get("https://discordapp.com/api/v8/applications/detectable")
@@ -68,6 +71,12 @@ def getAppInfo(app_id: Union[str | int]) -> getAppInfoPayload | None:
 
     if response.get("icon"):
         image_url = f"https://cdn.discordapp.com/app-icons/{app_id}/{response.get('icon')}.webp"
+        r = requests.get(image_url)
+        if r.status_code == 200:
+            image = Image.open(BytesIO(r.content))
+            # discard images under 64p, they just look super bad
+            if image.size[0] < 64:
+                image_url = None
     else:
         image_url = None
     steam_app_id = None
