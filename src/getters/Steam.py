@@ -68,7 +68,7 @@ class SteamAPI:
 
         if not r:
             logging.error(f"failed to fetch current state")
-            return fetchMiniProfileDataResponse()
+            return getCurrentStateResponse()
         
         player_summaries = r.json()
 
@@ -228,7 +228,7 @@ class SteamGetter:
         current_app_ID = current_game_info.app_id
 
         mini_profile_data: fetchMiniProfileDataResponse = self.api.fetchMiniProfileData()
-        app_details_data: fetchMiniProfileDataResponse = self.api.fetchAppDetails(current_app_ID)
+        app_details_data: fetchAppDetailsResponse = self.api.fetchAppDetails(current_app_ID)
         app_reviews: fetchAppReviewsResponse = self.api.fetchAppReviews(current_app_ID)
 
         # surely there's a better way to pass this much data

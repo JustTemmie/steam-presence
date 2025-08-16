@@ -23,3 +23,6 @@ def fetch(url: str, data: dict = {}, headers: dict = {}) -> requests.Response | 
         return r
     except requests.exceptions.ConnectTimeout:
         return
+    
+    except requests.exceptions.ConnectionError:
+        return
