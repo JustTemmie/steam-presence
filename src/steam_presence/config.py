@@ -45,9 +45,9 @@ class DiscordData:
 class SteamUser:
     api_key: str = ""
     user_id: int = 0
-    web_scrape: bool = False
-    auto_fetch_cookies: bool = False
-    cookie_browser: str = ""
+    # web_scrape: bool = False
+    # auto_fetch_cookies: bool = False
+    # cookie_browser: str = ""
 
 @dataclass
 class LocalProcess:
@@ -110,7 +110,7 @@ class ConfigSteam(GenericConfig):
         self.enabled: bool = False
         self.users: list[SteamUser] = []
         self.discord_fallback_app_id: int = 1400020030565122139
-        self.steam_store_button: bool = True
+        # self.steam_store_button: bool = True
 
 # TODO, not implemented
 class ConfigEpicGamesStore(GenericConfig):

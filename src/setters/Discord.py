@@ -199,23 +199,25 @@ class DiscordRPC:
         return True
 
     def updateSteamData(self) -> None:
-        if self.config.steam.steam_store_button and self.steam_payload.app_id != 0:
-            price_string = self.steam_payload.price_current
+        pass
+        # buttons are currently broken for some unknown reason
+        # if self.config.steam.steam_store_button and self.steam_payload.app_id != 0:
+        #     price_string = self.steam_payload.price_current
 
-            # we try multiple labels as they're capped to 32 characters
-            labels = [
-                f"{self.steam_payload.app_name} on steam - {price_string}",
-                f"{self.steam_payload.app_name} - {price_string}",
-                f"get it on steam! - {price_string}",
-                f"on steam! - {price_string}",
-                "get it on steam!"
-            ]
+        #     # we try multiple labels as they're capped to 32 characters
+        #     labels = [
+        #         f"{self.steam_payload.app_name} on steam - {price_string}",
+        #         f"{self.steam_payload.app_name} - {price_string}",
+        #         f"get it on steam! - {price_string}",
+        #         f"on steam! - {price_string}",
+        #         "get it on steam!"
+        #     ]
 
-            for label in labels:
-                if len(label) <= 32:
-                    break
+        #     for label in labels:
+        #         if len(label) <= 32:
+        #             break
                 
-            self.discord_buttons.append({
-                "label": label,
-                "url": f"https://store.steampowered.com/app/{self.steam_payload.app_id}"
-            })
+        #     self.discord_buttons.append({
+        #         "label": label,
+        #         "url": f"https://store.steampowered.com/app/{self.steam_payload.app_id}"
+        #     })
