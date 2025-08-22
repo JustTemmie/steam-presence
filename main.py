@@ -2,10 +2,11 @@ import src.steam_presence.logger # just need to initialize it
 import src.steam_presence.misc as steam_presence
 
 from src.fetchers.SteamGridDB import SteamGridDB
+from src.getters.Jellyfin import JellyfinGetter
 from src.getters.Local import LocalGetter
 from src.getters.Steam import SteamGetter
 from src.setters.Discord import DiscordRPC
-from src.steam_presence.config import Config, SteamUser
+from src.steam_presence.config import Config, SteamUser, JellyfinInstance
 
 import time
 import logging
@@ -22,6 +23,7 @@ logging.info("Generating getters...")
 SgdbFetcher = None
 localGetter = None
 steamGetters: list[SteamGetter] = []
+jellyfinGetters: list[JellyfinGetter] = []
 
 defaultGame: DiscordRPC = None
 
@@ -44,6 +46,11 @@ if config.steam.enabled:
         user = SteamUser(**user)
         steamGetters.append(SteamGetter(config, user))
 
+if config.jellyfin.enabled:
+    for instance in config.jellyfin.instances:
+        instance = JellyfinInstance(**instance)
+        jellyfinGetters.append(JellyfinGetter(config, instance))
+
 logging.info("Setup complete!")
 print("–" * steam_presence.get_terminal_width())
 
@@ -57,6 +64,9 @@ while True:
                 if process.display_name:
                     config.load() # reload the config on new RPC connection
                     RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
+                    if config.local_games.inject_discord_status_data:
+                        RPC_connections[RPC_ID].inject_bonus_status_data(config.local_games.discord_status_data)
+
                     RPC_connections[RPC_ID].instanciate(
                         process.display_name,
                         config.local_games.discord_fallback_app_id
@@ -78,6 +88,9 @@ while True:
                 if steam_game.app_name:
                     config.load() # reload the config
                     RPC_connections[RPC_ID] = DiscordRPC(config, SgdbFetcher)
+                    if config.steam.inject_discord_status_data:
+                        RPC_connections[RPC_ID].inject_bonus_status_data(config.steam.discord_status_data)
+
                     RPC_connections[RPC_ID].instanciate(
                         steam_game.app_name,
                         config.steam.discord_fallback_app_id
@@ -85,12 +98,38 @@ while True:
                 else:
                     break
             
-            game = RPC_connections[RPC_ID]
+            rpc_ression = RPC_connections[RPC_ID]
 
-            game.steam_payload = steam_game
+            rpc_ression.steam_payload = steam_game
 
-            game.update()
-            game.updateSteamData()
+            rpc_ression.update()
+            rpc_ression.updateSteamData()
+    
+
+    for jellyfin_session in [getter.fetch() for getter in jellyfinGetters]:
+        if jellyfin_session and jellyfin_session.media_source_id:
+            RPC_ID = jellyfin_session.media_source_id
+
+            if not RPC_connections.get(RPC_ID):
+                config.load() # reload the config
+                RPC_connections[RPC_ID] = DiscordRPC(config, None)
+                RPC_connections[RPC_ID].activity_type = 3
+                if config.jellyfin.inject_discord_status_data:
+                        RPC_connections[RPC_ID].inject_bonus_status_data(config.jellyfin.discord_status_data)
+
+                RPC_connections[RPC_ID].instanciate(
+                    jellyfin_session.series_name,
+                    config.jellyfin.discord_app_id
+                )
+
+                RPC_connections[RPC_ID].start_time = time.time() - jellyfin_session.play_position
+                RPC_connections[RPC_ID].end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
+            
+            rpc_ression = RPC_connections[RPC_ID]
+
+            rpc_ression.jellyfin_payload = jellyfin_session
+
+            rpc_ression.update()
 
     logging.debug("Processing complete!")
 
@@ -99,6 +138,8 @@ while True:
         logging.info("Switching to displaying the default game.")
         RPC_connections["DEFAULT"] = defaultGame
         RPC_connections["DEFAULT"].default_game_payload = config.default_game
+        if config.default_game.inject_discord_status_data:
+            RPC_connections[RPC_ID].inject_bonus_status_data(config.default_game.discord_status_data)
         RPC_connections["DEFAULT"].instanciate(config.default_game.name)
 
     if RPC_connections.get("DEFAULT"):

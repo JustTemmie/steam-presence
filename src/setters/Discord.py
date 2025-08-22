@@ -3,7 +3,7 @@ import src.steam_presence.misc as steam_presence
 
 from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
 from src.steam_presence.config import Config, DiscordData
-from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload
+from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload
 
 from time import time
 from pypresence import Presence, ActivityType
@@ -26,6 +26,8 @@ class DiscordRPC:
         # all activity types display details and state, in addition to text on image hovers
         # the listening, competing, and streaming activities also displays the large image URL
 
+        self.status_data: DiscordData = self.config.discord.status_data
+
         self.details: str = ""
         self.state: str = ""
         self.start_time: int = 0
@@ -43,6 +45,7 @@ class DiscordRPC:
         self.steam_payload: SteamFetchPayload = None
         self.local_payload: LocalGameFetchPayload = None
         self.discord_payload: DiscordDataPayload = None
+        self.jellyfin_payload: JellyfinDataPayload = None
         self.steam_grid_db_payload = None
         self.epic_games_store_payload = None
         self.default_game_payload = None
@@ -51,11 +54,22 @@ class DiscordRPC:
         return {
             "discord": self.discord_payload,
             # "epic_games_store": self.epic_games_store_payload,
+            "jellyfin": self.jellyfin_payload,
             "local": self.local_payload,
             "steam_grid_db": self.steam_grid_db_payload,
             "steam": self.steam_payload,
             "default": self.default_game_payload,
         }
+
+    def inject_bonus_status_data(self, status_data: DiscordData):
+        if status_data.get("status_lines"):
+            self.status_data["status_lines"] = status_data.get("status_lines") + self.status_data.get("status_lines")
+
+        if status_data.get("small_images"):
+            self.status_data["small_images"] = status_data.small_images + self.status_data.small_images
+
+        if status_data.get("large_images"):
+            self.status_data["large_images"] = status_data.large_images + self.status_data.large_images
 
     def instanciate(self, name: str, platform_fallback_app_id: int = None) -> bool:
         # skip app if it's found in the blacklist
@@ -81,6 +95,10 @@ class DiscordRPC:
         
         self.discord_app_id = app_ID
         self.start_time = round(time())
+
+        # overwrite config data with per app config data if applicable
+        for key, value in self.config.discord.per_app_status_data.get(self.app_name.casefold(), {}).items():
+            status_data[key] = value
         
         # only connect if discord is enabled
         # this check exists to allow development without having discord running
@@ -115,11 +133,6 @@ class DiscordRPC:
         
         self.last_update = time()
 
-        app_config_data: DiscordData = self.config.discord.playing
-        # overwrite config data with per app config data if applicable
-        for key, value in self.config.discord.per_app.get(self.app_name.casefold(), {}).items():
-            app_config_data[key] = value
-
         self.details = None
         self.state = None
         self.discord_buttons = []
@@ -140,7 +153,7 @@ class DiscordRPC:
             except:
                 return None
 
-        for status_line in app_config_data.get("status_lines", []):
+        for status_line in self.status_data.get("status_lines", []):
             formatted_line = formatRpcData(status_line)
             if formatted_line:
                 status_lines.append(formatted_line)
@@ -150,7 +163,7 @@ class DiscordRPC:
         if len(status_lines) >= 2:
             self.state = status_lines[1]
         
-        for large_image_url, large_image_text in app_config_data.get("large_images", {}).items():
+        for large_image_url, large_image_text in self.status_data.get("large_images", {}).items():
             image_url = formatRpcData(large_image_url)
             image_text = formatRpcData(large_image_text)
             # Continue if large_image_text was explicitly set to None
@@ -159,7 +172,7 @@ class DiscordRPC:
                 self.large_image_text = image_text
                 break
         
-        for small_image_url, small_image_text in app_config_data.get("small_images", {}).items():
+        for small_image_url, small_image_text in self.status_data.get("small_images", {}).items():
             image_url = formatRpcData(small_image_url)
             image_text = formatRpcData(small_image_text)
             if image_url and (image_text or small_image_text == None):
@@ -180,7 +193,7 @@ class DiscordRPC:
             self.discord_RPC.update(
                 activity_type = self.activity_type,
                 details = self.details, state = self.state,
-                start = self.start_time,
+                start = self.start_time, end=self.end_time,
                 large_image = self.large_image_url, large_text = self.large_image_text,
                 small_image = self.small_image_url, small_text = self.small_image_text,
                 buttons=[{"label": "My Website", "url": "https://qtqt.cf"}]#self.discord_buttons

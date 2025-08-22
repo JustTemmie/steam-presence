@@ -18,6 +18,24 @@ class SteamGridDBFetchPayload:
 class EpicGamesStoreFetchPayload:
     pass
 
+# ID: "jellyfin"
+@dataclass
+class JellyfinDataPayload:
+    user_name: str | None = None
+    client: str | None = None
+    device_name: str | None = None
+
+    play_position: float | None = None
+    media_source_id: str | None = None
+    is_paused: bool | None = None
+    
+    episode_name: str | None = None
+    series_name: str | None = None
+    series_studio: str | None = None
+    production_year: int | None = None
+    overview: str | None = None
+    length: float | None = None
+
 # ID: "local"
 @dataclass
 class LocalGameFetchPayload:

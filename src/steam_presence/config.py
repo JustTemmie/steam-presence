@@ -50,6 +50,12 @@ class SteamUser:
     # cookie_browser: str = ""
 
 @dataclass
+class JellyfinInstance:
+    api_key: str = ""
+    username: str = ""
+    instance_url: str = ""
+
+@dataclass
 class LocalProcess:
     process_name: str
     display_name: str
@@ -74,25 +80,21 @@ class ConfigDiscord(GenericConfig):
             "The Legend of Zelda: Majora's Mask": 1403714141734309980,
             "Rift Riff": 1403716067821490206,
         }
-        self.playing: DiscordData = {
+        self.status_data: DiscordData = {
             "status_lines": [
-                "{default.details}", # used by the default game
-                "{default.state}", # used by the default game
-                "{steam.rich_presence}",
-                "{steam.review_description} reviews ({steam.review_percent}%)",
             ],
             "small_images": {
             },
             "large_images": {
                 "{discord.image_url}": None,
                 "{steam_grid_db.icon}": None,
-                "{steam.capsule_header_image}": None,
+                "{steam.capsule_header_image}": None, # these are still here, due to injected status lines being prioritized above all else
                 "{steam.capsule_vertical_image}": None,
             },
         }
         # the discord trackmania icon SUCKS due to being super blurry
         # so it's a good example of a per app config
-        self.per_app: dict[str, DiscordData] = {
+        self.per_app_status_data: dict[str, DiscordData] = {
             "Trackmania": { # case-insensitive name
                 "large_images": {
                     "https://img.icons8.com/?size=256&id=LJEz2yMtDm2f": None,
@@ -112,17 +114,45 @@ class ConfigSteam(GenericConfig):
         self.discord_fallback_app_id: int = 1400020030565122139
         # self.steam_store_button: bool = True
 
+        self.inject_discord_status_data: bool = True
+        self.discord_status_data: DiscordData = {
+            "status_lines": [
+                "{steam.rich_presence}",
+                "{steam.review_description} reviews ({steam.review_percent}%)",
+            ]
+        }
+
 # TODO, not implemented
 class ConfigEpicGamesStore(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
         self.discord_fallback_app_id: int = 1400020128699256914
 
+class ConfigJellyfin(GenericConfig):
+    def __init__(self):
+        # warning: if you enable jellyfin images, your IP will be visible via inspect element
+        # it will also require your instance to be accessible by the wider internet
+        # so an instance URL of http://192.168.1.20:8096 won't work if you want images
+        self.enabled: bool = False
+        self.instances: list [JellyfinInstance] = []
+        self.discord_app_id: int = 1408546253008146472
+
+        self.inject_discord_status_data: bool = True
+        self.discord_status_data: DiscordData = {
+            "status_lines": [
+                "{jellyfin.episode_name}",
+                "{jellyfin.series_name}",
+            ]
+        }
+
 class ConfigLocalGames(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
         self.discord_fallback_app_id: int = 1400019956321620069
         self.processes: list[LocalProcess] = []
+
+        self.inject_discord_status_data: bool = True
+        self.discord_status_data: DiscordData = {}
 
 class ConfigDefaultGame(GenericConfig):
     def __init__(self):
@@ -132,6 +162,14 @@ class ConfigDefaultGame(GenericConfig):
         self.details: str = "Fighting a Stalnox."
         self.state: str = None
 
+        self.inject_discord_status_data: bool = True
+        self.discord_status_data: DiscordData = {
+            "status_lines": [
+                "{default.details}",
+                "{default.state}",
+            ]
+        }
+
 class Config:
     def __init__(self):
         self.app = ConfigApp()
@@ -139,6 +177,7 @@ class Config:
         self.steam_grid_db = ConfigSteamGridDB()
         self.steam = ConfigSteam()
         self.epic_games_store = ConfigEpicGamesStore()
+        self.jellyfin = ConfigJellyfin()
         self.local_games = ConfigLocalGames()
         self.default_game = ConfigDefaultGame()
     
@@ -161,15 +200,16 @@ class Config:
         self.steam_grid_db.load(config.get("steam_grid_db", {}))
         self.steam.load(config.get("steam", {}))
         self.epic_games_store.load(config.get("epic_games_store", {}))
+        self.jellyfin.load(config.get("jellyfin", {}))
         self.local_games.load(config.get("local_games", {}))
         self.default_game.load(config.get("default_game", {}))
 
         # ensure the app name checks are case-insensitive
         case_insensitive_per_app = {}
-        for key, value in self.discord.per_app.items():
+        for key, value in self.discord.per_app_status_data.items():
             case_insensitive_per_app[key.casefold()] = value
         
-        self.discord.per_app = case_insensitive_per_app
+        self.discord.per_app_status_data = case_insensitive_per_app
 
 
 
