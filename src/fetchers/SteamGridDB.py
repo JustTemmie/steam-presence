@@ -128,7 +128,7 @@ class SteamGridDB:
         self,
         app_id: Union[str, int] | None = None,
         platform: SteamGridPlatforms | None = None,
-        app_name: str | None = None,
+        app_name: str | None = None
     ) -> SteamGridDBFetchPayload:        
         if app_name:
             app_id = self.getIdWithName(app_name)

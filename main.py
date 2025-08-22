@@ -122,13 +122,13 @@ while True:
                     config.jellyfin.discord_app_id
                 )
 
-                RPC_connections[RPC_ID].start_time = time.time() - jellyfin_session.play_position
-                RPC_connections[RPC_ID].end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
             
             rpc_ression = RPC_connections[RPC_ID]
 
             rpc_ression.jellyfin_payload = jellyfin_session
 
+            rpc_ression.start_time = time.time() - jellyfin_session.play_position
+            rpc_ression.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
             rpc_ression.update()
 
     logging.debug("Processing complete!")

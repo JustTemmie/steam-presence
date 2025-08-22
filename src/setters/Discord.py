@@ -122,7 +122,7 @@ class DiscordRPC:
                 )
 
             else:
-                self.steam_grid_db_payload = self.SgdbFetcher.fetch(app_name=self.app_name)
+                self.steam_grid_db_payload = self.SgdbFetcher.fetch(app_name = self.app_name)
 
 
     def update(self) -> None:
