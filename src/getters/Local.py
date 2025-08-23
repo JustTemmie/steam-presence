@@ -19,7 +19,7 @@ class LocalGetter:
         return_payloads: list[LocalGameFetchPayload] = []
 
         desired_processes: list[psutil.Process] = {}
-        desired_process_names = process_names = [process.get("process_name") for process in self.config.local_games.processes]
+        desired_process_names = process_names = [process.get("process_name") for process in self.config.local.processes]
 
         for process in psutil.process_iter(['username', 'name']):
             # this should handle shitdows domain format "DOMAIN\\user"
@@ -38,7 +38,7 @@ class LocalGetter:
                 process_exe = None
             
             display_name = None
-            for config_process_entry in self.config.local_games.processes:
+            for config_process_entry in self.config.local.processes:
                 if config_process_entry["process_name"] == process_name:
                     display_name = config_process_entry["display_name"]
 

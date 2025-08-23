@@ -138,6 +138,11 @@ class ConfigJellyfin(GenericConfig):
         self.discord_app_id: int = 1408546253008146472
 
         self.inject_discord_status_data: bool = True
+        self.default_discord_status_data: DiscordData = {
+            "large_images": {
+                "https://avatars.githubusercontent.com/u/45698031?s=512.png": None
+            }
+        }
         self.per_media_type_discord_status_data: dict[str, DiscordData] = {
             "episode": {
                 "status_lines": [
@@ -149,7 +154,7 @@ class ConfigJellyfin(GenericConfig):
             }
         }
 
-class ConfigLocalGames(GenericConfig):
+class ConfigLocal(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
         self.discord_fallback_app_id: int = 1400019956321620069
@@ -182,7 +187,7 @@ class Config:
         self.steam = ConfigSteam()
         self.epic_games_store = ConfigEpicGamesStore()
         self.jellyfin = ConfigJellyfin()
-        self.local_games = ConfigLocalGames()
+        self.local = ConfigLocal()
         self.default_game = ConfigDefaultGame()
     
     def load(self, config_path="config.json"):
@@ -205,7 +210,7 @@ class Config:
         self.steam.load(config.get("steam", {}))
         self.epic_games_store.load(config.get("epic_games_store", {}))
         self.jellyfin.load(config.get("jellyfin", {}))
-        self.local_games.load(config.get("local_games", {}))
+        self.local.load(config.get("local", {}))
         self.default_game.load(config.get("default_game", {}))
 
         # ensure the app name checks are case-insensitive

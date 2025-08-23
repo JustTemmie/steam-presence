@@ -63,13 +63,13 @@ class DiscordRPC:
 
     def inject_bonus_status_data(self, status_data: DiscordData):
         if status_data.get("status_lines"):
-            self.status_data["status_lines"] = status_data.get("status_lines") + self.status_data.get("status_lines")
+            self.status_data["status_lines"] = status_data.get("status_lines", []) + self.status_data.get("status_lines", [])
 
         if status_data.get("small_images"):
-            self.status_data["small_images"] = status_data.small_images + self.status_data.small_images
+            self.status_data["small_images"] = status_data.get("small_images", {}) | self.status_data.get("small_images", {})
 
         if status_data.get("large_images"):
-            self.status_data["large_images"] = status_data.large_images + self.status_data.large_images
+            self.status_data["large_images"] = status_data.get("large_images", {}) | self.status_data.get("large_images", {})
 
     def instanciate(self, name: str, platform_fallback_app_id: int = None) -> bool:
         # skip app if it's found in the blacklist
@@ -196,7 +196,7 @@ class DiscordRPC:
                 start = self.start_time, end=self.end_time,
                 large_image = self.large_image_url, large_text = self.large_image_text,
                 small_image = self.small_image_url, small_text = self.small_image_text,
-                buttons=[{"label": "My Website", "url": "https://qtqt.cf"}]#self.discord_buttons
+                buttons=[{"label": "Test Button", "url": "https://github.com/JustTemmie/steam-presence"}]#self.discord_buttons
             )
         else:
             print(f"refreshing rpc with: ")
