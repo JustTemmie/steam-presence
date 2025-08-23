@@ -179,14 +179,15 @@ class DiscordRPC:
                 self.small_image_url = image_url
                 self.small_image_text = image_text
                 break
-
+    
+    def close_RPC(self):
+        if self.config.discord.enabled:
+            self.discord_RPC.close()
     
     def refresh(self) -> bool:
         # close the connection if it's been more than a minute since the last update
         if self.last_update + self.config.app.timeout < time():
-            if self.config.discord.enabled:
-                self.discord_RPC.close()
-            
+            self.close_RPC()
             return False
         
         if self.config.discord.enabled:

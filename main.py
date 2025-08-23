@@ -111,6 +111,9 @@ while True:
             RPC_ID = jellyfin_session.media_source_id
 
             if not RPC_connections.get(RPC_ID):
+                if jellyfin_session.is_paused:
+                    continue
+                
                 config.load() # reload the config
                 RPC_connections[RPC_ID] = DiscordRPC(config, None)
                 RPC_connections[RPC_ID].activity_type = 3
@@ -126,14 +129,19 @@ while True:
                     config.jellyfin.discord_app_id
                 )
 
+            rpc_ression = RPC_connections[RPC_ID]
+            rpc_ression.jellyfin_payload = jellyfin_session
             
-            if not jellyfin_session.is_paused:
-                rpc_ression = RPC_connections[RPC_ID]
-                rpc_ression.jellyfin_payload = jellyfin_session
+            if jellyfin_session.is_paused:
+                rpc_ression.start_time = None
+                rpc_ression.end_time = None
+            
+            else:
                 
                 rpc_ression.start_time = time.time() - jellyfin_session.play_position
                 rpc_ression.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
                 rpc_ression.update()
+            
 
     logging.debug("Processing complete!")
 
