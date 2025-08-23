@@ -1,7 +1,7 @@
-from src.steam_presence.config import Config, SteamUser
-from src.steam_presence.DataClasses import SteamFetchPayload
+from src.presence_manager.config import Config, SteamUser
+from src.presence_manager.DataClasses import SteamFetchPayload
 
-import src.steam_presence.misc as steam_presence
+import src.presence_manager.misc as presence_manager
 
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
@@ -64,7 +64,7 @@ class SteamAPI:
 
     def getCurrentState(self) -> getCurrentStateResponse | None:
         URL = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
-        r = steam_presence.fetch(URL)
+        r = presence_manager.fetch(URL)
 
         if not r:
             logging.error(f"failed to fetch current state")
@@ -91,7 +91,7 @@ class SteamAPI:
     def fetchMiniProfileData(self) -> fetchMiniProfileDataResponse:
         # convert steam ID 64 to steam ID 3, yes, really
         URL = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
-        r = steam_presence.fetch(URL)
+        r = presence_manager.fetch(URL)
 
         if not r:
             logging.error(f"failed to fetch mini profile")
@@ -126,7 +126,7 @@ class SteamAPI:
     
     def fetchAppDetails(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
         URL = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
-        r = steam_presence.fetch(URL)
+        r = presence_manager.fetch(URL)
 
         if not r:
             logging.error(f"failed to fetch app details for {app_ID}")
@@ -180,7 +180,7 @@ class SteamAPI:
     
     def fetchAppReviews(self, app_ID: Union[str, int]) -> fetchAppReviewsResponse:
         URL = f"https://store.steampowered.com/appreviews/{app_ID}?json=1"
-        r = steam_presence.fetch(URL)
+        r = presence_manager.fetch(URL)
 
         if not r:
             logging.error(f"failed to fetch app reviews for {app_ID}")

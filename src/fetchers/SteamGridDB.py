@@ -4,9 +4,9 @@ if __name__ == "__main__":
     import sys
     sys.path.append(".")
 
-from src.steam_presence.DataClasses import SteamGridDBFetchPayload
+from src.presence_manager.DataClasses import SteamGridDBFetchPayload
 
-import src.steam_presence.misc as steam_presence
+import src.presence_manager.misc as presence_manager
 
 from dataclasses import dataclass
 from enum import Enum
@@ -33,7 +33,7 @@ class SteamGridDB:
         self.base_url = "https://www.steamgriddb.com/api/v2"
     
     def _ApiFetch(self, endpoint: str, data: dict = {}) -> dict | None:
-        r = steam_presence.fetch(
+        r = presence_manager.fetch(
             f"{self.base_url}/{endpoint}",
             data = data,
             headers =  {
@@ -144,7 +144,7 @@ class SteamGridDB:
         
 
 if __name__ == "__main__":
-    from src.steam_presence.config import Config, SteamUser
+    from src.presence_manager.config import Config, SteamUser
 
     config = Config()
     config.load()

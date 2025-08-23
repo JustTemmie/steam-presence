@@ -12,7 +12,7 @@ import json
 # to check if the browser we're fetching cookies from is a supported browser
 # import browser_cookie3
 
-from src.steam_presence.command_line_args import args
+from src.presence_manager.command_line_args import args
 
 
 def deep_merge(original, update):
@@ -73,7 +73,7 @@ class ConfigDiscord(GenericConfig):
         self.custom_app_ids: dict[str, int] = {
             "App name here": 141471589572411256163
         }
-        self.steam_presence_app_ids: dict[str, int] = {
+        self.presence_manager_app_ids: dict[str, int] = {
             # "official" custom app IDs, overwrite custom_app_ids instead
             # i will _NOT_ merge a PR adding more of these
             # as the creator could delete them in the future, sorry :p

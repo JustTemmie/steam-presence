@@ -1,5 +1,5 @@
-from src.steam_presence.config import Config
-from src.steam_presence.DataClasses import LocalGameFetchPayload
+from src.presence_manager.config import Config
+from src.presence_manager.DataClasses import LocalGameFetchPayload
 
 import psutil
 import getpass

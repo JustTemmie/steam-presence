@@ -1,6 +1,6 @@
 # this file should only be imported once, preferably in main.py or smth
 
-from src.steam_presence.command_line_args import args
+from src.presence_manager.command_line_args import args
 
 import logging
 import os

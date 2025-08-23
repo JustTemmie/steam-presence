@@ -1,9 +1,9 @@
 import src.apis.discord as discordAPI
-import src.steam_presence.misc as steam_presence
+import src.presence_manager.misc as presence_manager
 
 from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
-from src.steam_presence.config import Config, DiscordData
-from src.steam_presence.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload
+from src.presence_manager.config import Config, DiscordData
+from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload
 
 from time import time
 from pypresence import Presence, ActivityType
@@ -78,7 +78,7 @@ class DiscordRPC:
             return False
         
         logging.info(f"Instanciating Discord RPC connection for {name}")
-        print("–" * steam_presence.get_terminal_width())
+        print("–" * presence_manager.get_terminal_width())
         self.app_name = name
 
         self.discord_payload = discordAPI.fetchData(self.app_name)

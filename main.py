@@ -1,12 +1,12 @@
-import src.steam_presence.logger # just need to initialize it
-import src.steam_presence.misc as steam_presence
+import src.presence_manager.logger # just need to initialize it
+import src.presence_manager.misc as presence_manager
 
 from src.fetchers.SteamGridDB import SteamGridDB
 from src.getters.Jellyfin import JellyfinGetter
 from src.getters.Local import LocalGetter
 from src.getters.Steam import SteamGetter
 from src.setters.Discord import DiscordRPC
-from src.steam_presence.config import Config, SteamUser, JellyfinInstance
+from src.presence_manager.config import Config, SteamUser, JellyfinInstance
 
 import time
 import logging
@@ -52,7 +52,7 @@ if config.jellyfin.enabled:
         jellyfinGetters.append(JellyfinGetter(config, instance))
 
 logging.info("Setup complete!")
-print("–" * steam_presence.get_terminal_width())
+print("–" * presence_manager.get_terminal_width())
 
 while True:
     if localGetter:
@@ -169,7 +169,7 @@ while True:
 
     for ID in expired_IDs:
         logging.info(f"Deleting connection to {ID}")
-        print("–" * steam_presence.get_terminal_width())
+        print("–" * presence_manager.get_terminal_width())
         RPC_connections.pop(ID)
     
     logging.debug("----- Cycle complete -----")

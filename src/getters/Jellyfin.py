@@ -1,7 +1,7 @@
-from src.steam_presence.config import Config, JellyfinInstance
-from src.steam_presence.DataClasses import JellyfinDataPayload
+from src.presence_manager.config import Config, JellyfinInstance
+from src.presence_manager.DataClasses import JellyfinDataPayload
 
-import src.steam_presence.misc as steam_presence
+import src.presence_manager.misc as presence_manager
 
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
@@ -24,7 +24,7 @@ class JellyfinGetter:
         logging.debug(f"Fetching jellyfin information")
 
         URL = f"{self.url}/Sessions?api_key={self.api_key}"
-        r = steam_presence.fetch(URL)
+        r = presence_manager.fetch(URL)
 
         if not r:
             logging.error(f"failed to fetch jellyfin session for {self.username}")
