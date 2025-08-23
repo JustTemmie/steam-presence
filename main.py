@@ -154,7 +154,9 @@ def getConfigFile():
             "game1",
             "game2",
             "game3"
-        ]
+        ],
+
+        "WHITELIST" : []
     }
 
     if exists(f"{dirname(abspath(__file__))}/config.json"):
@@ -818,6 +820,11 @@ def setPresenceDetails():
         return
     
     currentGameBlacklisted = False
+
+    # ignore game if it is not whitelisted, case insensitive check
+    if whitelist and gameName.casefold() not in map(str.casefold, whitelist):
+        log(f"{gameName} is not in whitelist, not creating RPC object.")
+        return
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
     if appID == defaultAppID or appID == defaultLocalAppID:
@@ -990,6 +997,7 @@ def main():
     global defaultAppID
     global defaultLocalAppID
     global blacklist
+    global whitelist
     global currentGameBlacklisted
     currentGameBlacklisted = False
     
@@ -1028,6 +1036,7 @@ def main():
     doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
     localGames = config["LOCAL_GAMES"]["GAMES"]
     blacklist = config["BLACKLIST"]
+    whitelist = config["WHITELIST"]
     
     steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
     gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
@@ -1106,6 +1115,7 @@ def main():
         doLocalGames = config["LOCAL_GAMES"]["ENABLED"]
         localGames = config["LOCAL_GAMES"]["GAMES"]
         blacklist = config["BLACKLIST"]
+        whitelist = config["WHITELIST"]
         
         steamStoreCoverartBackup = config["COVER_ART"]["USE_STEAM_STORE_FALLBACK"]
         gridEnabled = config["COVER_ART"]["STEAM_GRID_DB"]["ENABLED"]
