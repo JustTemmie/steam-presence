@@ -138,11 +138,15 @@ class ConfigJellyfin(GenericConfig):
         self.discord_app_id: int = 1408546253008146472
 
         self.inject_discord_status_data: bool = True
-        self.discord_status_data: DiscordData = {
-            "status_lines": [
-                "{jellyfin.episode_name}",
-                "{jellyfin.series_name}",
-            ]
+        self.per_media_type_discord_status_data: dict[str, DiscordData] = {
+            "episode": {
+                "status_lines": [
+                    "{jellyfin.name}",
+                ]
+            },
+            "movie": {
+
+            }
         }
 
 class ConfigLocalGames(GenericConfig):

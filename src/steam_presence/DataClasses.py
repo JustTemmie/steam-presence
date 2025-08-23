@@ -29,12 +29,13 @@ class JellyfinDataPayload:
     media_source_id: str | None = None
     is_paused: bool | None = None
     
-    episode_name: str | None = None
+    name: str | None = None
     series_name: str | None = None
     series_studio: str | None = None
     production_year: int | None = None
     overview: str | None = None
     length: float | None = None
+    media_type: str | None = None
 
 # ID: "local"
 @dataclass

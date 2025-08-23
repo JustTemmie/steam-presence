@@ -34,6 +34,9 @@ class JellyfinGetter:
         if not data:
             return JellyfinDataPayload()
         
+        with open("test.json", "w") as f:
+            json.dump(data, f)
+        
         for session in data:
             play_state = session.get("PlayState", {})
             now_playing = session.get("NowPlayingItem", {})
@@ -52,7 +55,7 @@ class JellyfinGetter:
                     media_source_id = play_state.get("MediaSourceId"),
                     is_paused = play_state.get("IsPaused"),
 
-                    episode_name = now_playing.get("Name"),
+                    name = now_playing.get("Name"),
                     series_name = now_playing.get("SeriesName"),
                     series_studio = now_playing.get("SeriesStudio"),
                     production_year = now_playing.get("ProductionYear"),
@@ -61,6 +64,7 @@ class JellyfinGetter:
                     # genres,
                     # studios,
                     length = now_playing.get("RunTimeTicks") / 10000 / 1000, # seconds
+                    media_type = now_playing.get("Type", "").casefold(),
                 )
         
         return JellyfinDataPayload()

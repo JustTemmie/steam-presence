@@ -114,11 +114,14 @@ while True:
                 config.load() # reload the config
                 RPC_connections[RPC_ID] = DiscordRPC(config, None)
                 RPC_connections[RPC_ID].activity_type = 3
-                if config.jellyfin.inject_discord_status_data:
-                        RPC_connections[RPC_ID].inject_bonus_status_data(config.jellyfin.discord_status_data)
 
+                if config.jellyfin.inject_discord_status_data:
+                    logging.info(f"{jellyfin_session.name} is of type {jellyfin_session.media_type}, injecting relevant status data")
+                    bonus_status_data: dict = config.jellyfin.per_media_type_discord_status_data.get(jellyfin_session.media_type, {})
+                    RPC_connections[RPC_ID].inject_bonus_status_data(bonus_status_data)
+                
                 RPC_connections[RPC_ID].instanciate(
-                    jellyfin_session.series_name,
+                    jellyfin_session.series_name or jellyfin_session.name,
                     config.jellyfin.discord_app_id
                 )
 
