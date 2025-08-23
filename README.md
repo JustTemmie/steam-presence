@@ -179,7 +179,9 @@ this is what a full config file looks like; you only need to fill in the parts t
     	"game1",
     	"game2",
     	"game3"
-    ]
+    ],
+
+    "WHITELIST": []
 }
 ```
 # Steam web API
@@ -409,6 +411,18 @@ Example:
 ]
 ```
 
+# Whitelist
+
+Here you can add games that should only show up in Discord's rich presence, all games not included here will not create a rich presence object. Leave empty to have no whitelist. Please fill in the games field according to the full name of the games, these are not case sensitive.
+
+Example:
+```
+"WHITELIST" : [
+    "Hades",
+    "Deep Rock Galactic",
+    "Risk of Rain 2"
+]
+```
 
 # Python
 only tested on python3.8 and higher.
