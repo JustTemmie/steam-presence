@@ -117,7 +117,7 @@ while True:
 
                 if config.jellyfin.inject_discord_status_data:
                     logging.info(f"{jellyfin_session.name} is of type {jellyfin_session.media_type}, injecting relevant status data")
-                    
+
                     bonus_status_data: dict = config.jellyfin.per_media_type_discord_status_data.get(jellyfin_session.media_type, {})
                     RPC_connections[RPC_ID].inject_bonus_status_data(bonus_status_data | config.jellyfin.default_discord_status_data)
                 
@@ -127,13 +127,13 @@ while True:
                 )
 
             
-            rpc_ression = RPC_connections[RPC_ID]
-
-            rpc_ression.jellyfin_payload = jellyfin_session
-
-            rpc_ression.start_time = time.time() - jellyfin_session.play_position
-            rpc_ression.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
-            rpc_ression.update()
+            if not jellyfin_session.is_paused:
+                rpc_ression = RPC_connections[RPC_ID]
+                rpc_ression.jellyfin_payload = jellyfin_session
+                
+                rpc_ression.start_time = time.time() - jellyfin_session.play_position
+                rpc_ression.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
+                rpc_ression.update()
 
     logging.debug("Processing complete!")
 

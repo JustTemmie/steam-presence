@@ -134,7 +134,7 @@ class ConfigJellyfin(GenericConfig):
         # it will also require your instance to be accessible by the wider internet
         # so an instance URL of http://192.168.1.20:8096 won't work if you want images
         self.enabled: bool = False
-        self.instances: list [JellyfinInstance] = []
+        self.instances: list[JellyfinInstance] = []
         self.discord_app_id: int = 1408546253008146472
 
         self.inject_discord_status_data: bool = True
