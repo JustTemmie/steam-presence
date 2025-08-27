@@ -15,6 +15,17 @@ import os
 # for general programing
 import copy
 
+# for enabling the use of XDG Base Directory Specification
+from pathlib import Path
+APP_NAME = "steam-presence"
+xdg_config_home = os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")
+config_dir = Path(xdg_config_home) / APP_NAME
+config_dir.mkdir(parents=True, exist_ok=True)
+data_dir = config_dir / "data"
+
+config_file = config_dir / "config.json"
+meta_file = config_dir / "meta.json"
+
 try:
     # requesting data from steam's API
     import requests
@@ -74,18 +85,18 @@ def makeWebRequest(URL, loops=0):
             return "error"
 
 def getMetaFile():
-    if exists(f"{dirname(__file__)}/data/meta.json"):
-        with open(f"{dirname(__file__)}/data/meta.json", "r") as f:
+    if exists(f"{data_dir}/meta.json"):
+        with open(f"{data_dir}/meta.json", "r") as f:
             metaFile = json.load(f)
     
-    elif exists(f"{dirname(__file__)}/meta.json"):
-        with open(f"{dirname(__file__)}/meta.json", "r") as f:
+    elif exists(meta_file):
+        with open(meta_file, "r") as f:
             metaFile = json.load(f)
     
     else:
         # remove in 1.12? maybe 1.13 - whenever i do anything else with the meta file - just make this throw an error instead
         log("couldn't find the the meta file, creating new one")
-        with open(f"{dirname(__file__)}/meta.json", "w") as f:
+        with open(meta_file, "w") as f:
             metaFile = json.dump({"structure-version": "0"}, f)
         
         return getMetaFile()
@@ -100,7 +111,7 @@ def writeToMetaFile(keys: list, value):
     
     metaFile[keys[-1]] = value
     
-    with open(f"{dirname(__file__)}/data/meta.json", "w") as f:
+    with open(f"{data_dir}/meta.json", "w") as f:
         json.dump(metaFile, f)
     
     
@@ -159,12 +170,12 @@ def getConfigFile():
         "WHITELIST" : []
     }
 
-    if exists(f"{dirname(abspath(__file__))}/config.json"):
-        with open(f"{dirname(abspath(__file__))}/config.json", "r") as f:
+    if exists(config_file):
+        with open(config_file, "r") as f:
             userSettings = json.load(f)
     
-    elif exists(f"{dirname(abspath(__file__))}/exampleconfig.json"):
-        with open(f"{dirname(abspath(__file__))}/exampleconfig.json", "r") as f:
+    elif exists(f"{config_dir}/exampleconfig.json"):
+        with open(f"{config_dir}/exampleconfig.json", "r") as f:
             userSettings = json.load(f)
     
     else:
@@ -234,7 +245,7 @@ def getImageFromSGDB(loops=0):
                     coverImageText = f"Art by {entry[4]} on SteamGrid DB"
                     log("successfully retrived icon from SGDB")
                     # saves this data to disk
-                    with open(f'{dirname(abspath(__file__))}/data/icons.txt', 'a') as icons:
+                    with open(f'{data_dir}/icons.txt', 'a') as icons:
                         icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                         icons.close()
                     return
@@ -265,7 +276,7 @@ def getImageFromSGDB(loops=0):
                 log("successfully retrived icon from SGDB")
 
                 # saves data to disk
-                with open(f'{dirname(abspath(__file__))}/data/icons.txt', 'a') as icons:
+                with open(f'{data_dir}/icons.txt', 'a') as icons:
                     icons.write(f"{gameName.lower()}={coverImage}||{coverImageText}\n")
                     icons.close()
                 return
@@ -412,7 +423,7 @@ def getGameImage():
     log(f"fetching icon for {gameName}")
     
     # checks if there's already an existing icon saved to disk for the game 
-    with open(f'{dirname(abspath(__file__))}/data/icons.txt', 'r') as icons:
+    with open(f'{data_dir}/icons.txt', 'r') as icons:
         for i in icons:
             # cut off the new line character
             game = i.split("\n")
@@ -465,11 +476,11 @@ def getGamePrice():
         
 # web scrapes the user's web page, sending the needed cookies along with the request
 def getWebScrapePresence():
-    if not exists(f"{dirname(abspath(__file__))}/cookies.txt"):
+    if not exists(f"{config_dir}/cookies.txt"):
         print("cookie.txt not found, this is because `WEB_SCRAPE` is enabled in the config")
         return
     
-    cj = cookielib.MozillaCookieJar(f"{dirname(abspath(__file__))}/cookies.txt")
+    cj = cookielib.MozillaCookieJar(f"{config_dir}/cookies.txt")
     cj.load()
     
     # split on ',' in case of multiple userIDs
@@ -641,8 +652,8 @@ def getGameDiscordID(loops=0):
     ignoredChars = "®©™℠"
     
     # check if the "customGameIDs.json" file exists, if so, open it
-    if exists(f"{dirname(abspath(__file__))}/data/customGameIDs.json"):
-        with open(f"{dirname(abspath(__file__))}/data/customGameIDs.json", "r") as f:
+    if exists(f"{data_dir}/customGameIDs.json"):
+        with open(f"{data_dir}/customGameIDs.json", "r") as f:
             # load the values of the file
             gameIDsFile = json.load(f)
 
@@ -762,8 +773,8 @@ def getLocalPresence():
     global isPlayingSteamGame
     
     
-    if exists(f"{dirname(abspath(__file__))}/data/games.txt"):
-        with open(f'{dirname(abspath(__file__))}/data/games.txt', 'r+') as gamesFile:
+    if exists(f"{data_dir}/games.txt"):
+        with open(f'{data_dir}/games.txt', 'r+') as gamesFile:
             for i in gamesFile:
                 # remove the new line
                 game = i.split("\n")
@@ -791,7 +802,7 @@ def getLocalPresence():
     # if games.txt doesn't exist at all           
     else:
         log("games.txt does not exist, creating one")
-        with open(f'{dirname(abspath(__file__))}/data/games.txt', 'a') as gamesFile:
+        with open(f'{data_dir}/games.txt', 'a') as gamesFile:
             gamesFile.write(f"{processName}={processName.title()}\n")
             gamesFile.close()
     
@@ -894,9 +905,9 @@ def verifyProjectVersion():
             error("import error whilst importing `shutil`, exiting")
             exit()
         
-        if not os.path.exists(f"{dirname(__file__)}/data"):
-            log(f"creating {dirname(__file__)}/data/")
-            os.makedirs(f"{dirname(__file__)}/data")
+        if not os.path.exists(data_dir):
+            log(f"creating {data_dir}")
+            os.makedirs(data_dir)
         
         expectedFiles = {
             "icons.txt": "",
@@ -907,18 +918,18 @@ def verifyProjectVersion():
         for i in expectedFiles:
             if not os.path.exists(i):
                 log(f"creating file `{i}` with content `{expectedFiles[i]}`")
-                with open(f"{dirname(__file__)}/{i}", "w") as f:
+                with open(f"{config_dir}/{i}", "w") as f:
                     f.write(expectedFiles[i])  
         
         try:
-            log(f"moving {dirname(__file__)}/icons.txt")
-            shutil.move(f"{dirname(__file__)}/icons.txt",           f"{dirname(__file__)}/data/icons.txt")
-            log(f"moving {dirname(__file__)}/games.txt")
-            shutil.move(f"{dirname(__file__)}/games.txt",           f"{dirname(__file__)}/data/games.txt")
-            log(f"moving {dirname(__file__)}/customGameIDs.json")
-            shutil.move(f"{dirname(__file__)}/customGameIDs.json",  f"{dirname(__file__)}/data/customGameIDs.json")
-            log(f"moving {dirname(__file__)}/meta.json")
-            shutil.move(f"{dirname(__file__)}/meta.json",           f"{dirname(__file__)}/data/meta.json")
+            log(f"moving {config_dir}/icons.txt")
+            shutil.move(f"{config_dir}/icons.txt",           f"{data_dir}/icons.txt")
+            log(f"moving {config_dir}/games.txt")
+            shutil.move(f"{config_dir}/games.txt",           f"{data_dir}/games.txt")
+            log(f"moving {config_dir}/customGameIDs.json")
+            shutil.move(f"{config_dir}/customGameIDs.json",  f"{data_dir}/customGameIDs.json")
+            log(f"moving {config_dir}/meta.json")
+            shutil.move(f"{config_dir}/meta.json",           f"{data_dir}/meta.json")
             
             writeToMetaFile(["structure-version"], "1")
         except Exception as e:
@@ -983,7 +994,7 @@ def checkForUpdate():
 def main():
     global currentVersion
     # this always has to match the newest release tag
-    currentVersion = "v1.12.1"
+    currentVersion = "v1.12.2"
     
     # check if there's any updates for the program
     checkForUpdate()
