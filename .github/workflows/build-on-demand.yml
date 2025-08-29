@@ -1,0 +1,66 @@
+name: Build image (on demand)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to build (branch, tag, or SHA)"
+        default: "main"
+        required: true
+      extra_tag:
+        description: "Optional extra image tag (e.g., v1.2.3)"
+        required: false
+      push_latest:
+        description: "Also tag/push as :latest"
+        type: boolean
+        default: false
+      no_cache:
+        description: "Build without cache"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: steam-presence
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          # Always produce ref + sha tags; optionally add latest and/or a custom tag
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha
+            ${{ inputs.push_latest && 'type=raw,value=latest' || '' }}
+            ${{ inputs.extra_tag != '' && format('type=raw,value={0}', inputs.extra_tag) || '' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          no-cache: ${{ inputs.no_cache }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
