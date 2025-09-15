@@ -90,6 +90,8 @@ follow the **setup** guide
 
 and for linux users, run the [Installer](#automatic-installer)
 
+for Nix/NixOS users, see the [Nix/NixOS](#nixnixos-experimental) section at the bottom.
+
 ## Setup
 ### Minimal
 create a file named `config.json` in the same directory as main.py and fill in the required data:
@@ -473,3 +475,57 @@ make this script executable using `chmod +x startup.sh`
 then run `crontab -e` and add `@reboot  /home/USER/startup.sh` to the end of the crontab file.
 
 if you've done these steps the script should launch itself after your computer turns on.
+
+### Nix/NixOS (experimental)
+
+If you use Nix flakes, this repository provides a package, an overlay, and a NixOS module.
+
+- Install just the package:
+  ```sh
+  nix run github:JustTemmie/steam-presence#steam-presence
+  ```
+
+- Use the overlay in your flake to get `pkgs.steam-presence`:
+  ```nix
+  {
+    inputs.steam-presence.url = "github:JustTemmie/steam-presence";
+    outputs = { self, nixpkgs, steam-presence, ... }: {
+      overlays.default = steam-presence.overlays.default;
+    };
+  }
+  ```
+
+- Enable the NixOS user service module:
+  ```nix
+  {
+    inputs.steam-presence.url = "github:JustTemmie/steam-presence";
+    outputs = { self, nixpkgs, steam-presence, ... }:
+    let
+      system = "x86_64-linux"; # your system
+      pkgs = import nixpkgs { inherit system; overlays = [ steam-presence.overlays.default ]; };
+    in {
+      nixosConfigurations.yourHost = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          steam-presence.nixosModules.steam-presence
+          ({ config, pkgs, ... }: {
+            programs.steam.presence = {
+              enable = true;
+              # Either set the key directly (not recommended) or via file/secret
+              # steamApiKey = "YOUR_STEAM_WEB_API_KEY";
+              steamApiKeyFile = "/run/secrets/steam_api_key"; # e.g. from agenix/sops
+              userIds = [ "YOUR_STEAMID" ];
+              # Other optional settings in nix/nixos-modules/steam-presence.nix
+            };
+          })
+        ];
+      };
+    };
+  }
+  ```
+
+How Nix configuration works (brief):
+- The module runs steam-presence as a systemd user service and manages a runtime directory at `$HOME/.local/state/steam-presence`.
+- A `config.base.json` is generated from your Nix options. If you provide `steamApiKeyFile` and/or `coverArt.steamGridDB.apiKeyFile`, the service reads those files at start and injects secrets into `config.json` (secrets are not stored in the Nix store).
+- Optional files like `cookies.txt`, `games.txt`, `icons.txt`, and `customGameIDs.json` can be pointed to via options; they are copied into the runtime directory at service start.
+- You can still edit files in the runtime directory without rebuilding; the wrapper seeds it on first run only.
