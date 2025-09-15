@@ -38,13 +38,6 @@
       };
     })
     // {
-      overlays = {
-        default = final: prev: {
-          steam-presence = prev.callPackage (self + "/nix/pkgs/steam-presence") {
-            src = prev.lib.cleanSource (self + "/");
-          };
-        };
-      };
       nixosModules = {
         steam-presence = import ./nix/nixos-modules/steam-presence.nix;
       };
