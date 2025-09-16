@@ -90,7 +90,7 @@ follow the **setup** guide
 
 and for linux users, run the [Installer](#automatic-installer)
 
-for Nix/NixOS users, see the [Nix/NixOS](#nixnixos-experimental) section at the bottom.
+for Nix/NixOS users, see the [Nix/NixOS](#nixnixos) section at the bottom.
 
 ## Setup
 ### Minimal
