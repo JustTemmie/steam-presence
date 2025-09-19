@@ -733,8 +733,16 @@ def getLocalPresence():
     
     try:
         # get a list of all open applications, make a list of their creation times, and their names
-        processCreationTimes = [i.create_time() for i in psutil.process_iter()]
-        processNames = [i.name().lower() for i in psutil.process_iter()]
+        processCreationTimes = []
+        processNames = []
+
+        for proc in psutil.process_iter():
+            try:
+                processCreationTimes.append(proc.create_time())
+                processNames.append(proc.name().lower())
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                # Continue instead of return when processes have updated since they were grabbed
+                continue
     except:
         return
 
