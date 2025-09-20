@@ -90,6 +90,8 @@ follow the **setup** guide
 
 and for linux users, run the [Installer](#automatic-installer)
 
+for Nix/NixOS users, see the [Nix/NixOS](#nixnixos) section at the bottom.
+
 ## Setup
 ### Minimal
 create a file named `config.json` in the same directory as main.py and fill in the required data:
@@ -473,3 +475,39 @@ make this script executable using `chmod +x startup.sh`
 then run `crontab -e` and add `@reboot  /home/USER/startup.sh` to the end of the crontab file.
 
 if you've done these steps the script should launch itself after your computer turns on.
+
+## Nix/NixOS
+
+If you use Nix flakes, this repository provides a package and a NixOS module.
+
+- Use the flake:
+  ```nix
+  {
+    inputs = {
+      steam-presence = {
+        url = "github:JustTemmie/steam-presence";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
+    };
+  }
+  ```
+
+- Enable the NixOS user service module:
+  ```nix
+  {
+    imports = [inputs.steam-presence.nixosModules.steam-presence];
+
+    programs.steam = {
+      # ...
+      presence = {
+        enable = true;
+        # Either set the key directly (not recommended) or via file/secret
+        # steamApiKey = "YOUR_STEAM_WEB_API_KEY";
+        steamApiKeyFile = "/run/secrets/steam_api_key"; # e.g. from agenix/sops
+        userIds = [ "YOUR_STEAMID" ];
+        # Other optional settings
+      };
+    };
+  }
+  ```
+  All configuration options are in [steam-presence.nix](nix/nixos-modules/steam-presence.nix)
