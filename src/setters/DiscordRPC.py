@@ -1,4 +1,5 @@
 import logging
+import copy
 
 from time import time
 from pypresence import Presence, ActivityType
@@ -12,10 +13,10 @@ from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchP
 
 
 class DiscordRPC:
-    def __init__(self, config: Config, SgdbFetcher: SteamGridDB | None):
+    def __init__(self, config: Config, SGDB_FETCHER: SteamGridDB | None):
         self.config = config
 
-        self.SgdbFetcher = SgdbFetcher
+        self.SGDB_FETCHER = SGDB_FETCHER
 
         self.discord_RPC: Presence = None
         self.discord_app_id: int = 0
@@ -26,7 +27,7 @@ class DiscordRPC:
         # all activity types display details and state, in addition to text on image hovers
         # the listening, competing, and streaming activities also displays the large image URL
 
-        self.status_data: DiscordData = self.config.discord.status_data
+        self.status_data: DiscordData = copy.deepcopy(config.discord.status_data)
 
         self.details: str = ""
         self.state: str = ""
@@ -62,6 +63,7 @@ class DiscordRPC:
         }
 
     def inject_bonus_status_data(self, status_data: DiscordData):
+        logging.debug("injecting status data: %s", status_data)
         if status_data.get("status_lines"):
             self.status_data["status_lines"] = status_data.get("status_lines", []) + self.status_data.get("status_lines", [])
 
@@ -110,20 +112,20 @@ class DiscordRPC:
         return True
     
     def first_update(self) -> None:
-        if self.SgdbFetcher:
+        if self.SGDB_FETCHER:
             if self.steam_payload or self.discord_payload.steam_app_id:
                 if self.steam_payload:
                     steam_app_id = self.steam_payload.app_id
                 else:
                     steam_app_id = self.discord_payload.steam_app_id
                 
-                self.steam_grid_db_payload = self.SgdbFetcher.fetch(
+                self.steam_grid_db_payload = self.SGDB_FETCHER.fetch(
                     app_id = steam_app_id,
                     platform = SteamGridPlatforms.STEAM
                 )
 
             else:
-                self.steam_grid_db_payload = self.SgdbFetcher.fetch(app_name = self.app_name)
+                self.steam_grid_db_payload = self.SGDB_FETCHER.fetch(app_name = self.app_name)
 
 
     def update(self) -> None:
