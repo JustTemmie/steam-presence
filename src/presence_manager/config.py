@@ -193,7 +193,7 @@ class Config:
         logging.info("Loading config file")
 
         try:
-            with open(config_path, "r") as f:
+            with open(config_path, "r", encoding="utf-8", errors="replace") as f:
                 config = json.load(f)
         except FileNotFoundError as e:
             if self.app:
