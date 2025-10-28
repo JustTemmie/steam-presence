@@ -14,7 +14,6 @@ import json
 
 from src.presence_manager.command_line_args import args
 
-
 def deep_merge(original, update):
     for key, value in update.items():
         if (

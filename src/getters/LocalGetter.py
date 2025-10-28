@@ -1,11 +1,10 @@
-from src.presence_manager.config import Config
-from src.presence_manager.DataClasses import LocalGameFetchPayload
-
 import psutil
 import getpass
 import logging
 
-from dataclasses import dataclass
+from src.presence_manager.config import Config
+from src.presence_manager.DataClasses import LocalGameFetchPayload
+
 
 current_user = getpass.getuser()
 
@@ -19,7 +18,7 @@ class LocalGetter:
         return_payloads: list[LocalGameFetchPayload] = []
 
         desired_processes: list[psutil.Process] = {}
-        desired_process_names = process_names = [process.get("process_name") for process in self.config.local.processes]
+        desired_process_names = [process.get("process_name") for process in self.config.local.processes]
 
         for process in psutil.process_iter(['username', 'name']):
             # this should handle shitdows domain format "DOMAIN\\user"
@@ -27,14 +26,13 @@ class LocalGetter:
 
             if username == current_user:
                 if process.name() in desired_process_names:
+                    logging.debug("found running proccess %s", process.name())
                     desired_processes[process.name()] = process
-        
-        
 
         for process_name, process in desired_processes.items():
             try:
                 process_exe = process.exe()
-            except:
+            except Exception:
                 process_exe = None
             
             display_name = None

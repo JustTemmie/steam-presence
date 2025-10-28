@@ -1,16 +1,13 @@
+import logging
+
+from dataclasses import dataclass
+from typing import Union
+from bs4 import BeautifulSoup
+
 from src.presence_manager.config import Config, SteamUser
 from src.presence_manager.DataClasses import SteamFetchPayload
 
 import src.presence_manager.misc as presence_manager
-
-from dataclasses import dataclass
-from bs4 import BeautifulSoup
-from typing import Union
-
-import requests
-import logging
-import json
-
 
 @dataclass
 class getCurrentStateResponse:
@@ -62,19 +59,22 @@ class SteamAPI:
         
         self.api_key = user.api_key
 
-    def getCurrentState(self) -> getCurrentStateResponse | None:
-        URL = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
-        r = presence_manager.fetch(URL)
+    def get_current_state(self) -> getCurrentStateResponse | None:
+        url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
+        r = presence_manager.fetch(url)
 
         if not r:
-            logging.error(f"failed to fetch current state")
+            logging.error("failed to fetch current state")
             return getCurrentStateResponse()
         
         player_summaries = r.json()
 
-        if not player_summaries: return None
+        if not player_summaries:
+            return None
+
         players = player_summaries.get("response", {}).get("players", [])
-        if len(players) == 0: return None
+        if len(players) == 0:
+            return None
 
         player_summary = players[0]
         if not player_summary.get("gameid"): return None
@@ -88,13 +88,13 @@ class SteamAPI:
         )
     
     # returns html data or None
-    def fetchMiniProfileData(self) -> fetchMiniProfileDataResponse:
+    def fetch_mini_profile_data(self) -> fetchMiniProfileDataResponse:
         # convert steam ID 64 to steam ID 3, yes, really
-        URL = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
-        r = presence_manager.fetch(URL)
+        url = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
+        r = presence_manager.fetch(url)
 
         if not r:
-            logging.error(f"failed to fetch mini profile")
+            logging.error("failed to fetch mini profile")
             return fetchMiniProfileDataResponse()
 
         mini_profile = r.content
@@ -124,12 +124,12 @@ class SteamAPI:
             profile_badge_name = badge_name,
         )
     
-    def fetchAppDetails(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
-        URL = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
-        r = presence_manager.fetch(URL)
+    def fetch_app_details(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
+        url = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
+        r = presence_manager.fetch(url)
 
         if not r:
-            logging.error(f"failed to fetch app details for {app_ID}")
+            logging.error("failed to fetch app details for %s", app_ID)
             return fetchAppDetailsResponse()
 
         data = r.json()
@@ -178,12 +178,12 @@ class SteamAPI:
             release_date,
         )
     
-    def fetchAppReviews(self, app_ID: Union[str, int]) -> fetchAppReviewsResponse:
-        URL = f"https://store.steampowered.com/appreviews/{app_ID}?json=1"
-        r = presence_manager.fetch(URL)
+    def fetch_app_reviews(self, app_id: Union[str, int]) -> fetchAppReviewsResponse:
+        url = f"https://store.steampowered.com/appreviews/{app_id}?json=1"
+        r = presence_manager.fetch(url)
 
         if not r:
-            logging.error(f"failed to fetch app reviews for {app_ID}")
+            logging.error("failed to fetch app reviews for %s", app_id)
             return fetchAppReviewsResponse()
 
         data = r.json()
@@ -218,18 +218,18 @@ class SteamGetter:
         self.api = SteamAPI(config, user)
 
     def fetch(self) -> SteamFetchPayload:
-        logging.debug(f"Fetching steam information for {self.user}")
+        logging.debug("Fetching steam information for %s", self.user)
 
-        current_game_info: getCurrentStateResponse | None = self.api.getCurrentState()
+        current_game_info: getCurrentStateResponse | None = self.api.get_current_state()
 
         if not current_game_info or not current_game_info.app_id:
             return SteamFetchPayload()
 
-        current_app_ID = current_game_info.app_id
+        current_app_id = current_game_info.app_id
 
-        mini_profile_data: fetchMiniProfileDataResponse = self.api.fetchMiniProfileData()
-        app_details_data: fetchAppDetailsResponse = self.api.fetchAppDetails(current_app_ID)
-        app_reviews: fetchAppReviewsResponse = self.api.fetchAppReviews(current_app_ID)
+        mini_profile_data: fetchMiniProfileDataResponse = self.api.fetch_mini_profile_data()
+        app_details_data: fetchAppDetailsResponse = self.api.fetch_app_details(current_app_id)
+        app_reviews: fetchAppReviewsResponse = self.api.fetch_app_reviews(current_app_id)
 
         # surely there's a better way to pass this much data
         return SteamFetchPayload(

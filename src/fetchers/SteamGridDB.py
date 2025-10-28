@@ -1,19 +1,12 @@
-# adds the project root to the path, this is to allow importing other files in an easier manner
-# if you know a better way of doing this, please tell me!
-if __name__ == "__main__":
-    import sys
-    sys.path.append(".")
+import logging
+
+from enum import Enum
+from typing import Union
 
 from src.presence_manager.DataClasses import SteamGridDBFetchPayload
 
 import src.presence_manager.misc as presence_manager
 
-from dataclasses import dataclass
-from enum import Enum
-import logging
-from typing import Union
-
-import requests
 
 class SteamGridPlatforms(Enum):
     INTERNAL = None
@@ -32,7 +25,7 @@ class SteamGridDB:
 
         self.base_url = "https://www.steamgriddb.com/api/v2"
     
-    def _ApiFetch(self, endpoint: str, data: dict = {}) -> dict | None:
+    def _api_fetch(self, endpoint: str, data: dict = {}) -> dict | None:
         r = presence_manager.fetch(
             f"{self.base_url}/{endpoint}",
             data = data,
@@ -42,24 +35,24 @@ class SteamGridDB:
         )
 
         if not r:
-            logging.error(f"failed to fetch {endpoint}")
+            logging.error("failed to fetch %s", endpoint)
             return None
         
         return r.json()
     
-    def getIdWithName(
+    def get_id_with_name(
         self,
         app_name: str
     ) -> int | None:
         # i love undocumented endpoints
-        r = self._ApiFetch(f"search/autocomplete/{app_name}")
+        r = self._api_fetch(f"search/autocomplete/{app_name}")
 
         if r and len(r) >= 1:
             games = r.get("data", [])
             if len(games) >= 1:
                 return games[0].get("id", None)
 
-    def getIconWithId(
+    def get_icon_with_id(
         self,
         app_id: Union[str, int],
         platform: SteamGridPlatforms
@@ -102,11 +95,11 @@ class SteamGridDB:
         # search using SGDBs IDs if no platform is given
         # "/icons/games/{app_id}" is internal
         # "/icons/{platform}/{app_id}" is external
-        if platform == None:
+        if platform is None:
             platform = "game"
         
         for data in datas:
-            r = self._ApiFetch(f"icons/{platform}/{app_id}", data=data)
+            r = self._api_fetch(f"icons/{platform}/{app_id}", data=data)
             
             if r and len(data) >= 1:
                 icons = r.get("data", [])
@@ -131,31 +124,13 @@ class SteamGridDB:
         app_name: str | None = None
     ) -> SteamGridDBFetchPayload:        
         if app_name:
-            app_id = self.getIdWithName(app_name)
+            app_id = self.get_id_with_name(app_name)
             platform = SteamGridPlatforms.INTERNAL
         
         if app_id:
             return SteamGridDBFetchPayload(
-                self.getIconWithId(app_id, platform)
+                self.get_icon_with_id(app_id, platform)
             )
         
         else:
             return SteamGridDBFetchPayload()
-        
-
-if __name__ == "__main__":
-    from src.presence_manager.config import Config, SteamUser
-
-    config = Config()
-    config.load()
-
-    sgdb = SteamGridDB(config)
-
-    # icon = sgdb.getIconExternalPlatform(1086940, "steam")
-
-    id = sgdb.getIdWithName("The Legend of Zelda: Majora's Mask")
-    print(id)
-
-    icon = sgdb.getIconWithId(id, SteamGridPlatforms.INTERNAL)
-    print(icon)
-

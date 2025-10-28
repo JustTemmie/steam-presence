@@ -1,15 +1,12 @@
+import logging
+import json
+
 from src.presence_manager.config import Config, JellyfinInstance
 from src.presence_manager.DataClasses import JellyfinDataPayload
 
 import src.presence_manager.misc as presence_manager
 
-from dataclasses import dataclass
-from bs4 import BeautifulSoup
-from typing import Union
 
-import requests
-import logging
-import json
 
 
 class JellyfinGetter:
@@ -21,13 +18,13 @@ class JellyfinGetter:
         self.url = instance.instance_url
 
     def fetch(self) -> JellyfinDataPayload:
-        logging.debug(f"Fetching jellyfin information")
+        logging.debug("Fetching jellyfin information")
 
-        URL = f"{self.url}/Sessions?api_key={self.api_key}"
-        r = presence_manager.fetch(URL)
+        url = f"{self.url}/Sessions?api_key={self.api_key}"
+        r = presence_manager.fetch(url)
 
         if not r:
-            logging.error(f"failed to fetch jellyfin session for {self.username}")
+            logging.error("failed to fetch jellyfin session for %s", self.username)
             return JellyfinDataPayload()
 
         data = r.json()

@@ -1,12 +1,10 @@
 beautifulsoup4
 requests
 
+pypresence
+
 # used to check the resolution of images
 pillow
-
-# discord, we're using the git version due to the last release being from 2023
-# and they've added support for different activity types, like what is required by jellyfin
-git+https://github.com/qwertyquerty/pypresence
 
 # steam
 # browser-cookie3 # fetching browser cookies

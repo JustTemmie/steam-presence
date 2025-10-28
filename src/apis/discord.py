@@ -1,23 +1,25 @@
+import json
+import logging
+
+from typing import Union
+from io import BytesIO
+from PIL import Image
+
+from dataclasses import dataclass
+
 from src.presence_manager.config import Config
 from src.presence_manager.DataClasses import DiscordDataPayload
 
 import src.presence_manager.misc as presence_manager
 
-from typing import Union
-from dataclasses import dataclass
-from PIL import Image
-from io import BytesIO
-
-import requests
-import json
 
 
-def getAppId(app_name: str, config: Config | None = None) -> int | None:
+def get_app_id(app_name: str, config: Config | None = None) -> int | None:
     URL = "https://discordapp.com/api/v8/applications/detectable"
     r = presence_manager.fetch(URL)
 
     if not r:
-        logging.error(f"failed to fetch discord app ID")
+        logging.error("failed to fetch discord app ID")
         return None
 
     games = []
@@ -63,7 +65,7 @@ class getAppInfoPayload:
     steam_app_id: str | None = None
     name: str | None = None
 
-def getAppInfo(app_id: Union[str | int]) -> getAppInfoPayload | None:
+def get_app_info(app_id: Union[str | int]) -> getAppInfoPayload | None:
     r = presence_manager.fetch(f"https://discordapp.com/api/v8/applications/{app_id}/rpc")
     
     if not r:
@@ -94,13 +96,13 @@ def getAppInfo(app_id: Union[str | int]) -> getAppInfoPayload | None:
         name=response.get("name")
     )
 
-def fetchData(app_name: str) -> DiscordDataPayload:
-    app_id = getAppId(app_name)
+def fetch_data(app_name: str) -> DiscordDataPayload:
+    app_id = get_app_id(app_name)
 
     if not app_id:
         return DiscordDataPayload()
 
-    app_info = getAppInfo(app_id)
+    app_info = get_app_info(app_id)
 
     return DiscordDataPayload(
         app_id,

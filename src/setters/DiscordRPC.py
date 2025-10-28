@@ -1,3 +1,8 @@
+import logging
+
+from time import time
+from pypresence import Presence, ActivityType
+
 import src.apis.discord as discordAPI
 import src.presence_manager.misc as presence_manager
 
@@ -5,11 +10,6 @@ from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
 from src.presence_manager.config import Config, DiscordData
 from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload
 
-from time import time
-from pypresence import Presence, ActivityType
-
-import logging
-import string
 
 class DiscordRPC:
     def __init__(self, config: Config, SgdbFetcher: SteamGridDB | None):
@@ -30,8 +30,8 @@ class DiscordRPC:
 
         self.details: str = ""
         self.state: str = ""
-        self.start_time: int = 0
-        self.end_time: int = 0
+        self.start_time: int = None
+        self.end_time: int = None
 
         self.large_image_url: str | None = None
         self.large_image_text: str = ""
@@ -70,45 +70,46 @@ class DiscordRPC:
 
         if status_data.get("large_images"):
             self.status_data["large_images"] = status_data.get("large_images", {}) | self.status_data.get("large_images", {})
-
+        
     def instanciate(self, name: str, platform_fallback_app_id: int = None) -> bool:
         # skip app if it's found in the blacklist
         if name.casefold() in map(str.casefold, self.config.app.blacklist):
-            logging.info(f"{gameName} is in the blacklist, skipping RPC object creation.")
+            logging.info("%s is in the blacklist, skipping RPC object creation.", name)
             return False
         
-        logging.info(f"Instanciating Discord RPC connection for {name}")
-        print("–" * presence_manager.get_terminal_width())
+        logging.info("Instanciating Discord RPC connection for %s", name)
         self.app_name = name
 
-        self.discord_payload = discordAPI.fetchData(self.app_name)
+        self.discord_payload = discordAPI.fetch_data(self.app_name)
 
         # figure out the correct app ID
-        app_ID = discordAPI.getAppId(name, self.config)
-        if app_ID:
+        app_id = discordAPI.get_app_id(name, self.config)
+        if app_id:
             self.app_id_is_name = True
         else:
             if platform_fallback_app_id:
-                app_ID = platform_fallback_app_id
+                app_id = platform_fallback_app_id
             else:
-                app_ID = self.config.discord.fallback_app_id
+                app_id = self.config.discord.fallback_app_id
         
-        self.discord_app_id = app_ID
-        self.start_time = round(time())
+        self.discord_app_id = app_id
+        self.start_time = time()
 
         # overwrite config data with per app config data if applicable
         for key, value in self.config.discord.per_app_status_data.get(self.app_name.casefold(), {}).items():
-            status_data[key] = value
+            self.status_data[key] = value
         
         # only connect if discord is enabled
         # this check exists to allow development without having discord running
         if self.config.discord.enabled:
             self.discord_RPC = Presence(client_id=self.discord_app_id)
             self.discord_RPC.connect()
+        
+        logging.info("Established Discord RPC connection for %s", name)
 
         return True
     
-    def firstUpdate(self) -> None:
+    def first_update(self) -> None:
         if self.SgdbFetcher:
             if self.steam_payload or self.discord_payload.steam_app_id:
                 if self.steam_payload:
@@ -126,10 +127,10 @@ class DiscordRPC:
 
 
     def update(self) -> None:
-        logging.debug(f"Updating data for {self.app_name}")
+        logging.debug("Updating data for %s", self.app_name)
         
         if self.last_update == 0:
-            self.firstUpdate()
+            self.first_update()
         
         self.last_update = time()
 
@@ -143,18 +144,18 @@ class DiscordRPC:
         if not self.app_id_is_name:
             status_lines.append(self.app_name)
         
-        def formatRpcData(line) -> str | None:
+        def format_rpc_data(line) -> str | None:
             try:
                 formatted_line = line.format(**self._get_RPC_data())
                 if "None" in formatted_line:
                     return None
                 
                 return formatted_line
-            except:
+            except Exception:
                 return None
 
         for status_line in self.status_data.get("status_lines", []):
-            formatted_line = formatRpcData(status_line)
+            formatted_line = format_rpc_data(status_line)
             if formatted_line:
                 status_lines.append(formatted_line)
 
@@ -164,8 +165,8 @@ class DiscordRPC:
             self.state = status_lines[1]
         
         for large_image_url, large_image_text in self.status_data.get("large_images", {}).items():
-            image_url = formatRpcData(large_image_url)
-            image_text = formatRpcData(large_image_text)
+            image_url = format_rpc_data(large_image_url)
+            image_text = format_rpc_data(large_image_text)
             # Continue if large_image_text was explicitly set to None
             if image_url and (image_text or large_image_text == None):
                 self.large_image_url = image_url
@@ -173,8 +174,8 @@ class DiscordRPC:
                 break
         
         for small_image_url, small_image_text in self.status_data.get("small_images", {}).items():
-            image_url = formatRpcData(small_image_url)
-            image_text = formatRpcData(small_image_text)
+            image_url = format_rpc_data(small_image_url)
+            image_text = format_rpc_data(small_image_text)
             if image_url and (image_text or small_image_text == None):
                 self.small_image_url = image_url
                 self.small_image_text = image_text
@@ -199,11 +200,13 @@ class DiscordRPC:
                 small_image = self.small_image_url, small_text = self.small_image_text,
                 buttons=[{"label": "Test Button", "url": "https://github.com/JustTemmie/steam-presence"}]#self.discord_buttons
             )
-        else:
-            print(f"refreshing rpc with: ")
+        if not self.config.discord.enabled or logging.root.level < 20:
+            print("refreshing rpc with:")
+            print(f"activity_type = {self.activity_type}")
             print(f"details = {self.details}")
             print(f"state = {self.state}")
             print(f"start_time = {self.start_time}")
+            print(f"end_time = {self.end_time}")
             print(f"large_image_text = {self.large_image_text}")
             print(f"large_image_url = {self.large_image_url}")
             print(f"small_image_text = {self.small_image_text}")
@@ -212,7 +215,7 @@ class DiscordRPC:
 
         return True
 
-    def updateSteamData(self) -> None:
+    def update_steam_data(self) -> None:
         pass
         # buttons are currently broken for some unknown reason
         # if self.config.steam.steam_store_button and self.steam_payload.app_id != 0:
