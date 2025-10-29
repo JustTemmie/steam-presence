@@ -95,29 +95,30 @@ while True:
         data = MPD_GETTER.fetch()
 
         if data.title:
-            if not RPC_connections.get("MPD"):
-                config.load()
-                RPC_connections["MPD"] = DiscordRPC(config, None)
-                RPC_connections["MPD"].activity_type = ActivityType.LISTENING
-
-                if config.mpd.inject_discord_status_data:
-                    RPC_connections["MPD"].inject_bonus_status_data(config.mpd.discord_status_data)
-                
-                RPC_connections["MPD"].instanciate(
-                    "MPD",
-                    config.mpd.discord_app_id
-                )
-
-                RPC_connections["MPD"].app_id_is_name = True
-
-            rpc_session = RPC_connections.get("MPD")
-
             if data.state == "pause":
-                logging.info("MPD is paused, closing discord RPC")
-                rpc_session.close_RPC()
-                RPC_connections.pop("MPD")
-            
-            elif data.state == "play":
+                if RPC_connections.get("MPD"):
+                    logging.info("MPD is paused, closing discord RPC")
+                    RPC_connections.get("MPD").close_RPC()
+                    RPC_connections.pop("MPD")
+
+            else:
+                if not RPC_connections.get("MPD"):
+                    config.load()
+                    RPC_connections["MPD"] = DiscordRPC(config, None)
+                    RPC_connections["MPD"].activity_type = ActivityType.LISTENING
+
+                    if config.mpd.inject_discord_status_data:
+                        RPC_connections["MPD"].inject_bonus_status_data(config.mpd.discord_status_data)
+                    
+                    RPC_connections["MPD"].instanciate(
+                        "MPD",
+                        config.mpd.discord_app_id
+                    )
+
+                    RPC_connections["MPD"].app_id_is_name = True
+
+                rpc_session = RPC_connections.get("MPD")
+                
                 if data.elapsed and data.duration:
                     try:
                         rpc_session.start_time = time.time() - float(data.elapsed)
