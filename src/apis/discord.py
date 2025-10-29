@@ -3,9 +3,8 @@ import logging
 
 from typing import Union
 from io import BytesIO
-from PIL import Image
-
 from dataclasses import dataclass
+from PIL import Image
 
 from src.presence_manager.config import Config
 from src.presence_manager.DataClasses import DiscordDataPayload
@@ -15,8 +14,8 @@ import src.presence_manager.misc as presence_manager
 
 
 def get_app_id(app_name: str, config: Config | None = None) -> int | None:
-    URL = "https://discordapp.com/api/v8/applications/detectable"
-    r = presence_manager.fetch(URL)
+    url = "https://discordapp.com/api/v8/applications/detectable"
+    r = presence_manager.fetch(url)
 
     if not r:
         logging.error("failed to fetch discord app ID")

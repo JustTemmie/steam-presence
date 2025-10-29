@@ -1,5 +1,4 @@
 import logging
-import requests
 
 import src.presence_manager.misc as presence_manager
 

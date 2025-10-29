@@ -1,27 +1,16 @@
-# adds the project root to the path, this is to allow importing other files in an easier manner
-# if you know a better way of doing this, please tell me!
-if __name__ == "__main__":
-    import sys
-    sys.path.append(".")
-
-from dataclasses import dataclass
-
 import logging
 import json
 
-# to check if the browser we're fetching cookies from is a supported browser
-# import browser_cookie3
+from dataclasses import dataclass
 
-from src.presence_manager.command_line_args import args
-
-def deep_merge(original, update):
+def _deep_merge(original, update):
     for key, value in update.items():
         if (
             key in original
             and isinstance(original[key], dict)
             and isinstance(value, dict)
         ):
-            deep_merge(original[key], value)
+            _deep_merge(original[key], value)
         else:
             original[key] = value
     
@@ -29,7 +18,7 @@ def deep_merge(original, update):
 
 class GenericConfig:
     def load(self, update: dict):
-        data = deep_merge(self.__dict__, update)
+        data = _deep_merge(self.__dict__, update)
         
         for key, value in data.items():
             setattr(self, key, value)

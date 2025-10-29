@@ -13,7 +13,7 @@ def get_terminal_width() -> int:
     return width
 
 
-def fetch(url: str, data: dict = {}, headers: dict = {}) -> requests.Response | None:
+def fetch(url: str, data: dict = None, headers: dict = None) -> requests.Response | None:
     try:
         r = requests.get(
             url,
