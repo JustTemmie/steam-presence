@@ -9,8 +9,7 @@ class MpdGetter:
         self.server_url = config.mpd.server_url
         self.password = config.mpd.password
 
-        self.host = self.server_url.split(":")[0]
-        self.port = self.server_url.split(":")[1]
+        self.host, self.port = self.server_url.split(":", 1)
 
     def fetch(self) -> MpdFetchPayload:
         logging.debug("Fetching MPD information at %s %s", self.host, self.port)
@@ -30,7 +29,7 @@ class MpdGetter:
             conn.sendall(b"currentsong\n")
             conn.sendall(b"status\n")
 
-            while b"OK\n" not in data:
+            while data.count(b"OK\n") < 2:
                 data += conn.recv(4096)
         
         info = {}
