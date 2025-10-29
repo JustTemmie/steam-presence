@@ -27,7 +27,8 @@ def _api_fetch(endpoint: str, api_key: str, data: dict = None) -> dict | None:
         data = data,
         headers =  {
             "Authorization": f"Bearer {api_key}"
-        }
+        },
+        cache_ttl = 1800
     )
 
     if not r:

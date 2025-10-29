@@ -13,7 +13,8 @@ def fetch_cover_art_url(artist: str | None, recording: str | None, release: str 
     query = " AND ".join(parts)
 
     r = presence_manager.fetch(
-        f"https://musicbrainz.org/ws/2/recording/?query={query} AND primarytype:album&inc=releases&fmt=json"
+        f"https://musicbrainz.org/ws/2/recording/?query={query} AND primarytype:album&inc=releases&fmt=json",
+        cache_ttl = 1800
     )
 
     if not r:
@@ -33,6 +34,7 @@ def fetch_cover_art_url(artist: str | None, recording: str | None, release: str 
     
     cover_art_resp = presence_manager.fetch(
         f"https://coverartarchive.org/release/{releases[0].get('id')}",
+        cache_ttl = 1800
     )
 
     if not cover_art_resp:

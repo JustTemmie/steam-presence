@@ -15,7 +15,10 @@ import src.presence_manager.misc as presence_manager
 
 def get_app_id(app_name: str, config: Config | None = None) -> int | None:
     url = "https://discordapp.com/api/v8/applications/detectable"
-    r = presence_manager.fetch(url)
+    r = presence_manager.fetch(
+        url,
+        cache_ttl = 1800
+    )
 
     if not r:
         logging.error("failed to fetch discord app ID")
@@ -65,7 +68,10 @@ class getAppInfoPayload:
     name: str | None = None
 
 def get_app_info(app_id: Union[str | int]) -> getAppInfoPayload | None:
-    r = presence_manager.fetch(f"https://discordapp.com/api/v8/applications/{app_id}/rpc")
+    r = presence_manager.fetch(
+        f"https://discordapp.com/api/v8/applications/{app_id}/rpc",
+        cache_ttl = 1800
+    )
     
     if not r:
         logging.error("failed to fetch image from discord")
@@ -75,7 +81,10 @@ def get_app_info(app_id: Union[str | int]) -> getAppInfoPayload | None:
 
     if response.get("icon"):
         image_url = f"https://cdn.discordapp.com/app-icons/{app_id}/{response.get('icon')}.webp"
-        r = presence_manager.fetch(image_url)
+        r = presence_manager.fetch(
+            image_url,
+            cache_ttl = 1800
+        )
         if r:
             image = Image.open(BytesIO(r.content))
             # discard images under 64p, they just look super bad

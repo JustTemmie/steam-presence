@@ -1,5 +1,10 @@
 import os
+import hashlib
+import time
+from typing import Dict, Tuple
+
 import requests
+
 
 def get_terminal_width() -> int:
     width: int
@@ -12,8 +17,48 @@ def get_terminal_width() -> int:
     
     return width
 
+_CACHE: Dict[str, Tuple[requests.Response, float]] = {}
+_LOCK = __import__('threading').RLock()
 
-def fetch(url: str, data: dict = None, headers: dict = None) -> requests.Response | None:
+def _cache_key(url: str, data: dict = None, headers: dict = None) -> str:
+    data = data or {}
+    headers = headers or {}
+
+    # using hashing may be a bit overkill, but it looks neat
+    raw = f"{url}|{sorted(data.items())}|{sorted(headers.items())}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def _get_cached(key: str, ttl: float) -> requests.Response | None:
+    with _LOCK:
+        if key not in _CACHE:
+            return None
+        
+        response, fetched_at = _CACHE[key]
+        if time.time() - fetched_at > ttl:
+            del _CACHE[key]
+            return None
+        
+        return response
+
+
+def _store_cached(key: str, response: requests.Response) -> None:
+    with _LOCK:
+        _CACHE[key] = (response, time.time())
+
+def fetch(
+    url: str,
+    data: dict = None,
+    headers: dict = None,
+    cache_ttl: float = 0) -> requests.Response | None:
+
+    key = _cache_key(url, data, headers)
+
+    if cache_ttl > 0:
+        cached = _get_cached(key, cache_ttl)
+        if cached:
+            return cached
+
     try:
         r = requests.get(
             url,
@@ -24,10 +69,11 @@ def fetch(url: str, data: dict = None, headers: dict = None) -> requests.Respons
 
         if r.status_code != 200:
             return
-        
-        return r
-    except requests.exceptions.ConnectTimeout:
-        return
     
-    except requests.exceptions.ConnectionError:
-        return
+        if cache_ttl > 0:
+            _store_cached(key, r)
+
+        return r
+    
+    except (requests.ConnectTimeout, requests.ConnectionError):
+        return None

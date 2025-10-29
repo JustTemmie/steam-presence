@@ -126,7 +126,10 @@ class SteamAPI:
     
     def fetch_app_details(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
         url = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
-        r = presence_manager.fetch(url)
+        r = presence_manager.fetch(
+            url,
+            cache_ttl = 900
+        )
 
         if not r:
             logging.error("failed to fetch app details for %s", app_ID)
@@ -180,7 +183,10 @@ class SteamAPI:
     
     def fetch_app_reviews(self, app_id: Union[str, int]) -> fetchAppReviewsResponse:
         url = f"https://store.steampowered.com/appreviews/{app_id}?json=1"
-        r = presence_manager.fetch(url)
+        r = presence_manager.fetch(
+            url,
+            cache_ttl = 1800
+        )
 
         if not r:
             logging.error("failed to fetch app reviews for %s", app_id)
