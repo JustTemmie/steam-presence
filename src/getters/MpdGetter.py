@@ -1,5 +1,6 @@
 import logging
 import socket
+import time
 
 from src.presence_manager.config import Config
 from src.presence_manager.DataClasses import MpdFetchPayload
@@ -68,6 +69,8 @@ class MpdGetter:
             song_id = info.get("songid"),
             elapsed = info.get("elapsed"),
             bitrate = info.get("bitrate"),
+
+            fetched_at = time.time(),
         )
 
 

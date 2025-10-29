@@ -119,10 +119,10 @@ while True:
 
                 rpc_session = RPC_connections.get("MPD")
                 
-                if data.elapsed and data.duration:
+                if data.fetched_at and data.elapsed and data.duration:
                     try:
-                        rpc_session.start_time = time.time() - float(data.elapsed)
-                        rpc_session.end_time = time.time() - float(data.elapsed) + float(data.duration)
+                        rpc_session.start_time = data.fetched_at - float(data.elapsed)
+                        rpc_session.end_time = data.fetched_at - float(data.elapsed) + float(data.duration)
                     except ValueError:
                         pass
 
