@@ -112,7 +112,11 @@ while True:
 
             rpc_session = RPC_connections.get("MPD")
 
-            if rpc_session:
+            if data.state == "pause":
+                rpc_session.close_RPC()
+                RPC_connections.pop("MPD")
+            
+            elif data.state == "play":
                 if data.elapsed and data.duration:
                     try:
                         rpc_session.start_time = time.time() - float(data.elapsed)
@@ -122,6 +126,8 @@ while True:
 
                 rpc_session.mpd_payload = data
                 rpc_session.update()
+            
+
 
     for steam_game in [getter.fetch() for getter in STEAM_GETTERS]:
         if steam_game:
@@ -178,8 +184,8 @@ while True:
             rpc_session.jellyfin_payload = jellyfin_session
             
             if jellyfin_session.is_paused:
-                rpc_session.start_time = None
-                rpc_session.end_time = None
+                rpc_session.close_RPC()
+                RPC_connections.pop(RPC_ID)
             
             else:
                 rpc_session.start_time = time.time() - jellyfin_session.play_position

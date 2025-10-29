@@ -69,7 +69,7 @@ def get_app_info(app_id: Union[str | int]) -> getAppInfoPayload | None:
     r = presence_manager.fetch(f"https://discordapp.com/api/v8/applications/{app_id}/rpc")
     
     if not r:
-        logging.error(f"failed to fetch image from discord")
+        logging.error("failed to fetch image from discord")
         return None
     
     response = r.json()
