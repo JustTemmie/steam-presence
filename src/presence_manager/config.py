@@ -179,7 +179,10 @@ class ConfigMpd(GenericConfig):
                 "{mpd.title}",
                 "{mpd.artist} / {mpd.album}",
                 "{mpd.artist}",
-            ]
+            ],
+            "large_images": {
+                "{mpd.music_brainz_cover_art}": None
+            }
         }
 
 class ConfigDefaultGame(GenericConfig):

@@ -80,8 +80,10 @@ class MpdFetchPayload:
     song_id: str | None = None
     elapsed: str | None = None
     bitrate: str | None = None
-    
+
     fetched_at: float | None = None
+    
+    music_brainz_cover_art: str | None = None
 
 # ID: "steam"
 @dataclass

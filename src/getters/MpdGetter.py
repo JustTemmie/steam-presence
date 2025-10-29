@@ -2,6 +2,8 @@ import logging
 import socket
 import time
 
+from src.apis.musicBrainz import fetch_cover_art_url
+
 from src.presence_manager.config import Config
 from src.presence_manager.DataClasses import MpdFetchPayload
 
@@ -26,7 +28,6 @@ class MpdGetter:
                     logging.critical("MPD password was rejected, don't set a password if the server doesn't need one")
                     exit()
 
-            # this might break under high latency? i'm unsure – sockets are weird
             conn.sendall(b"currentsong\n")
             conn.sendall(b"status\n")
 
@@ -71,6 +72,8 @@ class MpdGetter:
             bitrate = info.get("bitrate"),
 
             fetched_at = time.time(),
+
+            music_brainz_cover_art = fetch_cover_art_url(info.get("artist"), info.get("title"), info.get("album")),
         )
 
 
