@@ -52,6 +52,35 @@ class LocalGameFetchPayload:
     process_exe: str | None = None
     display_name: str | None = None
 
+# ID: "local"
+@dataclass
+class MpdFetchPayload:
+    file: str | None = None
+    last_modified: str | None = None
+    added: str | None = None
+    format: str | None = None
+    title: str | None = None
+    artist: str | None = None
+    date: str | None = None
+    album: str | None = None
+    track: str | None = None
+    album_artist: str | None = None
+    time: str | None = None
+    duration: str | None = None
+    pos: str | None = None
+
+    volume: str | None = None
+    repeat: str | None = None
+    random: str | None = None
+    single: str | None = None
+    consume: str | None = None
+    playlist_length: str | None = None
+    state: str | None = None
+    song: str | None = None
+    song_id: str | None = None
+    elapsed: str | None = None
+    bitrate: str | None = None
+
 # ID: "steam"
 @dataclass
 class SteamFetchPayload:

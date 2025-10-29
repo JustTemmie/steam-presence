@@ -30,7 +30,7 @@ class JellyfinGetter:
         if not data:
             return JellyfinDataPayload()
         
-        with open("test.json", "w") as f:
+        with open("test.json", "w", encoding="utf-8") as f:
             json.dump(data, f)
         
         for session in data:

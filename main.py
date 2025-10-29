@@ -12,6 +12,7 @@ import src.presence_manager.misc as presence_manager
 from src.fetchers.SteamGridDB import SteamGridDB
 from src.getters.JellyfinGetter import JellyfinGetter
 from src.getters.LocalGetter import LocalGetter
+from src.getters.MpdGetter import MpdGetter
 from src.getters.SteamGetter import SteamGetter
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config, SteamUser, JellyfinInstance
@@ -24,8 +25,9 @@ config.load()
 
 logging.info("Generating getters...")
 
-SGDB_FETCHER = None
 LOCAL_GETTER = None
+MPD_GETTER = None
+SGDB_FETCHER = None
 STEAM_GETTERS: list[SteamGetter] = []
 JELLYFIN_GETTERS: list[JellyfinGetter] = []
 
@@ -34,12 +36,14 @@ DEFAULT_GAME: DiscordRPC = None
 # key is just a generic identifier such as process ID or steam ID
 RPC_connections: dict[Union[int, str], DiscordRPC] = {}
 
+if config.local.enabled:
+    LOCAL_GETTER = LocalGetter(config)
+
+if config.mpd.enabled:
+    MPD_GETTER = MpdGetter(config)
 
 if config.steam_grid_db.enabled:
     SGDB_FETCHER = SteamGridDB(config)
-
-if config.local.enabled:
-    LOCAL_GETTER = LocalGetter(config)
 
 if config.default_game.enabled:
     DEFAULT_GAME = DiscordRPC(config, SGDB_FETCHER)
@@ -86,6 +90,38 @@ while True:
             game.local_payload = process
 
             game.update()
+    
+    if MPD_GETTER:
+        data = MPD_GETTER.fetch()
+
+        if data.title:
+            if not RPC_connections.get("MPD"):
+                config.load()
+                RPC_connections["MPD"] = DiscordRPC(config, None)
+                RPC_connections["MPD"].activity_type = ActivityType.LISTENING
+
+                if config.mpd.inject_discord_status_data:
+                    RPC_connections["MPD"].inject_bonus_status_data(config.mpd.discord_status_data)
+                
+                RPC_connections["MPD"].instanciate(
+                    "MPD",
+                    config.mpd.discord_app_id
+                )
+
+                RPC_connections["MPD"].app_id_is_name = True
+
+            rpc_session = RPC_connections.get("MPD")
+
+            if rpc_session:
+                if data.elapsed and data.duration:
+                    try:
+                        rpc_session.start_time = time.time() - float(data.elapsed)
+                        rpc_session.end_time = time.time() - float(data.elapsed) + float(data.duration)
+                    except ValueError:
+                        pass
+
+                rpc_session.mpd_payload = data
+                rpc_session.update()
 
     for steam_game in [getter.fetch() for getter in STEAM_GETTERS]:
         if steam_game:
@@ -107,12 +143,12 @@ while True:
                 else:
                     break
             
-            rpc_ression = RPC_connections[RPC_ID]
+            rpc_session = RPC_connections[RPC_ID]
 
-            rpc_ression.steam_payload = steam_game
+            rpc_session.steam_payload = steam_game
 
-            rpc_ression.update()
-            rpc_ression.update_steam_data()
+            rpc_session.update()
+            rpc_session.update_steam_data()
     
 
     for jellyfin_session in [getter.fetch() for getter in JELLYFIN_GETTERS]:
@@ -138,17 +174,17 @@ while True:
                     config.jellyfin.discord_app_id
                 )
 
-            rpc_ression = RPC_connections[RPC_ID]
-            rpc_ression.jellyfin_payload = jellyfin_session
+            rpc_session = RPC_connections[RPC_ID]
+            rpc_session.jellyfin_payload = jellyfin_session
             
             if jellyfin_session.is_paused:
-                rpc_ression.start_time = None
-                rpc_ression.end_time = None
+                rpc_session.start_time = None
+                rpc_session.end_time = None
             
             else:
-                rpc_ression.start_time = time.time() - jellyfin_session.play_position
-                rpc_ression.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
-                rpc_ression.update()
+                rpc_session.start_time = time.time() - jellyfin_session.play_position
+                rpc_session.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
+                rpc_session.update()
             
 
     logging.debug("Processing complete!")
@@ -180,5 +216,5 @@ while True:
         print("–" * presence_manager.get_terminal_width())
         RPC_connections.pop(identifier)
     
-    logging.debug("----- Cycle completed at %s -----", time.time())
+    logging.debug("----- Cycle completed at %s -----", round(time.time()))
     time.sleep(config.app.cycle_interval)

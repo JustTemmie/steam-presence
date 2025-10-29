@@ -166,6 +166,22 @@ class ConfigLocal(GenericConfig):
         self.inject_discord_status_data: bool = True
         self.discord_status_data: DiscordData = {}
 
+class ConfigMpd(GenericConfig):
+    def __init__(self):
+        self.enabled: bool = False
+        self.discord_app_id: int = 1397363004676509729
+        self.server_url: str = "localhost:6600"
+        self.password: str | None = None
+
+        self.inject_discord_status_data: bool = True
+        self.discord_status_data: DiscordData = {
+            "status_lines": [
+                "{mpd.title}",
+                "{mpd.artist} / {mpd.album}",
+                "{mpd.artist}",
+            ]
+        }
+
 class ConfigDefaultGame(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
@@ -191,6 +207,7 @@ class Config:
         self.epic_games_store = ConfigEpicGamesStore()
         self.jellyfin = ConfigJellyfin()
         self.local = ConfigLocal()
+        self.mpd = ConfigMpd()
         self.default_game = ConfigDefaultGame()
     
     def load(self, config_path="config.json"):
@@ -201,10 +218,10 @@ class Config:
                 config = json.load(f)
         except FileNotFoundError as e:
             if self.app:
-                logging.warn(f"couldn't find config, skipping reload")
+                logging.warning("couldn't find config, skipping reload")
                 return
             else:
-                logging.error(f"could not find a config path at '{config_path}' - exiting\n{e}")
+                logging.error("could not find a config path at '%s' - exiting\n%s", config_path, e)
                 exit()
         
         self.app.load(config.get("app", {}))
@@ -214,6 +231,7 @@ class Config:
         self.epic_games_store.load(config.get("epic_games_store", {}))
         self.jellyfin.load(config.get("jellyfin", {}))
         self.local.load(config.get("local", {}))
+        self.mpd.load(config.get("mpd", {}))
         self.default_game.load(config.get("default_game", {}))
 
         # ensure the app name checks are case-insensitive
@@ -222,9 +240,3 @@ class Config:
             case_insensitive_per_app[key.casefold()] = value
         
         self.discord.per_app_status_data = case_insensitive_per_app
-
-
-
-if __name__ == "__main__":
-    config = Config()
-    config.load(args.config)

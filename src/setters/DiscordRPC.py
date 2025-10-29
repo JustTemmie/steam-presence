@@ -9,7 +9,7 @@ import src.presence_manager.misc as presence_manager
 
 from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
 from src.presence_manager.config import Config, DiscordData
-from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload
+from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
 
 
 class DiscordRPC:
@@ -47,6 +47,7 @@ class DiscordRPC:
         self.local_payload: LocalGameFetchPayload = None
         self.discord_payload: DiscordDataPayload = None
         self.jellyfin_payload: JellyfinDataPayload = None
+        self.mpd_payload: MpdFetchPayload = None
         self.steam_grid_db_payload = None
         self.epic_games_store_payload = None
         self.default_game_payload = None
@@ -57,6 +58,7 @@ class DiscordRPC:
             # "epic_games_store": self.epic_games_store_payload,
             "jellyfin": self.jellyfin_payload,
             "local": self.local_payload,
+            "mpd": self.mpd_payload,
             "steam_grid_db": self.steam_grid_db_payload,
             "steam": self.steam_payload,
             "default": self.default_game_payload,
