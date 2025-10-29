@@ -5,18 +5,14 @@ from time import time
 from pypresence import Presence, ActivityType
 
 import src.apis.discord as discordAPI
-import src.presence_manager.misc as presence_manager
 
-from src.fetchers.SteamGridDB import SteamGridDB, SteamGridPlatforms
 from src.presence_manager.config import Config, DiscordData
 from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
 
 
 class DiscordRPC:
-    def __init__(self, config: Config, SGDB_FETCHER: SteamGridDB | None):
+    def __init__(self, config: Config):
         self.config = config
-
-        self.SGDB_FETCHER = SGDB_FETCHER
 
         self.discord_RPC: Presence = None
         self.discord_app_id: int = 0
@@ -75,7 +71,11 @@ class DiscordRPC:
         if status_data.get("large_images"):
             self.status_data["large_images"] = status_data.get("large_images", {}) | self.status_data.get("large_images", {})
         
-    def instanciate(self, name: str, platform_fallback_app_id: int = None) -> bool:
+    def instanciate(
+        self,
+        name: str,
+        platform_fallback_app_id: int = None,
+        activity_type: ActivityType = None) -> bool:
         # skip app if it's found in the blacklist
         if name.casefold() in map(str.casefold, self.config.app.blacklist):
             logging.info("%s is in the blacklist, skipping RPC object creation.", name)
@@ -85,6 +85,9 @@ class DiscordRPC:
         self.app_name = name
 
         self.discord_payload = discordAPI.fetch_data(self.app_name)
+
+        if activity_type:
+            self.activity_type = activity_type
 
         # figure out the correct app ID
         app_id = discordAPI.get_app_id(name, self.config)
@@ -112,29 +115,10 @@ class DiscordRPC:
         logging.info("Established Discord RPC connection for %s", name)
 
         return True
-    
-    def first_update(self) -> None:
-        if self.SGDB_FETCHER:
-            if self.steam_payload or self.discord_payload.steam_app_id:
-                if self.steam_payload:
-                    steam_app_id = self.steam_payload.app_id
-                else:
-                    steam_app_id = self.discord_payload.steam_app_id
-                
-                self.steam_grid_db_payload = self.SGDB_FETCHER.fetch(
-                    app_id = steam_app_id,
-                    platform = SteamGridPlatforms.STEAM
-                )
-
-            else:
-                self.steam_grid_db_payload = self.SGDB_FETCHER.fetch(app_name = self.app_name)
 
 
     def update(self) -> None:
         logging.debug("Updating data for %s", self.app_name)
-        
-        if self.last_update == 0:
-            self.first_update()
         
         self.last_update = time()
 
@@ -204,6 +188,7 @@ class DiscordRPC:
                 small_image = self.small_image_url, small_text = self.small_image_text,
                 buttons=[{"label": "Test Button", "url": "https://github.com/JustTemmie/steam-presence"}]#self.discord_buttons
             )
+        
         if not self.config.discord.enabled or logging.root.level < 20:
             print("refreshing rpc with:")
             print(f"activity_type = {self.activity_type}")

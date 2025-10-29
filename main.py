@@ -9,7 +9,8 @@ from pypresence import ActivityType
 import src.presence_manager.logger # just need to initialize it
 import src.presence_manager.misc as presence_manager
 
-from src.fetchers.SteamGridDB import SteamGridDB
+import src.apis.SteamGridDB as SteamGridDB
+
 from src.getters.JellyfinGetter import JellyfinGetter
 from src.getters.LocalGetter import LocalGetter
 from src.getters.MpdGetter import MpdGetter
@@ -27,7 +28,6 @@ logging.info("Generating getters...")
 
 LOCAL_GETTER = None
 MPD_GETTER = None
-SGDB_FETCHER = None
 STEAM_GETTERS: list[SteamGetter] = []
 JELLYFIN_GETTERS: list[JellyfinGetter] = []
 
@@ -42,11 +42,8 @@ if config.local.enabled:
 if config.mpd.enabled:
     MPD_GETTER = MpdGetter(config)
 
-if config.steam_grid_db.enabled:
-    SGDB_FETCHER = SteamGridDB(config)
-
 if config.default_game.enabled:
-    DEFAULT_GAME = DiscordRPC(config, SGDB_FETCHER)
+    DEFAULT_GAME = DiscordRPC(config)
 
 if config.steam.enabled:
     for user in config.steam.users:
@@ -71,17 +68,19 @@ while True:
             if not RPC_connections.get(RPC_ID):
                 if process.display_name:
                     config.load() # reload the config on new RPC connection
-                    RPC_connections[RPC_ID] = DiscordRPC(config, SGDB_FETCHER)
+                    rpc_session = DiscordRPC(config)
 
                     if config.local.inject_discord_status_data:
-                        RPC_connections[RPC_ID].inject_bonus_status_data(config.local.discord_status_data)
+                        rpc_session.inject_bonus_status_data(config.local.discord_status_data)
 
-                    RPC_connections[RPC_ID].instanciate(
+                    rpc_session.instanciate(
                         process.display_name,
                         config.local.discord_fallback_app_id
                     )
                     
-                    RPC_connections[RPC_ID].start_time = process.start_time
+                    rpc_session.start_time = process.start_time
+
+                    RPC_connections[RPC_ID] = rpc_session
                 else:
                     break
                 
@@ -104,18 +103,20 @@ while True:
             else:
                 if not RPC_connections.get("MPD"):
                     config.load()
-                    RPC_connections["MPD"] = DiscordRPC(config, None)
-                    RPC_connections["MPD"].activity_type = ActivityType.LISTENING
+                    rpc_session = DiscordRPC(config)
 
                     if config.mpd.inject_discord_status_data:
-                        RPC_connections["MPD"].inject_bonus_status_data(config.mpd.discord_status_data)
+                        rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)
                     
-                    RPC_connections["MPD"].instanciate(
+                    rpc_session.instanciate(
                         "MPD",
-                        config.mpd.discord_app_id
+                        platform_fallback_app_id = config.mpd.discord_app_id,
+                        activity_type = ActivityType.LISTENING
                     )
 
-                    RPC_connections["MPD"].app_id_is_name = True
+                    rpc_session.app_id_is_name = True
+
+                    RPC_connections["MPD"] = rpc_session
 
                 rpc_session = RPC_connections.get("MPD")
                 
@@ -136,20 +137,28 @@ while True:
             RPC_ID = steam_game.app_id
 
             if not RPC_connections.get(RPC_ID):
-                if steam_game.app_name:
-                    config.load() # reload the config
-                    RPC_connections[RPC_ID] = DiscordRPC(config, SGDB_FETCHER)
-                    if config.steam.inject_discord_status_data:
-                        RPC_connections[RPC_ID].inject_bonus_status_data(config.steam.discord_status_data)
+                if not steam_game.app_name:
+                    continue
 
-                    RPC_connections[RPC_ID].instanciate(
-                        steam_game.app_name,
-                        config.steam.discord_fallback_app_id
+                config.load() # reload the config
+                rpc_session = DiscordRPC(config)
+
+                if config.steam_grid_db.enabled and steam_game.app_id:
+                    rpc_session.steam_grid_db_payload = SteamGridDB.fetch_steam_grid_db(
+                        api_key = config.steam_grid_db.api_key,
+                        app_id = steam_game.app_id,
+                        platform = SteamGridDB.SteamGridPlatforms.STEAM
                     )
 
-                    RPC_connections[RPC_ID].start_time = time.time()
-                else:
-                    break
+                if config.steam.inject_discord_status_data:
+                    rpc_session.inject_bonus_status_data(config.steam.discord_status_data)
+
+                rpc_session.instanciate(
+                    steam_game.app_name,
+                    platform_fallback_app_id = config.steam.discord_fallback_app_id
+                )
+
+                RPC_connections[RPC_ID] = rpc_session
             
             rpc_session = RPC_connections[RPC_ID]
 
@@ -168,19 +177,21 @@ while True:
                     continue
                 
                 config.load() # reload the config
-                RPC_connections[RPC_ID] = DiscordRPC(config, None)
-                RPC_connections[RPC_ID].activity_type = ActivityType.WATCHING
+                rpc_session = DiscordRPC(config)
 
                 if config.jellyfin.inject_discord_status_data:
                     logging.info("%s is of type %s, injecting relevant status data", jellyfin_session.name, jellyfin_session.media_type)
 
                     bonus_status_data: dict = config.jellyfin.per_media_type_discord_status_data.get(jellyfin_session.media_type, {})
-                    RPC_connections[RPC_ID].inject_bonus_status_data(bonus_status_data | config.jellyfin.default_discord_status_data)
+                    rpc_session.inject_bonus_status_data(bonus_status_data | config.jellyfin.default_discord_status_data)
                 
-                RPC_connections[RPC_ID].instanciate(
+                rpc_session.instanciate(
                     jellyfin_session.series_name or jellyfin_session.name,
-                    config.jellyfin.discord_app_id
+                    platform_fallback_app_id = config.jellyfin.discord_app_id,
+                    activity_type = ActivityType.WATCHING
                 )
+
+                RPC_connections[RPC_ID] = rpc_session
 
             rpc_session = RPC_connections[RPC_ID]
             rpc_session.jellyfin_payload = jellyfin_session
