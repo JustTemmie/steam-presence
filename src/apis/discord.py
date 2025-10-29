@@ -1,7 +1,7 @@
 import json
 import logging
 
-from typing import Union
+from typing import Union, Optional
 from io import BytesIO
 from dataclasses import dataclass
 from PIL import Image
@@ -13,7 +13,7 @@ import src.presence_manager.misc as presence_manager
 
 
 
-def get_app_id(app_name: str, config: Config | None = None) -> int | None:
+def get_app_id(app_name: str, config: Optional[Config]) -> Optional[int]:
     url = "https://discordapp.com/api/v8/applications/detectable"
     r = presence_manager.fetch(
         url,
@@ -63,11 +63,11 @@ def get_app_id(app_name: str, config: Config | None = None) -> int | None:
 
 @dataclass
 class getAppInfoPayload:
-    image_url: str | None = None
-    steam_app_id: str | None = None
-    name: str | None = None
+    image_url: Optional[str]
+    steam_app_id: Optional[str]
+    name: Optional[str]
 
-def get_app_info(app_id: Union[str | int]) -> getAppInfoPayload | None:
+def get_app_info(app_id: Union[str | int]) -> Optional[getAppInfoPayload]:
     r = presence_manager.fetch(
         f"https://discordapp.com/api/v8/applications/{app_id}/rpc",
         cache_ttl = 1800
@@ -105,7 +105,7 @@ def get_app_info(app_id: Union[str | int]) -> getAppInfoPayload | None:
     )
 
 def fetch_data(app_name: str) -> DiscordDataPayload:
-    app_id = get_app_id(app_name)
+    app_id = get_app_id(app_name, config = None)
 
     if not app_id:
         return DiscordDataPayload()

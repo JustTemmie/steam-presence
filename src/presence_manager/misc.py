@@ -1,7 +1,7 @@
 import os
 import hashlib
 import time
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 
 import requests
 
@@ -29,7 +29,7 @@ def _cache_key(url: str, data: dict = None, headers: dict = None) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-def _get_cached(key: str, ttl: float) -> requests.Response | None:
+def _get_cached(key: str, ttl: float) -> Optional[requests.Response]:
     with _LOCK:
         if key not in _CACHE:
             return None
@@ -48,9 +48,9 @@ def _store_cached(key: str, response: requests.Response) -> None:
 
 def fetch(
     url: str,
-    data: dict = None,
-    headers: dict = None,
-    cache_ttl: float = 0) -> requests.Response | None:
+    data: Optional[dict] = None,
+    headers: Optional[dict] = None,
+    cache_ttl: float = 0) -> Optional[requests.Response]:
 
     key = _cache_key(url, data, headers)
 

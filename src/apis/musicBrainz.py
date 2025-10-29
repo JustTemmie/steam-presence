@@ -1,8 +1,9 @@
 import logging
+from typing import Optional
 
 import src.presence_manager.misc as presence_manager
 
-def fetch_cover_art_url(artist: str | None, recording: str | None, release: str | None) -> str | None:
+def fetch_cover_art_url(artist: Optional[str], recording: Optional[str], release: Optional[str]) -> Optional[str]:
     parts = []
     if artist:
         parts.append(f'artist:"{artist}"')

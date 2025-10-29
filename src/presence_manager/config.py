@@ -1,5 +1,6 @@
 import logging
 import json
+from typing import Optional
 
 from dataclasses import dataclass
 
@@ -42,7 +43,7 @@ class JellyfinInstance:
     api_key: str = ""
     username: str = ""
     server_url: str = ""
-    public_url: str | None = None
+    public_url: Optional[str] = None
 
 
 @dataclass
@@ -160,7 +161,7 @@ class ConfigMpd(GenericConfig):
         self.enabled: bool = False
         self.discord_app_id: int = 1397363004676509729
         self.server_url: str = "localhost:6600"
-        self.password: str | None = None
+        self.password: Optional[str] = None
 
         self.inject_discord_status_data: bool = True
         self.discord_status_data: DiscordData = {
@@ -177,7 +178,7 @@ class ConfigMpd(GenericConfig):
 class ConfigDefaultGame(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
-        self.discord_app_id: int | None = None
+        self.discord_app_id: Optional[int] = None
         self.name: str = "Breath of the Wild"
         self.details: str = "Fighting a Stalnox."
         self.state: str = None

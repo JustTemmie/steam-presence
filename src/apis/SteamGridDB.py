@@ -1,7 +1,7 @@
 import logging
 
 from enum import Enum
-from typing import Union
+from typing import Union, Optional
 
 from src.presence_manager.DataClasses import SteamGridDBFetchPayload
 
@@ -21,7 +21,7 @@ class SteamGridPlatforms(Enum):
 
 BASE_URL = "https://www.steamgriddb.com/api/v2"
 
-def _api_fetch(endpoint: str, api_key: str, data: dict = None) -> dict | None:
+def _api_fetch(endpoint: str, api_key: str, data: Optional[dict] = None) -> Optional[dict]:
     r = presence_manager.fetch(
         f"{BASE_URL}/{endpoint}",
         data = data,
@@ -40,7 +40,7 @@ def _api_fetch(endpoint: str, api_key: str, data: dict = None) -> dict | None:
 def get_id_with_name(
     api_key: str,
     app_name: str
-) -> int | None:
+) -> Optional[int]:
     # i love undocumented endpoints
     r = _api_fetch(api_key, f"search/autocomplete/{app_name}")
 
@@ -53,7 +53,7 @@ def get_icon_with_id(
     api_key: str,
     app_id: Union[str, int],
     platform: SteamGridPlatforms
-) -> str | None:
+) -> Optional[str]:
     # try multiple searches until we find a good one
     datas = [
         {
@@ -116,18 +116,15 @@ def get_icon_with_id(
 
 def fetch_steam_grid_db(
     api_key: str,
-    app_id: Union[str, int] | None = None,
-    platform: SteamGridPlatforms | None = None,
-    app_name: str | None = None
-) -> SteamGridDBFetchPayload:        
+    app_id: Optional[Union[str, int]] = None,
+    platform: Optional[SteamGridPlatforms] = None,
+    app_name: Optional[str] = None
+) -> SteamGridDBFetchPayload:
     if app_name:
         app_id = get_id_with_name(api_key, app_name)
         platform = SteamGridPlatforms.INTERNAL
     
     if app_id:
-        return SteamGridDBFetchPayload(
-            get_icon_with_id(api_key, app_id, platform)
-        )
+        return SteamGridDBFetchPayload(get_icon_with_id(api_key, app_id, platform))
     
-    else:
-        return SteamGridDBFetchPayload()
+    return SteamGridDBFetchPayload()

@@ -1,7 +1,7 @@
 import logging
 
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, Optional
 from bs4 import BeautifulSoup
 
 from src.presence_manager.config import Config, SteamUser
@@ -11,46 +11,46 @@ import src.presence_manager.misc as presence_manager
 
 @dataclass
 class getCurrentStateResponse:
-    app_name: str | None = None
-    app_id: int | None = None
-    avatar_url: str | None = None
-    display_name: str | None = None
-    profile_url: str | None = None
+    app_name: Optional[str] = None
+    app_id: Optional[int] = None
+    avatar_url: Optional[str] = None
+    display_name: Optional[str] = None
+    profile_url: Optional[str] = None
 
 @dataclass
 class fetchMiniProfileDataResponse:
-    rich_presence: str | None = None
-    background_url: str | None = None
-    profile_level: str | None = None
-    profile_badge_url: str | None = None
-    profile_badge_name: str | None = None
+    rich_presence: Optional[str] = None
+    background_url: Optional[str] = None
+    profile_level: Optional[str] = None
+    profile_badge_url: Optional[str] = None
+    profile_badge_name: Optional[str] = None
 
 @dataclass
 class fetchAppDetailsResponse:
-    required_age: int | None = None
-    capsule_header_image: str | None = None
-    capsule_main_image: str | None = None
-    website: str | None = None
-    developers: str | None = None
-    publishers: str | None = None
-    price_currency: str | None = None
-    price_initial: int | None = None
-    price_current: int | None = None
-    price_discount_percent: int | None = None
-    price_formatted: str | None = None
-    platform_windows: bool | None = None
-    platform_mac: bool | None = None
-    platform_linux: bool | None = None
-    achievement_count: int | None = None
-    release_date: str | None = None
+    required_age: Optional[int] = None
+    capsule_header_image: Optional[str] = None
+    capsule_main_image: Optional[str] = None
+    website: Optional[str] = None
+    developers: Optional[str] = None
+    publishers: Optional[str] = None
+    price_currency: Optional[str] = None
+    price_initial: Optional[int] = None
+    price_current: Optional[int] = None
+    price_discount_percent: Optional[int] = None
+    price_formatted: Optional[str] = None
+    platform_windows: Optional[bool] = None
+    platform_mac: Optional[bool] = None
+    platform_linux: Optional[bool] = None
+    achievement_count: Optional[int] = None
+    release_date: Optional[str] = None
 
 @dataclass
 class fetchAppReviewsResponse:
-    total_positive_reviews: int | None = None
-    total_negative_reviews: int | None = None
-    total_reviews: int | None = None
-    review_percent: int | None = None
-    review_description: str | None = None
+    total_positive_reviews: Optional[int] = None
+    total_negative_reviews: Optional[int] = None
+    total_reviews: Optional[int] = None
+    review_percent: Optional[int] = None
+    review_description: Optional[str] = None
 
 class SteamAPI:
     def __init__(self, config: Config, user: SteamUser):
@@ -59,7 +59,7 @@ class SteamAPI:
         
         self.api_key = user.api_key
 
-    def get_current_state(self) -> getCurrentStateResponse | None:
+    def get_current_state(self) -> Optional[getCurrentStateResponse]:
         url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
         r = presence_manager.fetch(url)
 
@@ -77,7 +77,8 @@ class SteamAPI:
             return None
 
         player_summary = players[0]
-        if not player_summary.get("gameid"): return None
+        if not player_summary.get("gameid"):
+            return None
 
         return getCurrentStateResponse(
             app_name=player_summary.get("gameextrainfo"),
@@ -226,7 +227,7 @@ class SteamGetter:
     def fetch(self) -> SteamFetchPayload:
         logging.debug("Fetching steam information for %s", self.user)
 
-        current_game_info: getCurrentStateResponse | None = self.api.get_current_state()
+        current_game_info: Optional[getCurrentStateResponse] = self.api.get_current_state()
 
         if not current_game_info or not current_game_info.app_id:
             return SteamFetchPayload()

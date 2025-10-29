@@ -2,6 +2,7 @@ import logging
 import copy
 
 from time import time
+from typing import Optional
 from pypresence import Presence, ActivityType
 
 import src.apis.discord as discordAPI
@@ -30,14 +31,14 @@ class DiscordRPC:
         self.start_time: int = None
         self.end_time: int = None
 
-        self.large_image_url: str | None = None
+        self.large_image_url: Optional[str] = None
         self.large_image_text: str = ""
-        self.small_image_url: str | None = None
+        self.small_image_url: Optional[str] = None
         self.small_image_text: str = ""
 
         self.discord_buttons = []
 
-        self.discord_image_url: str | None = None
+        self.discord_image_url: Optional[str] = None
 
         self.steam_payload: SteamFetchPayload = None
         self.local_payload: LocalGameFetchPayload = None
@@ -132,7 +133,7 @@ class DiscordRPC:
         if not self.app_id_is_name:
             status_lines.append(self.app_name)
         
-        def format_rpc_data(line) -> str | None:
+        def format_rpc_data(line) -> Optional[str]:
             try:
                 formatted_line = line.format(**self._get_RPC_data())
                 if "None" in formatted_line:
