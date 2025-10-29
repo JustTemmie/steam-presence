@@ -44,6 +44,11 @@ class MpdGetter:
         except Exception:
             return MpdFetchPayload()
 
+        if info.get("title") and info.get("state") != "pause":
+            music_brainz_cover_art = fetch_cover_art_url(info.get("artist"), info.get("title"), info.get("album"))
+        else:
+            music_brainz_cover_art = None
+        
         return MpdFetchPayload(
             file = info.get("file"),
             last_modified = info.get("last-modified"),
@@ -73,7 +78,5 @@ class MpdGetter:
 
             fetched_at = time.time(),
 
-            music_brainz_cover_art = fetch_cover_art_url(info.get("artist"), info.get("title"), info.get("album")),
+            music_brainz_cover_art = music_brainz_cover_art,
         )
-
-

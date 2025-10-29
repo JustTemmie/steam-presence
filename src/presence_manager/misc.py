@@ -7,7 +7,7 @@ def get_terminal_width() -> int:
     try:
         size = os.get_terminal_size()
         width = size.columns
-    except:
+    except Exception:
         width = 10
     
     return width
@@ -15,7 +15,12 @@ def get_terminal_width() -> int:
 
 def fetch(url: str, data: dict = {}, headers: dict = {}) -> requests.Response | None:
     try:
-        r = requests.get(url, data = data, headers = headers)
+        r = requests.get(
+            url,
+            data = data,
+            headers = headers,
+            timeout = 5
+        )
 
         if r.status_code != 200:
             return

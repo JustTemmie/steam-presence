@@ -1,6 +1,8 @@
 import logging
 import requests
 
+import src.presence_manager.misc as presence_manager
+
 def fetch_cover_art_url(artist: str | None, recording: str | None, release: str | None) -> str | None:
     parts = []
     if artist:
@@ -11,29 +13,31 @@ def fetch_cover_art_url(artist: str | None, recording: str | None, release: str 
         parts.append(f'release:"{release}"')
     query = " AND ".join(parts)
 
-    search_resp = requests.get(
-        f'https://musicbrainz.org/ws/2/recording/?query={query} AND primarytype:album&inc=releases&fmt=json',
-        timeout=10,
+    r = presence_manager.fetch(
+        f"https://musicbrainz.org/ws/2/recording/?query={query} AND primarytype:album&inc=releases&fmt=json"
     )
 
-    if search_resp.status_code != 200:
-        logging.info("MusicBrainz search failed: %s", search_resp.status_code)
+    if not r:
+        logging.info("MusicBrainz search failed")
         return None
     
-    recordings = search_resp.json().get("recordings", [])
+    recordings = r.json().get("recordings", [])
 
     if not recordings:
         logging.info("no matching release found for %s %s", artist, recording)
         return None
 
-    mbid = recordings[0].get("releases", [])[0].get("id")
-    cover_art_resp = requests.get(
-        f"https://coverartarchive.org/release/{mbid}",
-        timeout=10
+    releases = recordings[0].get("releases", [])
+    if not releases:
+        logging.info("no releases found for %s %s", artist, recording)
+        return None
+    
+    cover_art_resp = presence_manager.fetch(
+        f"https://coverartarchive.org/release/{releases[0].get('id')}",
     )
 
-    if cover_art_resp.status_code != 200:
-        logging.info("Cover Art Archive request failed: %s", cover_art_resp.status_code)
+    if not cover_art_resp:
+        logging.info("Cover Art Archive request failed")
         return None
     
     data = cover_art_resp.json()
@@ -42,6 +46,7 @@ def fetch_cover_art_url(artist: str | None, recording: str | None, release: str 
         print(img.get("thumbnails", {}).get("small"))
         if img.get("front"):
             return img.get("thumbnails", {}).get("small")
+    
     if data.get("images"):
         return data["images"][0]["image"]
     
