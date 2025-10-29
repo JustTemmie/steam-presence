@@ -209,17 +209,21 @@ while True:
 
     logging.debug("Processing complete!")
 
-    if DEFAULT_GAME and len(RPC_connections) == 0:
-        config.load() # reload the config
-        logging.info("Switching to displaying the default game.")
-        RPC_connections["DEFAULT"] = DEFAULT_GAME
-        RPC_connections["DEFAULT"].default_game_payload = config.default_game
-        if config.default_game.inject_discord_status_data:
-            RPC_connections[RPC_ID].inject_bonus_status_data(config.default_game.discord_status_data)
-        RPC_connections["DEFAULT"].instanciate(config.default_game.name)
+    if DEFAULT_GAME:
+        if len(RPC_connections) == 0:
+            config.load() # reload the config
+            logging.info("Switching to displaying the default game.")
+            RPC_connections["DEFAULT"] = DEFAULT_GAME
+            RPC_connections["DEFAULT"].default_game_payload = config.default_game
 
-    if RPC_connections.get("DEFAULT"):
-        if len(RPC_connections) == 1:
+            if config.default_game.inject_discord_status_data:
+                RPC_connections[RPC_ID].inject_bonus_status_data(config.default_game.discord_status_data)
+            
+            RPC_connections["DEFAULT"].instanciate(
+                config.default_game.name
+            )
+
+        elif len(RPC_connections) == 1 and RPC_connections.get("DEFAULT"):
             RPC_connections["DEFAULT"].update()
         else:
             RPC_connections.pop("DEFAULT")
