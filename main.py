@@ -113,6 +113,7 @@ while True:
             rpc_session = RPC_connections.get("MPD")
 
             if data.state == "pause":
+                logging.info("MPD is paused, closing discord RPC")
                 rpc_session.close_RPC()
                 RPC_connections.pop("MPD")
             
@@ -184,6 +185,7 @@ while True:
             rpc_session.jellyfin_payload = jellyfin_session
             
             if jellyfin_session.is_paused:
+                logging.info("jellyfin is paused, closing discord RPC")
                 rpc_session.close_RPC()
                 RPC_connections.pop(RPC_ID)
             
