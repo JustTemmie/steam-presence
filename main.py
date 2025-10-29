@@ -180,5 +180,5 @@ while True:
         print("–" * presence_manager.get_terminal_width())
         RPC_connections.pop(identifier)
     
-    logging.debug("----- Cycle complete -----")
+    logging.debug("----- Cycle completed at %s -----", time.time())
     time.sleep(config.app.cycle_interval)

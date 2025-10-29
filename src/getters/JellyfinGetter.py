@@ -7,20 +7,19 @@ from src.presence_manager.DataClasses import JellyfinDataPayload
 import src.presence_manager.misc as presence_manager
 
 
-
-
 class JellyfinGetter:
     def __init__(self, config: Config, instance: JellyfinInstance):
         self.config = config
 
         self.api_key = instance.api_key
         self.username = instance.username
-        self.url = instance.instance_url
+        self.server_url = instance.server_url
+        self.public_url = instance.public_url
 
     def fetch(self) -> JellyfinDataPayload:
         logging.debug("Fetching jellyfin information")
 
-        url = f"{self.url}/Sessions?api_key={self.api_key}"
+        url = f"{self.server_url}/Sessions?api_key={self.api_key}"
         r = presence_manager.fetch(url)
 
         if not r:
@@ -44,6 +43,9 @@ class JellyfinGetter:
                 # studios = now_playing.get("Studios", [])
 
                 return JellyfinDataPayload(
+                    server_url = self.server_url,
+                    public_url = self.public_url,
+
                     user_name = session.get("UserName"),
                     client = session.get("Client"),
                     device_name = session.get("DeviceName"),
@@ -57,6 +59,9 @@ class JellyfinGetter:
                     series_studio = now_playing.get("SeriesStudio"),
                     production_year = now_playing.get("ProductionYear"),
                     overview = now_playing.get("Overview"),
+                    episode_number = now_playing.get("IndexNumber"),
+                    season_number = now_playing.get("ParentIndexNumber"),
+                    id = now_playing.get("Id"),
                     # taglines,
                     # genres,
                     # studios,

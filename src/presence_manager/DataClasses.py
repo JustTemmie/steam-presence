@@ -21,6 +21,9 @@ class EpicGamesStoreFetchPayload:
 # ID: "jellyfin"
 @dataclass
 class JellyfinDataPayload:
+    server_url: str | None = None
+    public_url: str | None = None
+
     user_name: str | None = None
     client: str | None = None
     device_name: str | None = None
@@ -28,12 +31,15 @@ class JellyfinDataPayload:
     play_position: float | None = None
     media_source_id: str | None = None
     is_paused: bool | None = None
-    
+
     name: str | None = None
     series_name: str | None = None
     series_studio: str | None = None
     production_year: int | None = None
     overview: str | None = None
+    episode_number: str | None = None
+    season_number: str | None = None
+    id: str | None = None
     length: float | None = None
     media_type: str | None = None
 

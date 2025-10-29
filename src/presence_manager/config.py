@@ -52,7 +52,9 @@ class SteamUser:
 class JellyfinInstance:
     api_key: str = ""
     username: str = ""
-    instance_url: str = ""
+    server_url: str = ""
+    public_url: str | None = None
+
 
 @dataclass
 class LocalProcess:
@@ -61,7 +63,7 @@ class LocalProcess:
 
 class ConfigApp(GenericConfig):
     def __init__(self):
-        self.timeout: int = 60
+        self.timeout: int = 30
         self.cycle_interval: int = 20
         self.blacklist: list[str] = []
 
@@ -139,12 +141,14 @@ class ConfigJellyfin(GenericConfig):
         self.inject_discord_status_data: bool = True
         self.default_discord_status_data: DiscordData = {
             "large_images": {
+                "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary": None,
                 "https://avatars.githubusercontent.com/u/45698031?s=512.png": None
             }
         }
         self.per_media_type_discord_status_data: dict[str, DiscordData] = {
             "episode": {
                 "status_lines": [
+                    "S{jellyfin.season_number}E{jellyfin.episode_number} - {jellyfin.name}",
                     "{jellyfin.name}",
                 ]
             },
