@@ -43,9 +43,14 @@ class MpdGetter:
                     info[key.lower()] = val
         except Exception:
             return MpdFetchPayload()
+        
+        if info.get("state") != "play":
+            return MpdFetchPayload(
+                state = info.get("state")
+            )
 
-        if info.get("title") and info.get("state") != "pause":
-            music_brainz_cover_art = fetch_cover_art_url(info.get("artist"), info.get("title"), info.get("album"))
+        if info.get("artist") and (info.get("album") or info.get("title")):
+            music_brainz_cover_art = fetch_cover_art_url(info.get("artist"), info.get("album") or info.get("title"))
         else:
             music_brainz_cover_art = None
         

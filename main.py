@@ -93,42 +93,44 @@ while True:
     if MPD_GETTER:
         data = MPD_GETTER.fetch()
 
-        if data.title:
-            if data.state == "pause":
-                if RPC_connections.get("MPD"):
-                    logging.info("MPD is paused, closing discord RPC")
-                    RPC_connections.get("MPD").close_RPC()
-                    RPC_connections.pop("MPD")
+        if not data.title or data.state != "play":
+            if RPC_connections.get("MPD"):
+                logging.info("MPD is paused, closing discord RPC")
+                RPC_connections.get("MPD").close_RPC()
+                RPC_connections.pop("MPD")
 
-            else:
-                if not RPC_connections.get("MPD"):
-                    config.load()
-                    rpc_session = DiscordRPC(config)
+        else:
+            if not RPC_connections.get("MPD"):
+                config.load()
+                rpc_session = DiscordRPC(config)
 
-                    if config.mpd.inject_discord_status_data:
-                        rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)
-                    
-                    rpc_session.instanciate(
-                        "MPD",
-                        platform_fallback_app_id = config.mpd.discord_app_id,
-                        activity_type = ActivityType.LISTENING
-                    )
-
-                    rpc_session.app_id_is_name = True
-
-                    RPC_connections["MPD"] = rpc_session
-
-                rpc_session = RPC_connections.get("MPD")
+                if config.mpd.inject_discord_status_data:
+                    rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)
                 
-                if data.fetched_at and data.elapsed and data.duration:
-                    try:
-                        rpc_session.start_time = data.fetched_at - float(data.elapsed)
-                        rpc_session.end_time = data.fetched_at - float(data.elapsed) + float(data.duration)
-                    except ValueError:
-                        pass
+                rpc_session.instanciate(
+                    "MPD",
+                    platform_fallback_app_id = config.mpd.discord_app_id,
+                    activity_type = ActivityType.LISTENING
+                )
 
-                rpc_session.mpd_payload = data
-                rpc_session.update()
+                rpc_session.app_id_is_name = True
+
+                RPC_connections["MPD"] = rpc_session
+
+            rpc_session = RPC_connections.get("MPD")
+            # clear any mpd data that may be incorrect for a different song
+            if rpc_session.mpd_payload and rpc_session.mpd_payload.title != data.title:
+                rpc_session.mpd_payload = None
+            
+            if data.fetched_at and data.elapsed and data.duration:
+                try:
+                    rpc_session.start_time = data.fetched_at - float(data.elapsed)
+                    rpc_session.end_time = data.fetched_at - float(data.elapsed) + float(data.duration)
+                except ValueError:
+                    pass
+            
+            rpc_session.mpd_payload = data
+            rpc_session.update()
             
 
 

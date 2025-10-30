@@ -3,18 +3,11 @@ from typing import Optional
 
 import src.presence_manager.misc as presence_manager
 
-def fetch_cover_art_url(artist: Optional[str], recording: Optional[str], release: Optional[str]) -> Optional[str]:
-    parts = []
-    if artist:
-        parts.append(f'artist:"{artist}"')
-    if recording:
-        parts.append(f'recording:"{recording}"')
-    if release:
-        parts.append(f'release:"{release}"')
-    query = " AND ".join(parts)
+def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
+    query = f"artist:{artist} AND release:{album}"
 
     r = presence_manager.fetch(
-        f"https://musicbrainz.org/ws/2/recording/?query={query} AND primarytype:album&inc=releases&fmt=json",
+        f"https://musicbrainz.org/ws/2/release-group/?query={query}&limit=1&fmt=json",
         cache_ttl = 1800
     )
 
@@ -22,19 +15,14 @@ def fetch_cover_art_url(artist: Optional[str], recording: Optional[str], release
         logging.info("MusicBrainz search failed")
         return None
     
-    recordings = r.json().get("recordings", [])
+    mb_id = r.json().get("release-groups", [{}])[0].get("releases", [{}])[0].get("id")
 
-    if not recordings:
-        logging.info("no matching release found for %s %s", artist, recording)
-        return None
-
-    releases = recordings[0].get("releases", [])
-    if not releases:
-        logging.info("no releases found for %s %s", artist, recording)
+    if not id:
+        logging.info("failed to find a music brainz ID for %s %s", artist, album)
         return None
     
     cover_art_resp = presence_manager.fetch(
-        f"https://coverartarchive.org/release/{releases[0].get('id')}",
+        f"https://coverartarchive.org/release/{mb_id}",
         cache_ttl = 1800
     )
 
