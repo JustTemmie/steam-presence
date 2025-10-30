@@ -15,7 +15,14 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
         logging.info("MusicBrainz search failed")
         return None
     
-    mb_id = r.json().get("release-groups", [{}])[0].get("releases", [{}])[0].get("id")
+    data = r.json()
+    release_group_list = data.get("release-groups", [])
+    release_group = release_group_list[0] if release_group_list else {}
+
+    release_list = release_group.get("releases", [])
+    release = release_list[0] if release_list else {}
+
+    mb_id = release.get("id")
 
     if not id:
         logging.info("failed to find a music brainz ID for %s %s", artist, album)
@@ -33,7 +40,6 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     data = cover_art_resp.json()
 
     for img in data.get("images", []):
-        print(img.get("thumbnails", {}).get("small"))
         if img.get("front"):
             return img.get("thumbnails", {}).get("small")
     
