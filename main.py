@@ -73,10 +73,7 @@ while True:
                     if config.local.inject_discord_status_data:
                         rpc_session.inject_bonus_status_data(config.local.discord_status_data)
 
-                    rpc_session.instanciate(
-                        process.display_name,
-                        config.local.discord_fallback_app_id
-                    )
+                    rpc_session.instanciate(process.display_name)
                     
                     rpc_session.start_time = process.start_time
 
@@ -107,13 +104,7 @@ while True:
                 if config.mpd.inject_discord_status_data:
                     rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)
                 
-                rpc_session.instanciate(
-                    "MPD",
-                    platform_fallback_app_id = config.mpd.discord_app_id,
-                    activity_type = ActivityType.LISTENING
-                )
-
-                rpc_session.app_id_is_name = True
+                rpc_session.instanciate("MPD")
 
                 RPC_connections["MPD"] = rpc_session
 
@@ -155,10 +146,7 @@ while True:
                 if config.steam.inject_discord_status_data:
                     rpc_session.inject_bonus_status_data(config.steam.discord_status_data)
 
-                rpc_session.instanciate(
-                    steam_game.app_name,
-                    platform_fallback_app_id = config.steam.discord_fallback_app_id
-                )
+                rpc_session.instanciate(steam_game.app_name)
 
                 RPC_connections[RPC_ID] = rpc_session
             
@@ -185,13 +173,9 @@ while True:
                     logging.info("%s is of type %s, injecting relevant status data", jellyfin_session.name, jellyfin_session.media_type)
 
                     bonus_status_data: dict = config.jellyfin.per_media_type_discord_status_data.get(jellyfin_session.media_type, {})
-                    rpc_session.inject_bonus_status_data(bonus_status_data | config.jellyfin.default_discord_status_data)
+                    rpc_session.inject_bonus_status_data(config.jellyfin.default_discord_status_data | bonus_status_data)
                 
-                rpc_session.instanciate(
-                    jellyfin_session.series_name or jellyfin_session.name,
-                    platform_fallback_app_id = config.jellyfin.discord_app_id,
-                    activity_type = ActivityType.WATCHING
-                )
+                rpc_session.instanciate("Jellyfin")
 
                 RPC_connections[RPC_ID] = rpc_session
 
@@ -221,9 +205,7 @@ while True:
             if config.default_game.inject_discord_status_data:
                 RPC_connections[RPC_ID].inject_bonus_status_data(config.default_game.discord_status_data)
             
-            RPC_connections["DEFAULT"].instanciate(
-                config.default_game.name
-            )
+            RPC_connections["DEFAULT"].instanciate(config.default_game.name)
 
         elif len(RPC_connections) == 1 and RPC_connections.get("DEFAULT"):
             RPC_connections["DEFAULT"].update()

@@ -1,6 +1,7 @@
 import logging
 import json
 from typing import Optional
+from pypresence import ActivityType, StatusDisplayType
 
 from dataclasses import dataclass
 
@@ -26,6 +27,8 @@ class GenericConfig:
 
 @dataclass
 class DiscordData:
+    activity_type: Optional[ActivityType]
+    status_display_type: Optional[StatusDisplayType]
     status_lines: list[str]
     small_images: dict[str, str]
     large_images: dict[str, str]
@@ -60,24 +63,15 @@ class ConfigApp(GenericConfig):
 class ConfigDiscord(GenericConfig):
     def __init__(self):
         self.enabled: bool = True
-        self.fallback_app_id: int = 1400019956321620069
-        self.custom_app_ids: dict[str, int] = {
-            "App name here": 141471589572411256163
-        }
-        self.presence_manager_app_ids: dict[str, int] = {
-            # "official" custom app IDs, overwrite custom_app_ids instead
-            # i will _NOT_ merge a PR adding more of these
-            # as the creator could delete them in the future, sorry :p
-            "The Legend of Zelda: Majora's Mask": 1403714141734309980,
-            "Rift Riff": 1403716067821490206,
-        }
+        self.app_id: int = 1400019956321620069
         self.status_data: DiscordData = {
+            "activity_type": ActivityType.PLAYING,
+            "status_display_type": StatusDisplayType.NAME,
             "status_lines": [
             ],
             "small_images": {
             },
             "large_images": {
-                "{discord.image_url}": None,
                 "{steam_grid_db.icon}": None,
                 "{steam.capsule_header_image}": None, # these are still here, due to injected status lines being prioritized above all else
                 "{steam.capsule_vertical_image}": None,
@@ -103,7 +97,6 @@ class ConfigSteam(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
         self.users: list[SteamUser] = []
-        self.discord_fallback_app_id: int = 1400020030565122139
         # self.steam_store_button: bool = True
 
         self.inject_discord_status_data: bool = True
@@ -118,7 +111,6 @@ class ConfigSteam(GenericConfig):
 class ConfigEpicGamesStore(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
-        self.discord_fallback_app_id: int = 1400020128699256914
 
 class ConfigJellyfin(GenericConfig):
     def __init__(self):
@@ -127,10 +119,11 @@ class ConfigJellyfin(GenericConfig):
         # so an instance URL of http://192.168.1.20:8096 won't work if you want images
         self.enabled: bool = False
         self.instances: list[JellyfinInstance] = []
-        self.discord_app_id: int = 1408546253008146472
 
         self.inject_discord_status_data: bool = True
         self.default_discord_status_data: DiscordData = {
+            "activity_type": ActivityType.WATCHING,
+            "status_display_type": StatusDisplayType.DETAILS,
             "large_images": {
                 "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary": None,
                 "https://avatars.githubusercontent.com/u/45698031?s=512.png": None
@@ -139,19 +132,27 @@ class ConfigJellyfin(GenericConfig):
         self.per_media_type_discord_status_data: dict[str, DiscordData] = {
             "episode": {
                 "status_lines": [
+                    "{jellyfin.series_name}",
                     "S{jellyfin.season_number}E{jellyfin.episode_number} - {jellyfin.name}",
                     "{jellyfin.name}",
                 ]
             },
             "movie": {
-
+                "status_lines": [
+                    "{jellyfin.name}",
+                ]
+            },
+            "audio": {
+                "activity_type": ActivityType.LISTENING,
+                "status_lines": [
+                    "{jellyfin.name}",
+                ]
             }
         }
 
 class ConfigLocal(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
-        self.discord_fallback_app_id: int = 1400019956321620069
         self.processes: list[LocalProcess] = []
 
         self.inject_discord_status_data: bool = True
@@ -160,12 +161,13 @@ class ConfigLocal(GenericConfig):
 class ConfigMpd(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
-        self.discord_app_id: int = 1397363004676509729
         self.server_url: str = "localhost:6600"
         self.password: Optional[str] = None
 
         self.inject_discord_status_data: bool = True
         self.discord_status_data: DiscordData = {
+            "activity_type": ActivityType.LISTENING,
+            "status_display_type": StatusDisplayType.DETAILS,
             "status_lines": [
                 "{mpd.title}",
                 "{mpd.artist} / {mpd.album}",
@@ -179,7 +181,6 @@ class ConfigMpd(GenericConfig):
 class ConfigDefaultGame(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
-        self.discord_app_id: Optional[int] = None
         self.name: str = "Breath of the Wild"
         self.details: str = "Fighting a Stalnox."
         self.state: str = None

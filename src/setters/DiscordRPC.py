@@ -3,9 +3,7 @@ import copy
 
 from time import time
 from typing import Optional
-from pypresence import Presence, ActivityType
-
-import src.apis.discord as discordAPI
+from pypresence import Presence, ActivityType, StatusDisplayType
 
 from src.presence_manager.config import Config, DiscordData
 from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
@@ -17,12 +15,14 @@ class DiscordRPC:
 
         self.discord_RPC: Presence = None
         self.discord_app_id: int = 0
+        self.presence_manager_app_id: int = config.discord.app_id
         self.app_name: str = ""
-        self.app_id_is_name: bool = False
         self.last_update: float = 0
-        self.activity_type: ActivityType = ActivityType.PLAYING
+
+        self.activity_type: ActivityType = config.discord.status_data.get("activity_type", ActivityType.PLAYING)
+        self.status_display_type: StatusDisplayType = config.discord.status_data.get("status_display_type", StatusDisplayType.NAME)
         # all activity types display details and state, in addition to text on image hovers
-        # the listening, competing, and streaming activities also displays the large image URL
+        # the listening, competing, and streaming activities also displays the large image text for some reason
 
         self.status_data: DiscordData = copy.deepcopy(config.discord.status_data)
 
@@ -42,7 +42,6 @@ class DiscordRPC:
 
         self.steam_payload: SteamFetchPayload = None
         self.local_payload: LocalGameFetchPayload = None
-        self.discord_payload: DiscordDataPayload = None
         self.jellyfin_payload: JellyfinDataPayload = None
         self.mpd_payload: MpdFetchPayload = None
         self.steam_grid_db_payload = None
@@ -51,7 +50,6 @@ class DiscordRPC:
         
     def _get_RPC_data(self) -> dict:
         return {
-            "discord": self.discord_payload,
             # "epic_games_store": self.epic_games_store_payload,
             "jellyfin": self.jellyfin_payload,
             "local": self.local_payload,
@@ -63,6 +61,11 @@ class DiscordRPC:
 
     def inject_bonus_status_data(self, status_data: DiscordData):
         logging.debug("injecting status data: %s", status_data)
+        if status_data.get("activity_type"):
+            self.activity_type = status_data.get("activity_type")
+        if status_data.get("status_display_type"):
+            self.status_display_type = status_data.get("status_display_type")
+        
         if status_data.get("status_lines"):
             self.status_data["status_lines"] = status_data.get("status_lines", []) + self.status_data.get("status_lines", [])
 
@@ -72,11 +75,7 @@ class DiscordRPC:
         if status_data.get("large_images"):
             self.status_data["large_images"] = status_data.get("large_images", {}) | self.status_data.get("large_images", {})
         
-    def instanciate(
-        self,
-        name: str,
-        platform_fallback_app_id: int = None,
-        activity_type: ActivityType = None) -> bool:
+    def instanciate(self, name: str) -> bool:
         # skip app if it's found in the blacklist
         if name.casefold() in map(str.casefold, self.config.app.blacklist):
             logging.info("%s is in the blacklist, skipping RPC object creation.", name)
@@ -85,22 +84,6 @@ class DiscordRPC:
         logging.info("Instanciating Discord RPC connection for %s", name)
         self.app_name = name
 
-        self.discord_payload = discordAPI.fetch_data(self.app_name)
-
-        if activity_type:
-            self.activity_type = activity_type
-
-        # figure out the correct app ID
-        app_id = discordAPI.get_app_id(name, self.config)
-        if app_id:
-            self.app_id_is_name = True
-        else:
-            if platform_fallback_app_id:
-                app_id = platform_fallback_app_id
-            else:
-                app_id = self.config.discord.fallback_app_id
-        
-        self.discord_app_id = app_id
         self.start_time = time()
 
         # overwrite config data with per app config data if applicable
@@ -110,7 +93,7 @@ class DiscordRPC:
         # only connect if discord is enabled
         # this check exists to allow development without having discord running
         if self.config.discord.enabled:
-            self.discord_RPC = Presence(client_id=self.discord_app_id)
+            self.discord_RPC = Presence(client_id=self.presence_manager_app_id)
             self.discord_RPC.connect()
         
         logging.info("Established Discord RPC connection for %s", name)
@@ -128,10 +111,6 @@ class DiscordRPC:
         self.discord_buttons = []
 
         status_lines: list[str] = []
-
-        # if there is no app ID for this specific app, display the name thru the status 
-        if not self.app_id_is_name:
-            status_lines.append(self.app_name)
         
         def format_rpc_data(line) -> Optional[str]:
             try:
@@ -182,7 +161,9 @@ class DiscordRPC:
         
         if self.config.discord.enabled:
             self.discord_RPC.update(
+                name = self.app_name,
                 activity_type = self.activity_type,
+                status_display_type = self.status_display_type,
                 details = self.details, state = self.state,
                 start = self.start_time, end=self.end_time,
                 large_image = self.large_image_url, large_text = self.large_image_text,
