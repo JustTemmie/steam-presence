@@ -57,6 +57,9 @@ class LocalGameFetchPayload:
 @dataclass
 class MpdFetchPayload:
     file: Optional[str] = None
+    folder: Optional[str] = None
+    
+    file_path: Optional[str] = None
     last_modified: Optional[str] = None
     added: Optional[str] = None
     format: Optional[str] = None

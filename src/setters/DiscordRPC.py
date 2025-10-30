@@ -2,7 +2,7 @@ import logging
 import copy
 
 from time import time
-from typing import Optional
+from typing import Dict, Optional
 from pypresence import Presence, ActivityType, StatusDisplayType
 
 from src.presence_manager.config import Config, DiscordData
@@ -27,6 +27,8 @@ class DiscordRPC:
 
         self.details: str = ""
         self.state: str = ""
+        self.discord_buttons: list[Dict[str: str, str: str]] = []
+
         self.start_time: int = None
         self.end_time: int = None
 
@@ -34,8 +36,6 @@ class DiscordRPC:
         self.large_image_text: str = ""
         self.small_image_url: Optional[str] = None
         self.small_image_text: str = ""
-
-        self.discord_buttons = []
 
         self.discord_image_url: Optional[str] = None
 
@@ -73,6 +73,9 @@ class DiscordRPC:
 
         if status_data.get("large_images"):
             self.status_data["large_images"] = status_data.get("large_images", {}) | self.status_data.get("large_images", {})
+        
+        if status_data.get("buttons"):
+            self.status_data["buttons"] = status_data.get("buttons", {}) | self.status_data.get("buttons", {})
         
     def instanciate(self, name: str, discord_app_id: int) -> bool:
         # skip app if it's found in the blacklist
@@ -148,6 +151,18 @@ class DiscordRPC:
                 self.small_image_url = image_url
                 self.small_image_text = image_text
                 break
+        
+        for raw_label, raw_url in self.status_data.get("buttons", {}).items():
+            label = format_rpc_data(raw_label)
+            url = format_rpc_data(raw_url)
+            if label and url:
+                if len(label) > 32:
+                    logging.warning("button with label %s was skipped due to having a length of %s, discord caps them at 32", label, len(label))
+                else:
+                    self.discord_buttons.append({
+                        "label": label,
+                        "url": url
+                    })
     
     def close_RPC(self):
         if self.config.discord.enabled:
@@ -168,7 +183,7 @@ class DiscordRPC:
                 start = self.start_time, end=self.end_time,
                 large_image = self.large_image_url, large_text = self.large_image_text,
                 small_image = self.small_image_url, small_text = self.small_image_text,
-                # buttons=[{"label": "Test Button", "url": "https://github.com/JustTemmie/steam-presence"}]#self.discord_buttons
+                buttons = self.discord_buttons
             )
         
         if not self.config.discord.enabled or logging.root.level < 20:
@@ -188,27 +203,3 @@ class DiscordRPC:
             print(f"buttons = {self.discord_buttons}")
 
         return True
-
-    def update_steam_data(self) -> None:
-        pass
-        # buttons are currently broken for some unknown reason
-        # if self.config.steam.steam_store_button and self.steam_payload.app_id != 0:
-        #     price_string = self.steam_payload.price_current
-
-        #     # we try multiple labels as they're capped to 32 characters
-        #     labels = [
-        #         f"{self.steam_payload.app_name} on steam - {price_string}",
-        #         f"{self.steam_payload.app_name} - {price_string}",
-        #         f"get it on steam! - {price_string}",
-        #         f"on steam! - {price_string}",
-        #         "get it on steam!"
-        #     ]
-
-        #     for label in labels:
-        #         if len(label) <= 32:
-        #             break
-                
-        #     self.discord_buttons.append({
-        #         "label": label,
-        #         "url": f"https://store.steampowered.com/app/{self.steam_payload.app_id}"
-        #     })

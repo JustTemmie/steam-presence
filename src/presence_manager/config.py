@@ -32,6 +32,7 @@ class DiscordData:
     status_lines: list[str]
     small_images: dict[str, str]
     large_images: dict[str, str]
+    buttons: dict[str, str]
 
 @dataclass
 class SteamUser:
@@ -90,6 +91,9 @@ class ConfigDiscord(GenericConfig):
                 "{steam.capsule_vertical_image}": None,
                 "{steam.hero_capsule}": None,
             },
+            "buttons": {
+
+            }
         }
         # the discord trackmania icon SUCKS due to being super blurry
         # so it's a good example of a per app config
@@ -117,7 +121,10 @@ class ConfigSteam(GenericConfig):
             "status_lines": [
                 "{steam.rich_presence}",
                 "{steam.review_description} reviews ({steam.review_percent}%)",
-            ]
+            ],
+            "buttons": {
+                "on steam! – {steam.price_formatted}": "https://store.steampowered.com/app/{steam.app_id}"
+            }
         }
 
 # TODO, not implemented

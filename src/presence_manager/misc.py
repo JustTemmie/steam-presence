@@ -78,7 +78,7 @@ def fetch(
 
         return r
     
-    except (requests.ConnectTimeout, requests.ConnectionError):
+    except (requests.ConnectTimeout, requests.ConnectionError, requests.exceptions.ReadTimeout):
         return None
 
 def get_unused_discord_id(used_ids: list[int], config: Config) -> Optional[int]:
