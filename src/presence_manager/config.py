@@ -64,7 +64,7 @@ class ConfigApp(GenericConfig):
 class ConfigDiscord(GenericConfig):
     def __init__(self):
         self.enabled: bool = True
-        # discord only displays 1 app ID on your profile at a time, so we're just using 9 hard coded app IDs
+        # discord only displays 1 app ID on your profile at a time, so we're just using 14 hard coded app IDs
         # these are *NOT* user IDs, do *NOT* change these unless you actively use the discord developer portal
         # i will make fun of you in public discussions if you run into problems due to changing these
         self.app_ids: list[int] = [
@@ -77,6 +77,11 @@ class ConfigDiscord(GenericConfig):
             1433256801830436974,
             1433256843169497148,
             1433256891588542634,
+            1433283419613171763,
+            1433283473157656657,
+            1433283516803584071,
+            1433283551494930624,
+            1433283600035479704,
         ]
         self.status_data: DiscordData = {
             "activity_type": ActivityType.PLAYING,
