@@ -2,6 +2,7 @@ import os
 import hashlib
 import time
 import logging
+import random
 from typing import Dict, Tuple, Optional
 
 import requests
@@ -82,9 +83,10 @@ def fetch(
         return None
 
 def get_unused_discord_id(used_ids: list[int], config: Config) -> Optional[int]:
-    for discord_id in config.discord.app_ids:
-        if discord_id not in used_ids:
-            return discord_id
-    
+    # returning a random ID helps with a form of "rate limiting" from discord
+    available_ids = list(set(config.discord.app_ids) - set(used_ids))
+    if available_ids:
+        return random.choice(available_ids)
+
     logging.warning("all %s discord IDs have been used up, can't create any more RPC connections", len(config.discord.app_ids))
     return None
