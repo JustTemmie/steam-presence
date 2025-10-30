@@ -1,9 +1,12 @@
 import os
 import hashlib
 import time
+import logging
 from typing import Dict, Tuple, Optional
 
 import requests
+
+from src.presence_manager.config import Config
 
 
 def get_terminal_width() -> int:
@@ -77,3 +80,11 @@ def fetch(
     
     except (requests.ConnectTimeout, requests.ConnectionError):
         return None
+
+def get_unused_discord_id(used_ids: list[int], config: Config) -> Optional[int]:
+    for discord_id in config.discord.app_ids:
+        if discord_id not in used_ids:
+            return discord_id
+    
+    logging.warning("all %s discord IDs have been used up, can't create any more RPC connections", len(config.discord.app_ids))
+    return None

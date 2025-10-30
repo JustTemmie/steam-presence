@@ -15,7 +15,6 @@ class DiscordRPC:
 
         self.discord_RPC: Presence = None
         self.discord_app_id: int = 0
-        self.presence_manager_app_id: int = config.discord.app_id
         self.app_name: str = ""
         self.last_update: float = 0
 
@@ -75,7 +74,7 @@ class DiscordRPC:
         if status_data.get("large_images"):
             self.status_data["large_images"] = status_data.get("large_images", {}) | self.status_data.get("large_images", {})
         
-    def instanciate(self, name: str) -> bool:
+    def instanciate(self, name: str, discord_app_id: int) -> bool:
         # skip app if it's found in the blacklist
         if name.casefold() in map(str.casefold, self.config.app.blacklist):
             logging.info("%s is in the blacklist, skipping RPC object creation.", name)
@@ -83,6 +82,7 @@ class DiscordRPC:
         
         logging.info("Instanciating Discord RPC connection for %s", name)
         self.app_name = name
+        self.discord_app_id = discord_app_id
 
         self.start_time = time()
 
@@ -93,7 +93,7 @@ class DiscordRPC:
         # only connect if discord is enabled
         # this check exists to allow development without having discord running
         if self.config.discord.enabled:
-            self.discord_RPC = Presence(client_id=self.presence_manager_app_id)
+            self.discord_RPC = Presence(client_id=self.discord_app_id)
             self.discord_RPC.connect()
         
         logging.info("Established Discord RPC connection for %s", name)
@@ -173,7 +173,10 @@ class DiscordRPC:
         
         if not self.config.discord.enabled or logging.root.level < 20:
             print("refreshing rpc with:")
+            print(f"name = {self.app_name}")
+            print(f"discord_app_id = {self.discord_app_id}")
             print(f"activity_type = {self.activity_type}")
+            print(f"status_display_type = {self.status_display_type}")
             print(f"details = {self.details}")
             print(f"state = {self.state}")
             print(f"start_time = {self.start_time}")

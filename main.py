@@ -34,7 +34,7 @@ JELLYFIN_GETTERS: list[JellyfinGetter] = []
 DEFAULT_GAME: DiscordRPC = None
 
 # key is just a generic identifier such as process ID or steam ID
-RPC_connections: dict[Union[int, str], DiscordRPC] = {}
+RPC_connections: dict[int, DiscordRPC] = {}
 
 if config.local.enabled:
     LOCAL_GETTER = LocalGetter(config)
@@ -73,7 +73,10 @@ while True:
                     if config.local.inject_discord_status_data:
                         rpc_session.inject_bonus_status_data(config.local.discord_status_data)
 
-                    rpc_session.instanciate(process.display_name)
+                    rpc_session.instanciate(
+                        process.display_name, 
+                        presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                    )
                     
                     rpc_session.start_time = process.start_time
 
@@ -104,7 +107,10 @@ while True:
                 if config.mpd.inject_discord_status_data:
                     rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)
                 
-                rpc_session.instanciate("MPD")
+                rpc_session.instanciate(
+                    "MPD",
+                    presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                )
 
                 RPC_connections["MPD"] = rpc_session
 
@@ -146,7 +152,10 @@ while True:
                 if config.steam.inject_discord_status_data:
                     rpc_session.inject_bonus_status_data(config.steam.discord_status_data)
 
-                rpc_session.instanciate(steam_game.app_name)
+                rpc_session.instanciate(
+                    steam_game.app_name,
+                    presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                )
 
                 RPC_connections[RPC_ID] = rpc_session
             
@@ -175,8 +184,12 @@ while True:
                     bonus_status_data: dict = config.jellyfin.per_media_type_discord_status_data.get(jellyfin_session.media_type, {})
                     rpc_session.inject_bonus_status_data(config.jellyfin.default_discord_status_data | bonus_status_data)
                 
-                rpc_session.instanciate("Jellyfin")
+                rpc_session.instanciate(
+                    "Jellyfin",
+                    presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                )
 
+                
                 RPC_connections[RPC_ID] = rpc_session
 
             rpc_session = RPC_connections[RPC_ID]
@@ -205,7 +218,10 @@ while True:
             if config.default_game.inject_discord_status_data:
                 RPC_connections[RPC_ID].inject_bonus_status_data(config.default_game.discord_status_data)
             
-            RPC_connections["DEFAULT"].instanciate(config.default_game.name)
+            RPC_connections["DEFAULT"].instanciate(
+                config.default_game.name, 
+                presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+            )
 
         elif len(RPC_connections) == 1 and RPC_connections.get("DEFAULT"):
             RPC_connections["DEFAULT"].update()
