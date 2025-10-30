@@ -90,6 +90,8 @@ class MpdFetchPayload:
 @dataclass
 class SteamFetchPayload:
     capsule_vertical_image: str = None
+    hero_capsule: str = None
+    logo: str = None
 
     # Current account state
     app_name: Optional[str] = None

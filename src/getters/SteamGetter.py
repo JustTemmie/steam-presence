@@ -240,7 +240,9 @@ class SteamGetter:
 
         # surely there's a better way to pass this much data
         return SteamFetchPayload(
-            capsule_vertical_image = f"https://steamcdn-a.akamaihd.net/steam/apps/{current_game_info.app_id}/library_600x900_2x.jpg",
+            capsule_vertical_image = f"https://steamcdn-a.akamaihd.net/steam/apps/{current_game_info.app_id}/library_600x900.jpg",
+            hero_capsule = f"https://steamcdn-a.akamaihd.net/steam/apps/{current_game_info.app_id}/hero_capsule.jpg",
+            logo = f"https://steamcdn-a.akamaihd.net/steam/apps/{current_game_info.app_id}/logo.png",
 
             app_name = current_game_info.app_name,
             app_id = current_game_info.app_id,

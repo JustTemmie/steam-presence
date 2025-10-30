@@ -81,6 +81,7 @@ class ConfigDiscord(GenericConfig):
                 "{steam_grid_db.icon}": None,
                 "{steam.capsule_header_image}": None, # these are still here, due to injected status lines being prioritized above all else
                 "{steam.capsule_vertical_image}": None,
+                "{steam.hero_capsule}": None,
             },
         }
         # the discord trackmania icon SUCKS due to being super blurry

@@ -187,7 +187,7 @@ class DiscordRPC:
                 start = self.start_time, end=self.end_time,
                 large_image = self.large_image_url, large_text = self.large_image_text,
                 small_image = self.small_image_url, small_text = self.small_image_text,
-                buttons=[{"label": "Test Button", "url": "https://github.com/JustTemmie/steam-presence"}]#self.discord_buttons
+                # buttons=[{"label": "Test Button", "url": "https://github.com/JustTemmie/steam-presence"}]#self.discord_buttons
             )
         
         if not self.config.discord.enabled or logging.root.level < 20:
