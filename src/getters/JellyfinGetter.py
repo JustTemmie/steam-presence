@@ -62,6 +62,8 @@ class JellyfinGetter:
                     episode_number = now_playing.get("IndexNumber"),
                     season_number = now_playing.get("ParentIndexNumber"),
                     id = now_playing.get("Id"),
+                    series_id = now_playing.get("SeriesId"),
+                    parent_backdrop_item_id = now_playing.get("ParentBackdropItemId"),
                     # taglines,
                     # genres,
                     # studios,

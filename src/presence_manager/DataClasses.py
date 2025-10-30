@@ -41,6 +41,8 @@ class JellyfinDataPayload:
     episode_number: Optional[str] = None
     season_number: Optional[str] = None
     id: Optional[str] = None
+    series_id: Optional[str] = None
+    parent_backdrop_item_id: Optional[str] = None
     length: Optional[float] = None
     media_type: Optional[str] = None
 

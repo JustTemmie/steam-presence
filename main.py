@@ -164,8 +164,7 @@ while True:
             rpc_session.steam_payload = steam_game
 
             rpc_session.update()
-            rpc_session.update_steam_data()
-    
+
 
     for jellyfin_session in [getter.fetch() for getter in JELLYFIN_GETTERS]:
         if jellyfin_session and jellyfin_session.media_source_id:

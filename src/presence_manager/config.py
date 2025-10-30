@@ -145,7 +145,10 @@ class ConfigJellyfin(GenericConfig):
             "activity_type": ActivityType.WATCHING,
             "status_display_type": StatusDisplayType.DETAILS,
             "large_images": {
-                "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary": None,
+                # after playing around with the numbers, this seems to be close the best resolution for discord
+                # anything higher and it just looks "oversharpened"
+                "{jellyfin.public_url}/Items/{jellyfin.series_id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100": None,
+                "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100": None,
                 "https://avatars.githubusercontent.com/u/45698031?s=512.png": None
             }
         }
@@ -153,19 +156,19 @@ class ConfigJellyfin(GenericConfig):
             "episode": {
                 "status_lines": [
                     "{jellyfin.series_name}",
-                    "S{jellyfin.season_number}E{jellyfin.episode_number} - {jellyfin.name}",
-                    "{jellyfin.name}",
+                    "S{jellyfin.season_number}E{jellyfin.episode_number} – {jellyfin.name}",
+                    "{jellyfin.name}"
                 ]
             },
             "movie": {
                 "status_lines": [
-                    "{jellyfin.name}",
+                    "{jellyfin.name}"
                 ]
             },
             "audio": {
                 "activity_type": ActivityType.LISTENING,
                 "status_lines": [
-                    "{jellyfin.name}",
+                    "{jellyfin.name}"
                 ]
             }
         }
