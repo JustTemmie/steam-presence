@@ -90,6 +90,10 @@ while True:
             RPC_ID = process.process_name
             if not RPC_connections.get(RPC_ID):
                 if process.display_name:
+
+                    logging.info("Found process %s locally, creating new local RPC", process.process_exe)
+
+
                     config.load() # reload the config on new RPC connection
                     rpc_session = DiscordRPC(config)
 
@@ -124,6 +128,9 @@ while True:
 
         else:
             if not RPC_connections.get("MPD"):
+
+                logging.info("Found %s being listened to thru MPD, creating new MPD RPC", data.title)
+
                 config.load()
                 rpc_session = DiscordRPC(config)
 
@@ -140,6 +147,7 @@ while True:
             rpc_session = RPC_connections.get("MPD")
             # clear any mpd data that may be incorrect for a different song
             if rpc_session.mpd_payload and rpc_session.mpd_payload.title != data.title:
+                logging.info("Detected new MPD song %s, updating data", data.title)
                 rpc_session.mpd_payload = None
             
             if data.fetched_at and data.elapsed and data.duration:
@@ -162,6 +170,8 @@ while True:
                 if not RPC_connections.get(RPC_ID):
                     if not steam_game.app_name:
                         continue
+                    
+                    logging.info("Found %s being played on steam, creating new steam RPC", steam_game.app_name)
 
                     config.load() # reload the config
                     rpc_session = DiscordRPC(config)
@@ -197,6 +207,8 @@ while True:
                 if not RPC_connections.get(RPC_ID):
                     if jellyfin_session.is_paused:
                         continue
+                        
+                    logging.info("Found %s being watched on jellyfin, creating new jellyfin RPC", jellyfin_session.title)
                     
                     config.load() # reload the config
                     rpc_session = DiscordRPC(config)

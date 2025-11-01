@@ -6,6 +6,7 @@ from typing import Dict, Optional
 import pypresence
 from pypresence import ActivityType, StatusDisplayType
 
+import src.presence_manager.misc as presence_manager
 from src.presence_manager.config import Config, DiscordData
 from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
 
@@ -84,7 +85,7 @@ class DiscordRPC:
             logging.info("%s is in the blacklist, skipping RPC object creation.", name)
             return False
         
-        logging.info("Instanciating Discord RPC connection for %s", name)
+        logging.info("Trying to establish Discord RPC connection for %s", name)
         self.app_name = name
         self.discord_app_id = discord_app_id
 
@@ -103,7 +104,9 @@ class DiscordRPC:
             except pypresence.exceptions.DiscordNotFound:
                 logging.warning("Failed to connect to discord, is it running?")
         
-        logging.info("Established Discord RPC connection for %s", name)
+        logging.info("Succesfully established Discord RPC connection for %s", name)
+
+        print("–" * presence_manager.get_terminal_width())
 
         return True
 
