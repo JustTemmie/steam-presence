@@ -3,7 +3,8 @@ import copy
 
 from time import time
 from typing import Dict, Optional
-from pypresence import Presence, ActivityType, StatusDisplayType
+import pypresence
+from pypresence import ActivityType, StatusDisplayType
 
 from src.presence_manager.config import Config, DiscordData
 from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
@@ -13,7 +14,7 @@ class DiscordRPC:
     def __init__(self, config: Config):
         self.config = config
 
-        self.discord_RPC: Presence = None
+        self.discord_RPC: pypresence.Presence = None
         self.discord_app_id: int = 0
         self.app_name: str = ""
         self.last_update: float = 0
@@ -96,8 +97,11 @@ class DiscordRPC:
         # only connect if discord is enabled
         # this check exists to allow development without having discord running
         if self.config.discord.enabled:
-            self.discord_RPC = Presence(client_id=self.discord_app_id)
-            self.discord_RPC.connect()
+            self.discord_RPC = pypresence.Presence(client_id=self.discord_app_id)
+            try:
+                self.discord_RPC.connect()
+            except pypresence.exceptions.DiscordNotFound:
+                logging.warning("Failed to connect to discord, is it running?")
         
         logging.info("Established Discord RPC connection for %s", name)
 
