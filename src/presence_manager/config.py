@@ -58,7 +58,7 @@ class LocalProcess:
 class ConfigApp(GenericConfig):
     def __init__(self):
         self.timeout: int = 30
-        self.cycle_interval: int = 20
+        self.cycle_interval: int = 5
         self.blacklist: list[str] = []
 
 class ConfigDiscord(GenericConfig):
@@ -118,6 +118,7 @@ class ConfigSteamGridDB(GenericConfig):
 class ConfigSteam(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
+        self.cooldown: int = 20
         self.users: list[SteamUser] = []
         # self.steam_store_button: bool = True
 
@@ -136,6 +137,7 @@ class ConfigSteam(GenericConfig):
 class ConfigEpicGamesStore(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
+        self.cooldown: int = 20
 
 class ConfigJellyfin(GenericConfig):
     def __init__(self):
@@ -143,6 +145,7 @@ class ConfigJellyfin(GenericConfig):
         # it will also require your instance to be accessible by the wider internet
         # so an instance URL of http://192.168.1.20:8096 won't work if you want images
         self.enabled: bool = False
+        self.cooldown: int = 0
         self.instances: list[JellyfinInstance] = []
 
         self.inject_discord_status_data: bool = True
@@ -181,6 +184,7 @@ class ConfigJellyfin(GenericConfig):
 class ConfigLocal(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
+        self.cooldown: int = 0
         self.processes: list[LocalProcess] = []
 
         self.inject_discord_status_data: bool = True
@@ -189,6 +193,7 @@ class ConfigLocal(GenericConfig):
 class ConfigMpd(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
+        self.cooldown: int = 0
         self.server_url: str = "localhost:6600"
         self.password: Optional[str] = None
 

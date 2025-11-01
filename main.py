@@ -3,8 +3,7 @@ import time
 import logging
 
 from typing import Union
-
-from pypresence import ActivityType
+from dataclasses import dataclass
 
 import src.presence_manager.logger # just need to initialize it
 import src.presence_manager.misc as presence_manager
@@ -33,8 +32,29 @@ JELLYFIN_GETTERS: list[JellyfinGetter] = []
 
 DEFAULT_GAME: DiscordRPC = None
 
+class ServiceCooldown:
+    def __init__(self, cooldown):
+        self.cooldown: float = cooldown
+        self.next_tick: float = time.time()
+    
+    def is_ready(self) -> bool:
+        if self.next_tick > time.time():
+            return False
+        
+        self.next_tick = time.time() + self.cooldown
+        return True
+
+class ServiceCooldowns:
+    def __init__(self):
+        self.steam = ServiceCooldown(config.steam.cooldown)
+        self.epic_games_store = ServiceCooldown(config.epic_games_store.cooldown) # unused
+        self.jellyfin = ServiceCooldown(config.jellyfin.cooldown)
+        self.local = ServiceCooldown(config.local.cooldown)
+        self.mpd = ServiceCooldown(config.mpd.cooldown)
+
+service_cooldowns = ServiceCooldowns()
 # key is just a generic identifier such as process ID or steam ID
-RPC_connections: dict[int, DiscordRPC] = {}
+RPC_connections: dict[Union[int, str], DiscordRPC] = {}
 
 if config.local.enabled:
     LOCAL_GETTER = LocalGetter(config)
@@ -60,7 +80,10 @@ logging.info("Setup complete!")
 print("–" * presence_manager.get_terminal_width())
 
 while True:
-    if LOCAL_GETTER:
+    cycle_start_time = time.time()
+
+
+    if LOCAL_GETTER and service_cooldowns.local.is_ready():
         processes = LOCAL_GETTER.fetch()
 
         for process in processes:
@@ -90,7 +113,7 @@ while True:
 
             game.update()
     
-    if MPD_GETTER:
+    if MPD_GETTER and service_cooldowns.mpd.is_ready():
         data = MPD_GETTER.fetch()
 
         if not data.title or data.state != "play":
@@ -131,79 +154,80 @@ while True:
             
 
 
-    for steam_game in [getter.fetch() for getter in STEAM_GETTERS]:
-        if steam_game:
-            RPC_ID = steam_game.app_id
+    if STEAM_GETTERS and service_cooldowns.steam.is_ready():
+        for steam_game in [getter.fetch() for getter in STEAM_GETTERS]:
+            if steam_game:
+                RPC_ID = steam_game.app_id
 
-            if not RPC_connections.get(RPC_ID):
-                if not steam_game.app_name:
-                    continue
+                if not RPC_connections.get(RPC_ID):
+                    if not steam_game.app_name:
+                        continue
 
-                config.load() # reload the config
-                rpc_session = DiscordRPC(config)
+                    config.load() # reload the config
+                    rpc_session = DiscordRPC(config)
 
-                if config.steam_grid_db.enabled and steam_game.app_id:
-                    rpc_session.steam_grid_db_payload = SteamGridDB.fetch_steam_grid_db(
-                        api_key = config.steam_grid_db.api_key,
-                        app_id = steam_game.app_id,
-                        platform = SteamGridDB.SteamGridPlatforms.STEAM
+                    if config.steam_grid_db.enabled and steam_game.app_id:
+                        rpc_session.steam_grid_db_payload = SteamGridDB.fetch_steam_grid_db(
+                            api_key = config.steam_grid_db.api_key,
+                            app_id = steam_game.app_id,
+                            platform = SteamGridDB.SteamGridPlatforms.STEAM
+                        )
+
+                    if config.steam.inject_discord_status_data:
+                        rpc_session.inject_bonus_status_data(config.steam.discord_status_data)
+
+                    rpc_session.instanciate(
+                        steam_game.app_name,
+                        presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
                     )
 
-                if config.steam.inject_discord_status_data:
-                    rpc_session.inject_bonus_status_data(config.steam.discord_status_data)
-
-                rpc_session.instanciate(
-                    steam_game.app_name,
-                    presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
-                )
-
-                RPC_connections[RPC_ID] = rpc_session
-            
-            rpc_session = RPC_connections[RPC_ID]
-
-            rpc_session.steam_payload = steam_game
-
-            rpc_session.update()
-
-
-    for jellyfin_session in [getter.fetch() for getter in JELLYFIN_GETTERS]:
-        if jellyfin_session and jellyfin_session.media_source_id:
-            RPC_ID = jellyfin_session.media_source_id
-
-            if not RPC_connections.get(RPC_ID):
-                if jellyfin_session.is_paused:
-                    continue
+                    RPC_connections[RPC_ID] = rpc_session
                 
-                config.load() # reload the config
-                rpc_session = DiscordRPC(config)
+                rpc_session = RPC_connections[RPC_ID]
 
-                if config.jellyfin.inject_discord_status_data:
-                    logging.info("%s is of type %s, injecting relevant status data", jellyfin_session.name, jellyfin_session.media_type)
+                rpc_session.steam_payload = steam_game
 
-                    bonus_status_data: dict = config.jellyfin.per_media_type_discord_status_data.get(jellyfin_session.media_type, {})
-                    rpc_session.inject_bonus_status_data(config.jellyfin.default_discord_status_data | bonus_status_data)
-                
-                rpc_session.instanciate(
-                    "Jellyfin",
-                    presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
-                )
-
-                
-                RPC_connections[RPC_ID] = rpc_session
-
-            rpc_session = RPC_connections[RPC_ID]
-            rpc_session.jellyfin_payload = jellyfin_session
-            
-            if jellyfin_session.is_paused:
-                logging.info("jellyfin is paused, closing discord RPC")
-                rpc_session.close_RPC()
-                RPC_connections.pop(RPC_ID)
-            
-            else:
-                rpc_session.start_time = time.time() - jellyfin_session.play_position
-                rpc_session.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
                 rpc_session.update()
-            
+
+    if JELLYFIN_GETTERS and service_cooldowns.steam.is_ready():
+        for jellyfin_session in [getter.fetch() for getter in JELLYFIN_GETTERS]:
+            if jellyfin_session and jellyfin_session.media_source_id:
+                RPC_ID = jellyfin_session.media_source_id
+
+                if not RPC_connections.get(RPC_ID):
+                    if jellyfin_session.is_paused:
+                        continue
+                    
+                    config.load() # reload the config
+                    rpc_session = DiscordRPC(config)
+
+                    if config.jellyfin.inject_discord_status_data:
+                        logging.info("%s is of type %s, injecting relevant status data", jellyfin_session.name, jellyfin_session.media_type)
+
+                        bonus_status_data: dict = config.jellyfin.per_media_type_discord_status_data.get(jellyfin_session.media_type, {})
+                        rpc_session.inject_bonus_status_data(config.jellyfin.default_discord_status_data | bonus_status_data)
+                    
+                    rpc_session.instanciate(
+                        "Jellyfin",
+                        presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                    )
+
+                    
+                    RPC_connections[RPC_ID] = rpc_session
+
+                rpc_session = RPC_connections[RPC_ID]
+                rpc_session.jellyfin_payload = jellyfin_session
+                
+                if jellyfin_session.is_paused:
+                    logging.info("jellyfin is paused, closing discord RPC")
+                    rpc_session.close_RPC()
+                    RPC_connections.pop(RPC_ID)
+                
+                else:
+                    rpc_session.start_time = time.time() - jellyfin_session.play_position
+                    rpc_session.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
+                    rpc_session.update()
+                
 
     logging.debug("Processing complete!")
 
@@ -240,4 +264,4 @@ while True:
         RPC_connections.pop(identifier)
     
     logging.debug("----- Cycle completed at %s -----", round(time.time()))
-    time.sleep(config.app.cycle_interval)
+    time.sleep(max(0, config.app.cycle_interval - (time.time() - cycle_start_time)))
