@@ -189,7 +189,7 @@ while True:
 
                 rpc_session.update()
 
-    if JELLYFIN_GETTERS and service_cooldowns.steam.is_ready():
+    if JELLYFIN_GETTERS and service_cooldowns.jellyfin.is_ready():
         for jellyfin_session in [getter.fetch() for getter in JELLYFIN_GETTERS]:
             if jellyfin_session and jellyfin_session.media_source_id:
                 RPC_ID = jellyfin_session.media_source_id
