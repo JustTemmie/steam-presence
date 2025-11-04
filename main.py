@@ -148,6 +148,7 @@ while True:
             # clear any mpd data that may be incorrect for a different song
             if rpc_session.mpd_payload and rpc_session.mpd_payload.title != data.title:
                 logging.info("Detected new MPD song %s, updating data", data.title)
+                print("–" * presence_manager.get_terminal_width())        
                 rpc_session.mpd_payload = None
             
             if data.fetched_at and data.elapsed and data.duration:
@@ -208,7 +209,7 @@ while True:
                     if jellyfin_session.is_paused:
                         continue
                         
-                    logging.info("Found %s being watched on jellyfin, creating new jellyfin RPC", jellyfin_session.title)
+                    logging.info("Found %s being watched on jellyfin, creating new jellyfin RPC", jellyfin_session.name)
                     
                     config.load() # reload the config
                     rpc_session = DiscordRPC(config)
