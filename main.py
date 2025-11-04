@@ -252,7 +252,13 @@ while True:
     if LAST_FM_GETTERS and service_cooldowns.last_fm.is_ready():
         for last_fm_session in [getter.fetch() for getter in LAST_FM_GETTERS]:
             if last_fm_session and last_fm_session.username:
-                print(last_fm_session)
+
+                if not last_fm_session.track_name:
+                    if RPC_connections.get(last_fm_session.username):
+                        logging.info("Last.fm is paused, closing discord RPC")
+                        RPC_connections.get(last_fm_session.username).close_RPC()
+                        RPC_connections.pop(last_fm_session.username)
+
                 RPC_ID = last_fm_session.username
         
                 if not RPC_connections.get(RPC_ID):                        

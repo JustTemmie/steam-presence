@@ -42,7 +42,10 @@ class LastFmGetter:
         
         # not now playing
         if not current_track.get("@attr", {}).get("nowplaying"):
-            return LastFmFetchPayload()
+            return LastFmFetchPayload(
+                username = self.username,
+                track_name = None
+            )
             
         album_art = None
         
@@ -56,7 +59,7 @@ class LastFmGetter:
         
         
         for image in current_track.get("image", []):
-            if image.get("size") == "medium":
+            if image.get("size") == "large":
                 album_art = image.get("#text")
                 continue
         

@@ -232,6 +232,9 @@ class ConfigLastFm(GenericConfig):
             ],
             "large_images": {
                 "{last_fm.album_art}": None
+            },
+            "buttons": {
+                "{last_fm.track_name} on Last.fm": "{last_fm.track_url}"
             }
         }
 
