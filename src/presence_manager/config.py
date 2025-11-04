@@ -57,7 +57,7 @@ class LocalProcess:
 
 class ConfigApp(GenericConfig):
     def __init__(self):
-        self.timeout: int = 30
+        self.timeout: int = 55
         self.cycle_interval: int = 5
         self.blacklist: list[str] = []
 
@@ -118,7 +118,7 @@ class ConfigSteamGridDB(GenericConfig):
 class ConfigSteam(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
-        self.cooldown: int = 20
+        self.cooldown: int = 25
         self.users: list[SteamUser] = []
         # self.steam_store_button: bool = True
 
