@@ -1,14 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-# ID: "discord"
-@dataclass
-class DiscordDataPayload:
-    app_id: Optional[int] = None
-    image_url: Optional[str] = None
-    steam_app_id: Optional[str] = None
-    name: Optional[str] = None
-
 # ID: "steam_grid_db"
 @dataclass
 class SteamGridDBFetchPayload:

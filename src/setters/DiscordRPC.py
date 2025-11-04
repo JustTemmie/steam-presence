@@ -8,7 +8,7 @@ from pypresence import ActivityType, StatusDisplayType
 
 import src.presence_manager.misc as presence_manager
 from src.presence_manager.config import Config, DiscordData
-from src.presence_manager.DataClasses import DiscordDataPayload, LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
+from src.presence_manager.DataClasses import LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
 
 
 class DiscordRPC:
