@@ -92,7 +92,10 @@ class SteamAPI:
     def fetch_mini_profile_data(self) -> fetchMiniProfileDataResponse:
         # convert steam ID 64 to steam ID 3, yes, really
         url = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
-        r = presence_manager.fetch(url)
+        r = presence_manager.fetch(
+            url,
+            cache_ttl=60
+        )
 
         if not r:
             logging.error("failed to fetch mini profile")
