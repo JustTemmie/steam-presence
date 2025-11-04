@@ -1,8 +1,7 @@
 import logging
-import json
 
 from src.presence_manager.config import Config, JellyfinInstance
-from src.presence_manager.DataClasses import JellyfinDataPayload
+from src.presence_manager.DataClasses import JellyfinFetchPayload
 
 import src.presence_manager.misc as presence_manager
 
@@ -16,7 +15,7 @@ class JellyfinGetter:
         self.server_url = instance.server_url
         self.public_url = instance.public_url
 
-    def fetch(self) -> JellyfinDataPayload:
+    def fetch(self) -> JellyfinFetchPayload:
         logging.debug("Fetching jellyfin information")
 
         url = f"{self.server_url}/Sessions?api_key={self.api_key}"
@@ -24,11 +23,11 @@ class JellyfinGetter:
 
         if not r:
             logging.error("failed to fetch jellyfin session for %s", self.username)
-            return JellyfinDataPayload()
+            return JellyfinFetchPayload()
 
         data = r.json()
         if not data:
-            return JellyfinDataPayload()
+            return JellyfinFetchPayload()
         
         # with open("test.json", "w", encoding="utf-8") as f:
         #     json.dump(data, f)
@@ -42,7 +41,7 @@ class JellyfinGetter:
                 # genres = now_playing.get("Genres", [])
                 # studios = now_playing.get("Studios", [])
 
-                return JellyfinDataPayload(
+                return JellyfinFetchPayload(
                     server_url = self.server_url,
                     public_url = self.public_url,
 
@@ -71,6 +70,6 @@ class JellyfinGetter:
                     media_type = now_playing.get("Type", "").casefold(),
                 )
         
-        return JellyfinDataPayload()
+        return JellyfinFetchPayload()
 
 

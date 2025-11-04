@@ -50,6 +50,7 @@ def _store_cached(key: str, response: requests.Response) -> None:
     with _LOCK:
         _CACHE[key] = (response, time.time())
 
+# i should really implement a garbage collector for this eventually
 def fetch(
     url: str,
     data: Optional[dict] = None,
