@@ -13,9 +13,10 @@ import src.apis.SteamGridDB as SteamGridDB
 from src.getters.JellyfinGetter import JellyfinGetter
 from src.getters.LocalGetter import LocalGetter
 from src.getters.MpdGetter import MpdGetter
+from src.getters.LastFmGetter import LastFmGetter
 from src.getters.SteamGetter import SteamGetter
 from src.setters.DiscordRPC import DiscordRPC
-from src.presence_manager.config import Config, SteamUser, JellyfinInstance
+from src.presence_manager.config import Config, SteamUser, JellyfinInstance, LastFmUser
 
 
 logging.info("Starting setup!")
@@ -29,6 +30,7 @@ LOCAL_GETTER = None
 MPD_GETTER = None
 STEAM_GETTERS: list[SteamGetter] = []
 JELLYFIN_GETTERS: list[JellyfinGetter] = []
+LAST_FM_GETTERS: list[LastFmGetter] = []
 
 DEFAULT_GAME: DiscordRPC = None
 
@@ -51,6 +53,7 @@ class ServiceCooldowns:
         self.jellyfin = ServiceCooldown(config.jellyfin.cooldown)
         self.local = ServiceCooldown(config.local.cooldown)
         self.mpd = ServiceCooldown(config.mpd.cooldown)
+        self.last_fm = ServiceCooldown(config.last_fm.cooldown)
 
 service_cooldowns = ServiceCooldowns()
 # key is just a generic identifier such as process ID or steam ID
@@ -75,6 +78,11 @@ if config.jellyfin.enabled:
     for instance in config.jellyfin.instances:
         instance = JellyfinInstance(**instance)
         JELLYFIN_GETTERS.append(JellyfinGetter(config, instance))
+
+if config.last_fm.enabled:
+    for user in config.last_fm.users:
+        user = LastFmUser(**user)
+        LAST_FM_GETTERS.append(LastFmGetter(config, user))
 
 logging.info("Setup complete!")
 print("–" * presence_manager.get_terminal_width())
@@ -240,7 +248,34 @@ while True:
                     rpc_session.start_time = time.time() - jellyfin_session.play_position
                     rpc_session.end_time = time.time() - jellyfin_session.play_position + jellyfin_session.length
                     rpc_session.update()
+
+    if LAST_FM_GETTERS and service_cooldowns.last_fm.is_ready():
+        for last_fm_session in [getter.fetch() for getter in LAST_FM_GETTERS]:
+            if last_fm_session and last_fm_session.username:
+                print(last_fm_session)
+                RPC_ID = last_fm_session.username
+        
+                if not RPC_connections.get(RPC_ID):                        
+                    logging.info("Found %s listening to music thru last.fm, creating new last.fm RPC", last_fm_session.username)
+                    
+                    config.load() # reload the config
+                    rpc_session = DiscordRPC(config)
+
+                    if config.last_fm.inject_discord_status_data:
+                        rpc_session.inject_bonus_status_data(config.last_fm.discord_status_data)
+
+                    rpc_session.instanciate(
+                        "Last.fm",
+                        presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                    )
+
+                    RPC_connections[RPC_ID] = rpc_session
                 
+                # note that start and end time aren't set for last.fm, as the data is simply not available
+                rpc_session = RPC_connections[RPC_ID]
+                rpc_session.last_fm_payload = last_fm_session
+                
+                rpc_session.update()
 
     logging.debug("Processing complete!")
 

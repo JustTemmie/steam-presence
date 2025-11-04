@@ -49,6 +49,10 @@ class JellyfinInstance:
     server_url: str = ""
     public_url: Optional[str] = None
 
+@dataclass
+class LastFmUser:
+    api_key: str = ""
+    username: str = ""
 
 @dataclass
 class LocalProcess:
@@ -211,6 +215,26 @@ class ConfigMpd(GenericConfig):
             }
         }
 
+class ConfigLastFm(GenericConfig):
+    def __init__(self):
+        self.enabled: bool = False
+        self.cooldown: int = 15
+        self.users: list[LastFmUser] = []
+
+        self.inject_discord_status_data: bool = True
+        self.discord_status_data: DiscordData = {
+            "activity_type": ActivityType.LISTENING,
+            "status_display_type": StatusDisplayType.DETAILS,
+            "status_lines": [
+                "{last_fm.track_name}",
+                "{last_fm.artist_name} / {last_fm.album_name}",
+                "{last_fm.album_name}",
+            ],
+            "large_images": {
+                "{last_fm.album_art}": None
+            }
+        }
+
 class ConfigDefaultGame(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
@@ -236,6 +260,7 @@ class Config:
         self.jellyfin = ConfigJellyfin()
         self.local = ConfigLocal()
         self.mpd = ConfigMpd()
+        self.last_fm = ConfigLastFm()
         self.default_game = ConfigDefaultGame()
     
     def load(self, config_path="config.json"):
@@ -260,6 +285,7 @@ class Config:
         self.jellyfin.load(config.get("jellyfin", {}))
         self.local.load(config.get("local", {}))
         self.mpd.load(config.get("mpd", {}))
+        self.last_fm.load(config.get("last_fm", {}))
         self.default_game.load(config.get("default_game", {}))
 
         # ensure the app name checks are case-insensitive

@@ -8,7 +8,7 @@ from pypresence import ActivityType, StatusDisplayType
 
 import src.presence_manager.misc as presence_manager
 from src.presence_manager.config import Config, DiscordData
-from src.presence_manager.DataClasses import LocalGameFetchPayload, SteamFetchPayload, JellyfinDataPayload, MpdFetchPayload
+from src.presence_manager.DataClasses import LocalGameFetchPayload, SteamFetchPayload, JellyfinFetchPayload, MpdFetchPayload, LastFmFetchPayload
 
 
 class DiscordRPC:
@@ -43,8 +43,9 @@ class DiscordRPC:
 
         self.steam_payload: SteamFetchPayload = None
         self.local_payload: LocalGameFetchPayload = None
-        self.jellyfin_payload: JellyfinDataPayload = None
+        self.jellyfin_payload: JellyfinFetchPayload = None
         self.mpd_payload: MpdFetchPayload = None
+        self.last_fm_payload: LastFmFetchPayload = None
         self.steam_grid_db_payload = None
         self.epic_games_store_payload = None
         self.default_game_payload = None
@@ -55,6 +56,7 @@ class DiscordRPC:
             "jellyfin": self.jellyfin_payload,
             "local": self.local_payload,
             "mpd": self.mpd_payload,
+            "last_fm": self.last_fm_payload,
             "steam_grid_db": self.steam_grid_db_payload,
             "steam": self.steam_payload,
             "default": self.default_game_payload,
@@ -146,7 +148,7 @@ class DiscordRPC:
             image_url = format_rpc_data(large_image_url)
             image_text = format_rpc_data(large_image_text)
             # Continue if large_image_text was explicitly set to None
-            if image_url and (image_text or large_image_text == None):
+            if image_url and (image_text or large_image_text is None):
                 self.large_image_url = image_url
                 self.large_image_text = image_text
                 break
@@ -154,7 +156,7 @@ class DiscordRPC:
         for small_image_url, small_image_text in self.status_data.get("small_images", {}).items():
             image_url = format_rpc_data(small_image_url)
             image_text = format_rpc_data(small_image_text)
-            if image_url and (image_text or small_image_text == None):
+            if image_url and (image_text or small_image_text is None):
                 self.small_image_url = image_url
                 self.small_image_text = image_text
                 break

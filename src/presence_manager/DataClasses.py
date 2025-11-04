@@ -13,7 +13,7 @@ class EpicGamesStoreFetchPayload:
 
 # ID: "jellyfin"
 @dataclass
-class JellyfinDataPayload:
+class JellyfinFetchPayload:
     server_url: Optional[str] = None
     public_url: Optional[str] = None
 
@@ -47,7 +47,7 @@ class LocalGameFetchPayload:
     process_exe: Optional[str] = None
     display_name: Optional[str] = None
 
-# ID: "local"
+# ID: "mpd"
 @dataclass
 class MpdFetchPayload:
     file: Optional[str] = None
@@ -82,6 +82,18 @@ class MpdFetchPayload:
     fetched_at: Optional[float] = None
     
     music_brainz_cover_art: Optional[str] = None
+
+# ID: "last_fm"
+@dataclass
+class LastFmFetchPayload:
+    username: Optional[str] = None
+
+    album_art: Optional[str] = None
+    artist_name: Optional[str] = None
+    album_name: Optional[str] = None
+    track_name: Optional[str] = None
+    track_url: Optional[str] = None
+    streamable: Optional[str] = None
 
 # ID: "steam"
 @dataclass
