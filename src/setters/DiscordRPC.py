@@ -182,16 +182,21 @@ class DiscordRPC:
             return False
         
         if self.config.discord.enabled:
-            self.discord_RPC.update(
-                name = self.app_name,
-                activity_type = self.activity_type,
-                status_display_type = self.status_display_type,
-                details = self.details, state = self.state,
-                start = self.start_time, end=self.end_time,
-                large_image = self.large_image_url, large_text = self.large_image_text,
-                small_image = self.small_image_url, small_text = self.small_image_text,
-                buttons = self.discord_buttons
-            )
+            try:
+                self.discord_RPC.update(
+                    name = self.app_name,
+                    activity_type = self.activity_type,
+                    status_display_type = self.status_display_type,
+                    details = self.details, state = self.state,
+                    start = self.start_time, end=self.end_time,
+                    large_image = self.large_image_url, large_text = self.large_image_text,
+                    small_image = self.small_image_url, small_text = self.small_image_text,
+                    buttons = self.discord_buttons
+                )
+            except pypresence.exceptions.PipeClosed:
+                logging.warning("discord RPC pipe closed, disonnecting...")
+                self.close_RPC()
+                return False
         
         if not self.config.discord.enabled or logging.root.level < 20:
             print("refreshing rpc with:")
