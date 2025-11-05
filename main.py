@@ -146,7 +146,7 @@ while True:
                     rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)
                 
                 rpc_session.instanciate(
-                    "MPD",
+                    config.mpd.app_name,
                     presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
                 )
 
@@ -229,7 +229,7 @@ while True:
                         rpc_session.inject_bonus_status_data(config.jellyfin.default_discord_status_data | bonus_status_data)
                     
                     rpc_session.instanciate(
-                        "Jellyfin",
+                        config.jellyfin.app_name,
                         presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
                     )
 
@@ -252,36 +252,38 @@ while True:
     if LAST_FM_GETTERS and service_cooldowns.last_fm.is_ready():
         for last_fm_session in [getter.fetch() for getter in LAST_FM_GETTERS]:
             if last_fm_session and last_fm_session.username:
+                RPC_ID = f"{last_fm_session.username}/Last.fm"
 
                 if not last_fm_session.track_name:
-                    if RPC_connections.get(last_fm_session.username):
+                    if RPC_connections.get(RPC_ID):
                         logging.info("Last.fm is paused, closing discord RPC")
-                        RPC_connections.get(last_fm_session.username).close_RPC()
-                        RPC_connections.pop(last_fm_session.username)
+                        RPC_connections.get(RPC_ID).close_RPC()
+                        RPC_connections.pop(RPC_ID)
 
-                RPC_ID = last_fm_session.username
-        
-                if not RPC_connections.get(RPC_ID):                        
-                    logging.info("Found %s listening to music thru last.fm, creating new last.fm RPC", last_fm_session.username)
+                else:
+                    if not RPC_connections.get(RPC_ID):                        
+                        logging.info("Found %s listening to music thru last.fm, creating new last.fm RPC", last_fm_session.username)
+                        
+                        config.load() # reload the config
+                        rpc_session = DiscordRPC(config)
+
+                        if config.last_fm.inject_discord_status_data:
+                            rpc_session.inject_bonus_status_data(config.last_fm.discord_status_data)
+
+                        rpc_session.instanciate(
+                            config.last_fm.app_name,
+                            presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                        )
+
+                        rpc_session.start_time = None
+
+                        RPC_connections[RPC_ID] = rpc_session
                     
-                    config.load() # reload the config
-                    rpc_session = DiscordRPC(config)
-
-                    if config.last_fm.inject_discord_status_data:
-                        rpc_session.inject_bonus_status_data(config.last_fm.discord_status_data)
-
-                    rpc_session.instanciate(
-                        "Last.fm",
-                        presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
-                    )
-
-                    RPC_connections[RPC_ID] = rpc_session
-                
-                # note that start and end time aren't set for last.fm, as the data is simply not available
-                rpc_session = RPC_connections[RPC_ID]
-                rpc_session.last_fm_payload = last_fm_session
-                
-                rpc_session.update()
+                    # note that start and end time aren't set for last.fm, as the data is simply not available
+                    rpc_session = RPC_connections[RPC_ID]
+                    rpc_session.last_fm_payload = last_fm_session
+                    
+                    rpc_session.update()
 
     logging.debug("Processing complete!")
 

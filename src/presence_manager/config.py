@@ -152,6 +152,7 @@ class ConfigJellyfin(GenericConfig):
         self.cooldown: int = 0
         self.instances: list[JellyfinInstance] = []
 
+        self.app_name: str = "Jellyfin"
         self.inject_discord_status_data: bool = True
         self.default_discord_status_data: DiscordData = {
             "activity_type": ActivityType.WATCHING,
@@ -201,6 +202,7 @@ class ConfigMpd(GenericConfig):
         self.server_url: str = "localhost:6600"
         self.password: Optional[str] = None
 
+        self.app_name: str = "MPD"
         self.inject_discord_status_data: bool = True
         self.discord_status_data: DiscordData = {
             "activity_type": ActivityType.LISTENING,
@@ -221,6 +223,7 @@ class ConfigLastFm(GenericConfig):
         self.cooldown: int = 15
         self.users: list[LastFmUser] = []
 
+        self.app_name: str = "Last.fm"
         self.inject_discord_status_data: bool = True
         self.discord_status_data: DiscordData = {
             "activity_type": ActivityType.LISTENING,
