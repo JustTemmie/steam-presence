@@ -33,6 +33,9 @@ class JellyfinGetter:
         #     json.dump(data, f)
         
         for session in data:
+            if session.get("UserName") != self.username:
+                continue
+
             play_state = session.get("PlayState", {})
             now_playing = session.get("NowPlayingItem", {})
 
