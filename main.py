@@ -46,7 +46,7 @@ service_cooldowns = ServiceCooldowns()
 # key is just a generic identifier such as process ID or steam ID
 RPC_connections: dict[Union[int, str], DiscordRPC] = {}
 
-DEFAULT_GAME = DiscordRPC(config) if config.default_game.enabled else None
+DEFAULT_GAME = DiscordRPC(config, None) if config.default_game.enabled else None
 
 logging.info("Initial setup complete!")
 print("–" * presence_manager.get_terminal_width())
@@ -55,17 +55,17 @@ while True:
     cycle_start_time = time.time()
     config.load() # reload
 
+    if config.mpd.enabled and service_cooldowns.mpd.is_ready():
+        run_mpd_cycle(RPC_connections, config)
+
+    if config.local.enabled and service_cooldowns.local.is_ready():
+        run_local_cycle(RPC_connections, config)
+
     if config.jellyfin.enabled and service_cooldowns.jellyfin.is_ready():
         run_jellyfin_cycle(RPC_connections, config)
 
     if config.last_fm.enabled and service_cooldowns.last_fm.is_ready():
         run_last_fm_cycle(RPC_connections, config)
-
-    if config.local.enabled and service_cooldowns.local.is_ready():
-        run_local_cycle(RPC_connections, config)
-
-    if config.mpd.enabled and service_cooldowns.mpd.is_ready():
-        run_mpd_cycle(RPC_connections, config)
 
     if config.steam.enabled and service_cooldowns.steam.is_ready():
         run_steam_cycle(RPC_connections, config)
@@ -108,4 +108,9 @@ while True:
         RPC_connections.pop(identifier)
     
     logging.debug("----- Cycle completed at %s -----", round(time.time()))
-    time.sleep(max(0, config.app.cycle_interval - (time.time() - cycle_start_time)))
+
+    try:
+        time.sleep(max(0, config.app.cycle_interval - (time.time() - cycle_start_time)))
+    except KeyboardInterrupt:
+        logging.info("Closed by keyboard interrupt")
+        exit()

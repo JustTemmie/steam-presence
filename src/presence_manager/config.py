@@ -65,7 +65,7 @@ class ConfigApp(GenericConfig):
         self.cycle_interval: int = 5
         self.blacklist: list[str] = []
         self.presedence_rules: dict[str: str] = {
-            "mpd": "last_fm" # in this example, mpd takes presedence over last.fm
+            "MPD": "Last.fm" # in this example, mpd takes presedence over last.fm
         }
 
 class ConfigDiscord(GenericConfig):

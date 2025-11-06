@@ -116,7 +116,6 @@ class DiscordRPC:
 
         return True
 
-
     def update(self) -> None:
         logging.debug("Updating data for %s", self.app_name)
         
@@ -207,7 +206,7 @@ class DiscordRPC:
                 self.close_RPC()
                 return False
         
-        if not self.config.discord.enabled or logging.root.level < 20:
+        if not self.config.discord.enabled or logging.root.level < 10:
             print("refreshing rpc with:")
             print(f"name = {self.app_name}")
             print(f"discord_app_id = {self.discord_app_id}")

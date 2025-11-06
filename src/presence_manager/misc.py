@@ -37,11 +37,12 @@ def blocked_by_presedence(
     blocking_platforms: list[str] = []
 
     for blocking, blocked in presedence_rules.items():
-        if blocked == platform:
+        if blocked == platform.value:
             blocking_platforms.append(blocking)
-
+    
     for connection in existing_connections:
-        if connection.platform in blocking_platforms:
+        if connection.platform.value in blocking_platforms:
+            logging.debug("%s takes presedence over %s", connection.platform, platform)
             return True
     
     return False
