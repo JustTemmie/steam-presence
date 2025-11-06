@@ -44,11 +44,6 @@ class MpdGetter:
         except Exception:
             return MpdFetchPayload()
         
-        if info.get("state") != "play":
-            return MpdFetchPayload(
-                state = info.get("state")
-            )
-
         if info.get("artist") and (info.get("album") or info.get("title")):
             music_brainz_cover_art = fetch_cover_art_url(info.get("artist"), info.get("album") or info.get("title"))
         else:

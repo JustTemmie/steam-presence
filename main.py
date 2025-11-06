@@ -100,9 +100,9 @@ while True:
 
     for identifier in expired_IDs:
         logging.info(
-            "Deleting connection to %s after %s seconds",
+            "Deleting connection to %s after being connected for %s seconds",
             identifier,
-            time.time() - RPC_connections.get(identifier).start_time
+            round(time.time() - RPC_connections.get(identifier).creation_time, 1)
         )
         print("–" * presence_manager.get_terminal_width())
         RPC_connections.pop(identifier)

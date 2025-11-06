@@ -23,6 +23,7 @@ class DiscordRPC:
         self.discord_app_id: int = 0
         self.app_name: str = ""
         self.last_update: float = 0
+        self.creation_time = time()
 
         self.activity_type: ActivityType = config.discord.status_data.get("activity_type", ActivityType.PLAYING)
         self.status_display_type: StatusDisplayType = config.discord.status_data.get("status_display_type", StatusDisplayType.NAME)
