@@ -3,13 +3,13 @@ from typing import Optional
 from enum import Enum
 
 class Platforms(Enum):
-    UNKNOWN = "Unknown" # used as fallback
-    EPIC_GAMES_STORE = "Epic Games Store"
-    JELLYFIN = "Jellyfin"
-    LAST_FM = "Last.fm"
-    LOCAL = "Local"
-    MPD = "MPD"
-    STEAM = "Steam"
+    UNKNOWN = "unknown" # used as fallback
+    EPIC_GAMES_STORE = "epic_games_store"
+    JELLYFIN = "jellyfin"
+    LAST_FM = "last_fm"
+    LOCAL = "local"
+    MPD = "mpd"
+    STEAM = "steam"
 
 # ID: "steam_grid_db"
 @dataclass
