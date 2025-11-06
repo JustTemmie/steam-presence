@@ -5,7 +5,7 @@ from typing import Union, Optional
 
 from src.presence_manager.DataClasses import SteamGridDBFetchPayload
 
-import src.presence_manager.misc as presence_manager
+from src.presence_manager.fetch import fetch
 
 
 class SteamGridPlatforms(Enum):
@@ -22,7 +22,7 @@ class SteamGridPlatforms(Enum):
 BASE_URL = "https://www.steamgriddb.com/api/v2"
 
 def _api_fetch(endpoint: str, api_key: str, data: Optional[dict] = None) -> Optional[dict]:
-    r = presence_manager.fetch(
+    r = fetch(
         f"{BASE_URL}/{endpoint}",
         data = data,
         headers =  {

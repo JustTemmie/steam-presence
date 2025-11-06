@@ -1,12 +1,12 @@
 import logging
 from typing import Optional
 
-import src.presence_manager.misc as presence_manager
+from src.presence_manager.fetch import fetch
 
 def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     query = f"artist:{artist} AND release:{album}"
 
-    r = presence_manager.fetch(
+    r = fetch(
         f"https://musicbrainz.org/ws/2/release-group/?query={query}&limit=1&fmt=json",
         cache_ttl = 1800
     )
@@ -28,7 +28,7 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
         logging.info("failed to find a music brainz ID for %s %s", artist, album)
         return None
     
-    cover_art_resp = presence_manager.fetch(
+    cover_art_resp = fetch(
         f"https://coverartarchive.org/release/{mb_id}",
         cache_ttl = 1800
     )

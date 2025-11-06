@@ -3,8 +3,7 @@ import logging
 from src.presence_manager.config import Config, JellyfinInstance
 from src.presence_manager.DataClasses import JellyfinFetchPayload
 
-import src.presence_manager.misc as presence_manager
-
+from src.presence_manager.fetch import fetch
 
 class JellyfinGetter:
     def __init__(self, config: Config, instance: JellyfinInstance):
@@ -19,7 +18,7 @@ class JellyfinGetter:
         logging.debug("Fetching jellyfin information")
 
         url = f"{self.server_url}/Sessions?api_key={self.api_key}"
-        r = presence_manager.fetch(url)
+        r = fetch(url)
 
         if not r:
             logging.error("failed to fetch jellyfin session for %s", self.username)

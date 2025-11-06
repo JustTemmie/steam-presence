@@ -1,12 +1,10 @@
 
 import logging
-import json
 
 from src.presence_manager.config import Config, LastFmUser
 from src.presence_manager.DataClasses import LastFmFetchPayload
 
-import src.presence_manager.misc as presence_manager
-
+from src.presence_manager.fetch import fetch
 
 class LastFmGetter:
     def __init__(self, config: Config, user: LastFmUser):
@@ -19,7 +17,7 @@ class LastFmGetter:
         logging.debug("Fetching last.fm information")
         
         url = f"https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={self.username}&api_key={self.api_key}&format=json"
-        r = presence_manager.fetch(url)
+        r = fetch(url)
 
         if not r:
             logging.error("failed to fetch last.fm session for %s", self.username)
