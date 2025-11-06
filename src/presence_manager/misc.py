@@ -42,6 +42,6 @@ def blocked_by_presedence(
 
     for connection in existing_connections:
         if connection.platform in blocking_platforms:
-            return False
+            return True
     
-    return True
+    return False
