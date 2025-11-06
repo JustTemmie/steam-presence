@@ -5,7 +5,7 @@ import time
 from src.apis.musicBrainz import fetch_cover_art_url
 
 from src.presence_manager.config import Config
-from src.presence_manager.DataClasses import MpdFetchPayload
+from src.presence_manager.interfaces import MpdFetchPayload
 
 class MpdGetter:
     def __init__(self, config: Config):

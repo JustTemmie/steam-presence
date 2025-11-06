@@ -3,7 +3,7 @@ import logging
 from enum import Enum
 from typing import Union, Optional
 
-from src.presence_manager.DataClasses import SteamGridDBFetchPayload
+from src.presence_manager.interfaces import SteamGridDBFetchPayload
 
 from src.presence_manager.fetch import fetch
 

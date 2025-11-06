@@ -27,7 +27,6 @@ def run_mpd_cycle(RPC_connections, config: Config):
 
     else:
         if not RPC_connections.get("MPD"):
-
             logging.info("Found %s being listened to thru MPD, creating new MPD RPC", data.title)
 
             rpc_session = DiscordRPC(config)

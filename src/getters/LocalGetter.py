@@ -3,7 +3,7 @@ import getpass
 import logging
 
 from src.presence_manager.config import Config
-from src.presence_manager.DataClasses import LocalGameFetchPayload
+from src.presence_manager.interfaces import LocalGameFetchPayload
 
 
 current_user = getpass.getuser()

@@ -1,7 +1,7 @@
 import logging
 
 from src.presence_manager.config import Config, JellyfinInstance
-from src.presence_manager.DataClasses import JellyfinFetchPayload
+from src.presence_manager.interfaces import JellyfinFetchPayload
 
 from src.presence_manager.fetch import fetch
 

@@ -5,7 +5,7 @@ from typing import Union, Optional
 from bs4 import BeautifulSoup
 
 from src.presence_manager.config import Config, SteamUser
-from src.presence_manager.DataClasses import SteamFetchPayload
+from src.presence_manager.interfaces import SteamFetchPayload
 
 from src.presence_manager.fetch import fetch
 

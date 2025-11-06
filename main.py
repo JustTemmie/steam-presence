@@ -3,12 +3,9 @@ import time
 import logging
 
 from typing import Union
-from dataclasses import dataclass
 
 import src.presence_manager.logger # just need to initialize it
 import src.presence_manager.misc as presence_manager
-
-import src.apis.SteamGridDB as SteamGridDB
 
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config

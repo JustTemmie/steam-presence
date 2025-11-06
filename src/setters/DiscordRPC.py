@@ -8,7 +8,7 @@ from pypresence import ActivityType, StatusDisplayType
 
 import src.presence_manager.misc as presence_manager
 from src.presence_manager.config import Config, DiscordData
-from src.presence_manager.DataClasses import LocalGameFetchPayload, SteamFetchPayload, JellyfinFetchPayload, MpdFetchPayload, LastFmFetchPayload
+from src.presence_manager.interfaces import LocalGameFetchPayload, SteamFetchPayload, JellyfinFetchPayload, MpdFetchPayload, LastFmFetchPayload
 
 
 class DiscordRPC:
@@ -54,11 +54,11 @@ class DiscordRPC:
         return {
             # "epic_games_store": self.epic_games_store_payload,
             "jellyfin": self.jellyfin_payload,
+            "last_fm": self.last_fm_payload,
             "local": self.local_payload,
             "mpd": self.mpd_payload,
-            "last_fm": self.last_fm_payload,
-            "steam_grid_db": self.steam_grid_db_payload,
             "steam": self.steam_payload,
+            "steam_grid_db": self.steam_grid_db_payload,
             "default": self.default_game_payload,
         }
 

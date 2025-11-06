@@ -1,5 +1,14 @@
 from dataclasses import dataclass
 from typing import Optional
+from enum import Enum
+
+class Platforms(Enum):
+    EPIC_GAMES_STORE = "Epic Games Store"
+    JELLYFIN = "Jellyfin"
+    LAST_FM = "Last.fm"
+    LOCAL = "Local"
+    MPD = "MPD"
+    STEAM = "Steam"
 
 # ID: "steam_grid_db"
 @dataclass

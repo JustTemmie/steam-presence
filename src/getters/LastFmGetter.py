@@ -2,7 +2,7 @@
 import logging
 
 from src.presence_manager.config import Config, LastFmUser
-from src.presence_manager.DataClasses import LastFmFetchPayload
+from src.presence_manager.interfaces import LastFmFetchPayload
 
 from src.presence_manager.fetch import fetch
 
