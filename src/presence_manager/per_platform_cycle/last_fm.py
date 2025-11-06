@@ -1,6 +1,7 @@
 import logging
 
 import src.presence_manager.misc as presence_manager
+from src.presence_manager.interfaces import Platforms
 
 from src.getters.LastFmGetter import LastFmGetter
 from src.setters.DiscordRPC import DiscordRPC
@@ -22,6 +23,13 @@ def run_last_fm_cycle(RPC_connections, config: Config):
     if not config.last_fm.enabled:
         return
     
+    if presence_manager.blocked_by_presedence(
+        Platforms.LAST_FM,
+        RPC_connections.values(),
+        config
+    ):
+        return
+
     for last_fm_session in [getter.fetch() for getter in LAST_FM_GETTERS]:
         if last_fm_session and last_fm_session.username:
             rpc_id = f"{last_fm_session.username}/Last.fm"
@@ -36,7 +44,7 @@ def run_last_fm_cycle(RPC_connections, config: Config):
                 if not RPC_connections.get(rpc_id):                        
                     logging.info("Found %s listening to music thru last.fm, creating new last.fm RPC", last_fm_session.username)
                     
-                    rpc_session = DiscordRPC(config)
+                    rpc_session = DiscordRPC(config, Platforms.LAST_FM)
 
                     if config.last_fm.inject_discord_status_data:
                         rpc_session.inject_bonus_status_data(config.last_fm.discord_status_data)

@@ -1,6 +1,7 @@
 import logging
 
 import src.presence_manager.misc as presence_manager
+from src.presence_manager.interfaces import Platforms
 
 from src.getters.SteamGetter import SteamGetter
 from src.setters.DiscordRPC import DiscordRPC
@@ -22,6 +23,13 @@ def run_steam_cycle(RPC_connections, config: Config):
     if not config.steam.enabled:
         return
     
+    if presence_manager.blocked_by_presedence(
+        Platforms.STEAM,
+        RPC_connections.values(),
+        config
+    ):
+        return
+
     for steam_game in [getter.fetch() for getter in STEAM_GETTERS]:
         if steam_game:
             rpc_id = steam_game.app_id
@@ -32,7 +40,7 @@ def run_steam_cycle(RPC_connections, config: Config):
                 
                 logging.info("Found %s being played on steam, creating new steam RPC", steam_game.app_name)
 
-                rpc_session = DiscordRPC(config)
+                rpc_session = DiscordRPC(config, Platforms.STEAM)
 
                 # if config.steam_grid_db.enabled and steam_game.app_id:
                 #     rpc_session.steam_grid_db_payload = SteamGridDB.fetch_steam_grid_db(

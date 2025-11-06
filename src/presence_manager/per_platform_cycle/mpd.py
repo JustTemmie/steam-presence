@@ -1,6 +1,7 @@
 import logging
 
 import src.presence_manager.misc as presence_manager
+from src.presence_manager.interfaces import Platforms
 
 from src.getters.MpdGetter import MpdGetter
 from src.setters.DiscordRPC import DiscordRPC
@@ -17,6 +18,13 @@ def run_mpd_cycle(RPC_connections, config: Config):
     if not config.mpd.enabled:
         return
     
+    if presence_manager.blocked_by_presedence(
+        Platforms.MPD,
+        RPC_connections.values(),
+        config
+    ):
+        return
+
     data = MPD_GETTER.fetch()
 
     if not data.title or data.state != "play":
@@ -29,7 +37,7 @@ def run_mpd_cycle(RPC_connections, config: Config):
         if not RPC_connections.get("MPD"):
             logging.info("Found %s being listened to thru MPD, creating new MPD RPC", data.title)
 
-            rpc_session = DiscordRPC(config)
+            rpc_session = DiscordRPC(config, Platforms.MPD)
 
             if config.mpd.inject_discord_status_data:
                 rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)

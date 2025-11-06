@@ -3,6 +3,7 @@ from typing import Optional
 from enum import Enum
 
 class Platforms(Enum):
+    UNKNOWN = "Unknown" # used as fallback
     EPIC_GAMES_STORE = "Epic Games Store"
     JELLYFIN = "Jellyfin"
     LAST_FM = "Last.fm"

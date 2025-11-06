@@ -1,6 +1,7 @@
 import logging
 
 import src.presence_manager.misc as presence_manager
+from src.presence_manager.interfaces import Platforms
 
 from src.getters.LocalGetter import LocalGetter
 from src.setters.DiscordRPC import DiscordRPC
@@ -17,6 +18,13 @@ def run_local_cycle(RPC_connections, config: Config):
     if not config.local.enabled:
         return
 
+    if presence_manager.blocked_by_presedence(
+        Platforms.LOCAL,
+        RPC_connections.values(),
+        config
+    ):
+        return
+
     processes = LOCAL_GETTER.fetch()
     
     for process in processes:
@@ -28,7 +36,7 @@ def run_local_cycle(RPC_connections, config: Config):
                 logging.info("Found process %s locally, creating new local RPC", process.process_exe)
 
 
-                rpc_session = DiscordRPC(config)
+                rpc_session = DiscordRPC(config, Platforms.LOCAL)
 
                 if config.local.inject_discord_status_data:
                     rpc_session.inject_bonus_status_data(config.local.discord_status_data)

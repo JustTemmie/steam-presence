@@ -8,12 +8,16 @@ from pypresence import ActivityType, StatusDisplayType
 
 import src.presence_manager.misc as presence_manager
 from src.presence_manager.config import Config, DiscordData
-from src.presence_manager.interfaces import LocalGameFetchPayload, SteamFetchPayload, JellyfinFetchPayload, MpdFetchPayload, LastFmFetchPayload
+from src.presence_manager.interfaces import (
+    LocalGameFetchPayload, SteamFetchPayload,
+    JellyfinFetchPayload, MpdFetchPayload,
+    LastFmFetchPayload, Platforms)
 
 
 class DiscordRPC:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, platform: Platforms):
         self.config = config
+        self.platform: Platforms = platform if platform else Platforms.UNKNOWN
 
         self.discord_RPC: pypresence.Presence = None
         self.discord_app_id: int = 0
