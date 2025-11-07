@@ -8,7 +8,7 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
 
     r = fetch(
         f"https://musicbrainz.org/ws/2/release-group/?query={query}&limit=1&fmt=json",
-        cache_ttl = 1800
+        cache_ttl = 7200
     )
 
     if not r:
@@ -30,7 +30,7 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     
     cover_art_resp = fetch(
         f"https://coverartarchive.org/release/{mb_id}",
-        cache_ttl = 1800
+        cache_ttl = 3600
     )
 
     if not cover_art_resp:
