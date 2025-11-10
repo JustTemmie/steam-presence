@@ -49,8 +49,10 @@ class MpdGetter:
         else:
             music_brainz_cover_art = None
         
-        # unsure if this can crash
-        folder, file = info.get("file", "").rsplit("/", 1)
+        try:
+            folder, file = info.get("file", "").rsplit("/", 1)
+        except ValueError:
+            return MpdFetchPayload()
         
         return MpdFetchPayload(
             file = file,
