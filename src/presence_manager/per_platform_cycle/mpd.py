@@ -35,7 +35,7 @@ def run_mpd_cycle(RPC_connections, config: Config):
             RPC_connections.get("MPD").close_RPC()
             RPC_connections.pop("MPD")
 
-    else:
+    elif data.state:
         if not RPC_connections.get("MPD"):
             logging.info("Found %s being listened to thru MPD, creating new MPD RPC", data.title)
 
