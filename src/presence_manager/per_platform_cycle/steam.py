@@ -3,6 +3,7 @@ import logging
 import src.presence_manager.misc as presence_manager
 from src.presence_manager.interfaces import Platforms
 
+import src.apis.steamGridDB as steamGridDB
 from src.getters.SteamGetter import SteamGetter
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config, SteamUser
@@ -19,7 +20,7 @@ if intial_config.steam.enabled:
 
 del intial_config
 
-def run_steam_cycle(RPC_connections, config: Config):
+def run_steam_cycle(RPC_connections, config: Config, ):
     if not config.steam.enabled:
         return
     
@@ -42,12 +43,12 @@ def run_steam_cycle(RPC_connections, config: Config):
 
                 rpc_session = DiscordRPC(config, Platforms.STEAM)
 
-                # if config.steam_grid_db.enabled and steam_game.app_id:
-                #     rpc_session.steam_grid_db_payload = SteamGridDB.fetch_steam_grid_db(
-                #         api_key = config.steam_grid_db.api_key,
-                #         app_id = steam_game.app_id,
-                #         platform = SteamGridDB.SteamGridPlatforms.STEAM
-                #     )
+                if config.steam_grid_db.enabled and steam_game.app_id:
+                    rpc_session.steam_grid_db_payload = steamGridDB.fetch_steam_grid_db(
+                        api_key = config.steam_grid_db.api_key,
+                        app_id = steam_game.app_id,
+                        platform = SteamGridDB.SteamGridPlatforms.STEAM
+                    )
 
                 if config.steam.inject_discord_status_data:
                     rpc_session.inject_bonus_status_data(config.steam.discord_status_data)
