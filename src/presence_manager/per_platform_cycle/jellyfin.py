@@ -21,7 +21,7 @@ if intial_config.jellyfin.enabled:
 del intial_config
 
 def run_jellyfin_cycle(RPC_connections, config: Config):
-    if not config.jellyfin.enabled:
+    if not config.jellyfin.enabled and JELLYFIN_GETTERS:
         return
     
     if presence_manager.blocked_by_presedence(

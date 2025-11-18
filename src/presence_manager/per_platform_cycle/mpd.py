@@ -15,7 +15,7 @@ MPD_GETTER = MpdGetter(inital_config) if inital_config.mpd.enabled else None
 del inital_config
 
 def run_mpd_cycle(RPC_connections, config: Config):
-    if not config.mpd.enabled:
+    if not config.mpd.enabled and MPD_GETTER:
         return
     
     if presence_manager.blocked_by_presedence(

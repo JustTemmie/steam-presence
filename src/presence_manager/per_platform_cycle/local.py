@@ -16,7 +16,7 @@ LOCAL_GETTER = LocalGetter(inital_config) if inital_config.local.enabled else No
 del inital_config
 
 def run_local_cycle(RPC_connections, config: Config):
-    if not config.local.enabled:
+    if not config.local.enabled and LOCAL_GETTER:
         return
 
     if presence_manager.blocked_by_presedence(

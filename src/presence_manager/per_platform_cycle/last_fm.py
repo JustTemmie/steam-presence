@@ -20,7 +20,7 @@ if inital_config.last_fm.enabled:
 del inital_config
 
 def run_last_fm_cycle(RPC_connections, config: Config):
-    if not config.last_fm.enabled:
+    if not config.last_fm.enabled and LAST_FM_GETTERS:
         return
     
     if presence_manager.blocked_by_presedence(

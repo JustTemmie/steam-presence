@@ -21,7 +21,7 @@ if intial_config.steam.enabled:
 del intial_config
 
 def run_steam_cycle(RPC_connections, config: Config, ):
-    if not config.steam.enabled:
+    if not config.steam.enabled and STEAM_GETTERS:
         return
     
     if presence_manager.blocked_by_presedence(
