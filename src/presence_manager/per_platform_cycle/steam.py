@@ -47,7 +47,7 @@ def run_steam_cycle(RPC_connections, config: Config, ):
                     rpc_session.steam_grid_db_payload = steamGridDB.fetch_steam_grid_db(
                         api_key = config.steam_grid_db.api_key,
                         app_id = steam_game.app_id,
-                        platform = SteamGridDB.SteamGridPlatforms.STEAM
+                        platform = steamGridDB.SteamGridPlatforms.STEAM
                     )
 
                 if config.steam.inject_discord_status_data:

@@ -3,6 +3,7 @@ import logging
 import src.presence_manager.misc as presence_manager
 from src.presence_manager.interfaces import Platforms
 
+import src.apis.steamGridDB as steamGridDB
 from src.getters.LocalGetter import LocalGetter
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config
@@ -35,8 +36,14 @@ def run_local_cycle(RPC_connections, config: Config):
 
                 logging.info("Found process %s locally, creating new local RPC", process.process_exe)
 
-
                 rpc_session = DiscordRPC(config, Platforms.LOCAL)
+
+                if config.steam_grid_db.enabled:
+                    rpc_session.steam_grid_db_payload = steamGridDB.fetch_steam_grid_db(
+                        api_key = config.steam_grid_db.api_key,
+                        app_name = process.display_name,
+                        platform = steamGridDB.SteamGridPlatforms.STEAM
+                    )
 
                 if config.local.inject_discord_status_data:
                     rpc_session.inject_bonus_status_data(config.local.discord_status_data)
