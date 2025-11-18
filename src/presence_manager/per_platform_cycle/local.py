@@ -40,9 +40,8 @@ def run_local_cycle(RPC_connections, config: Config):
 
                 if config.steam_grid_db.enabled:
                     rpc_session.steam_grid_db_payload = steamGridDB.fetch_steam_grid_db(
-                        api_key = config.steam_grid_db.api_key,
-                        app_name = process.display_name,
-                        platform = steamGridDB.SteamGridPlatforms.STEAM
+                        config = config,
+                        app_name = process.display_name
                     )
 
                 if config.local.inject_discord_status_data:

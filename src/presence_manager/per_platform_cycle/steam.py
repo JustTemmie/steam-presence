@@ -45,7 +45,7 @@ def run_steam_cycle(RPC_connections, config: Config, ):
 
                 if config.steam_grid_db.enabled and steam_game.app_id:
                     rpc_session.steam_grid_db_payload = steamGridDB.fetch_steam_grid_db(
-                        api_key = config.steam_grid_db.api_key,
+                        config = config,
                         app_id = steam_game.app_id,
                         platform = steamGridDB.SteamGridPlatforms.STEAM
                     )

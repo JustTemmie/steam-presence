@@ -3,8 +3,8 @@ import logging
 from enum import Enum
 from typing import Union, Optional
 
+from src.presence_manager.config import Config, SGDBLookupTable
 from src.presence_manager.interfaces import SteamGridDBFetchPayload
-
 from src.presence_manager.fetch import fetch
 
 
@@ -28,7 +28,7 @@ def _api_fetch(endpoint: str, api_key: str, data: Optional[dict] = None) -> Opti
         headers =  {
             "Authorization": f"Bearer {api_key}"
         },
-        cache_ttl = 1800
+        cache_ttl = 7200
     )
 
     if not r:
@@ -42,7 +42,7 @@ def get_id_with_name(
     app_name: str
 ) -> Optional[int]:
     # i love undocumented endpoints
-    r = _api_fetch(api_key, f"search/autocomplete/{app_name}")
+    r = _api_fetch(f"search/autocomplete/{app_name}", api_key)
 
     if r and len(r) >= 1:
         games = r.get("data", [])
@@ -96,7 +96,7 @@ def get_icon_with_id(
         platform = "game"
     
     for data in datas:
-        r = _api_fetch(api_key, f"icons/{platform}/{app_id}", data=data)
+        r = _api_fetch(f"icons/{platform}/{app_id}", api_key, data=data)
         
         if r and len(data) >= 1:
             icons = r.get("data", [])
@@ -115,16 +115,32 @@ def get_icon_with_id(
     return None
 
 def fetch_steam_grid_db(
-    api_key: str,
+    config: Config,
     app_id: Optional[Union[str, int]] = None,
     platform: Optional[SteamGridPlatforms] = None,
     app_name: Optional[str] = None
 ) -> SteamGridDBFetchPayload:
     if app_name:
-        app_id = get_id_with_name(api_key, app_name)
-        platform = SteamGridPlatforms.INTERNAL
+        lookup_table = config.steam_grid_db.lookup_table
+        if lookup_table:
+            for entry in lookup_table:
+                if app_name == entry.get("name"):
+                    app_id = entry.get("id")
+                    platform = SteamGridPlatforms.INTERNAL
+                    break
+        
+        if not app_id:
+            app_id = get_id_with_name(
+                config.steam_grid_db.api_key,
+                app_name
+            )
+            platform = SteamGridPlatforms.INTERNAL
     
     if app_id:
-        return SteamGridDBFetchPayload(get_icon_with_id(api_key, app_id, platform))
+        return SteamGridDBFetchPayload(get_icon_with_id(
+            config.steam_grid_db.api_key,
+            app_id,
+            platform
+        ))
     
     return SteamGridDBFetchPayload()

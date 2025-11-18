@@ -59,6 +59,11 @@ class LocalProcess:
     process_name: str
     display_name: str
 
+@dataclass
+class SGDBLookupTable:
+    name: str
+    id: int
+
 class ConfigApp(GenericConfig):
     def __init__(self):
         self.timeout: int = 55
@@ -121,6 +126,12 @@ class ConfigSteamGridDB(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
         self.api_key: str = "NONE"
+        self.lookup_table: list[SGDBLookupTable] = [
+            {
+                "name": "Blender",
+                "id": 5247796
+            }
+        ]
 
 class ConfigSteam(GenericConfig):
     def __init__(self):
