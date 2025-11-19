@@ -184,7 +184,10 @@ class DiscordRPC:
     def refresh(self) -> bool:
         # close the connection if it's been more than a minute since the last update
         if self.last_update + self.config.app.timeout < time():
-            self.close_RPC()
+            try:
+                self.close_RPC()
+            except AssertionError:
+                pass
             return False
         
         if self.config.discord.enabled:
@@ -204,7 +207,10 @@ class DiscordRPC:
                 )
             except pypresence.exceptions.PipeClosed:
                 logging.warning("discord RPC pipe closed, disonnecting...")
-                self.close_RPC()
+                try:
+                    self.close_RPC()
+                except AssertionError:
+                    pass
                 return False
         
         if not self.config.discord.enabled or logging.root.level < 10:
