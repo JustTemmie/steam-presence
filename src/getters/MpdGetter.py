@@ -11,6 +11,7 @@ class MpdGetter:
     def __init__(self, config: Config):
         self.server_url = config.mpd.server_url
         self.password = config.mpd.password
+        self.music_brainz = config.mpd.music_brainz
 
         self.host, self.port = self.server_url.split(":", 1)
 
@@ -44,8 +45,14 @@ class MpdGetter:
         except Exception:
             return MpdFetchPayload()
         
-        if info.get("artist") and (info.get("album") or info.get("title")):
-            music_brainz_cover_art = fetch_cover_art_url(info.get("artist"), info.get("album") or info.get("title"))
+        if (self.music_brainz and
+            info.get("artist") and
+            (info.get("album") or info.get("title"))
+        ):
+            music_brainz_cover_art = fetch_cover_art_url(
+                info.get("artist"),
+                info.get("album") or info.get("title")
+            )
         else:
             music_brainz_cover_art = None
         

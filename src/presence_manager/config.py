@@ -215,6 +215,7 @@ class ConfigMpd(GenericConfig):
         self.cooldown: int = 0
         self.server_url: str = "localhost:6600"
         self.password: Optional[str] = None
+        self.music_brainz: bool = False
 
         self.app_name: str = "MPD"
         self.inject_discord_status_data: bool = True
