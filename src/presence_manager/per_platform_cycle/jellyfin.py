@@ -8,20 +8,10 @@ from src.getters.JellyfinGetter import JellyfinGetter
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config, JellyfinInstance
 
-intial_config = Config()
-intial_config.load()
-
 JELLYFIN_GETTERS: list[JellyfinGetter] = []
 
-if intial_config.jellyfin.enabled:
-    for instance in intial_config.jellyfin.instances:
-        instance = JellyfinInstance(**instance)
-        JELLYFIN_GETTERS.append(JellyfinGetter(intial_config, instance))
-
-del intial_config
-
 def run_jellyfin_cycle(RPC_connections, config: Config):
-    if not config.jellyfin.enabled and JELLYFIN_GETTERS:
+    if not config.jellyfin.enabled:
         return
     
     if presence_manager.blocked_by_presedence(
@@ -30,6 +20,12 @@ def run_jellyfin_cycle(RPC_connections, config: Config):
         config
     ):
         return
+    
+    if len(JELLYFIN_GETTERS) == 0:
+        logging.info("Instancing Jellyfin getters")
+        for instance in config.jellyfin.instances:
+            instance = JellyfinInstance(**instance)
+            JELLYFIN_GETTERS.append(JellyfinGetter(config, instance))
 
     for jellyfin_session in [getter.fetch() for getter in JELLYFIN_GETTERS]:
         if jellyfin_session and jellyfin_session.media_source_id:

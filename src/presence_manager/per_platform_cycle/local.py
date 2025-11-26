@@ -8,15 +8,10 @@ from src.getters.LocalGetter import LocalGetter
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config
 
-inital_config = Config()
-inital_config.load()
-
-LOCAL_GETTER = LocalGetter(inital_config) if inital_config.local.enabled else None
-
-del inital_config
+LOCAL_GETTER_REFERENCE: list[LocalGetter] = []
 
 def run_local_cycle(RPC_connections, config: Config):
-    if not config.local.enabled and LOCAL_GETTER:
+    if not config.local.enabled:
         return
 
     if presence_manager.blocked_by_presedence(
@@ -25,8 +20,12 @@ def run_local_cycle(RPC_connections, config: Config):
         config
     ):
         return
+    
+    if len(LOCAL_GETTER_REFERENCE) == 0:
+        logging.info("Instancing Local getter")
+        LOCAL_GETTER_REFERENCE.append(LocalGetter(config))
 
-    processes = LOCAL_GETTER.fetch()
+    processes = LOCAL_GETTER_REFERENCE[0].fetch()
     
     for process in processes:
         rpc_id = process.process_name

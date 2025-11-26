@@ -7,15 +7,10 @@ from src.getters.MpdGetter import MpdGetter
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config
 
-inital_config = Config()
-inital_config.load()
-
-MPD_GETTER = MpdGetter(inital_config) if inital_config.mpd.enabled else None
-
-del inital_config
+MPD_GETTER_REFERENCE: list[MpdGetter] = []
 
 def run_mpd_cycle(RPC_connections, config: Config):
-    if not config.mpd.enabled and MPD_GETTER:
+    if not config.mpd.enabled:
         return
     
     if presence_manager.blocked_by_presedence(
@@ -25,7 +20,11 @@ def run_mpd_cycle(RPC_connections, config: Config):
     ):
         return
 
-    data = MPD_GETTER.fetch()
+    if len(MPD_GETTER_REFERENCE) == 0:
+        logging.info("Instancing MPD getter")
+        MPD_GETTER_REFERENCE.append(MpdGetter(config))
+
+    data = MPD_GETTER_REFERENCE[0].fetch()
 
     print("data.state =", data.state)
 

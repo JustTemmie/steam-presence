@@ -7,20 +7,10 @@ from src.getters.LastFmGetter import LastFmGetter
 from src.setters.DiscordRPC import DiscordRPC
 from src.presence_manager.config import Config, LastFmUser
 
-inital_config = Config()
-inital_config.load()
-
 LAST_FM_GETTERS: list[LastFmGetter] = []
 
-if inital_config.last_fm.enabled:
-    for user in inital_config.last_fm.users:
-        user = LastFmUser(**user)
-        LAST_FM_GETTERS.append(LastFmGetter(inital_config, user))
-
-del inital_config
-
 def run_last_fm_cycle(RPC_connections, config: Config):
-    if not config.last_fm.enabled and LAST_FM_GETTERS:
+    if not config.last_fm.enabled:
         return
     
     if presence_manager.blocked_by_presedence(
@@ -29,6 +19,12 @@ def run_last_fm_cycle(RPC_connections, config: Config):
         config
     ):
         return
+
+    if len(LAST_FM_GETTERS) == 0:
+        logging.info("Instancing Last.fm getters")
+        for user in config.last_fm.users:
+            user = LastFmUser(**user)
+            LAST_FM_GETTERS.append(LastFmGetter(config, user))
 
     for last_fm_session in [getter.fetch() for getter in LAST_FM_GETTERS]:
         if last_fm_session and last_fm_session.username:
