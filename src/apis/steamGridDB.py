@@ -121,7 +121,7 @@ def fetch_steam_grid_db(
     app_name: Optional[str] = None
 ) -> SteamGridDBFetchPayload:
     if app_name:
-        lookup_table = config.steam_grid_db.lookup_table
+        lookup_table: SGDBLookupTable = config.steam_grid_db.lookup_table
         if lookup_table:
             for entry in lookup_table:
                 if app_name == entry.get("name"):
