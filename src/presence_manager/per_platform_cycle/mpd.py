@@ -30,9 +30,8 @@ def run_mpd_cycle(RPC_connections, config: Config):
 
     if not data.title or (data.state and data.state != "play"):
         if RPC_connections.get("MPD"):
-            logging.info("MPD is paused, closing discord RPC")
-            RPC_connections.get("MPD").close_RPC()
-            RPC_connections.pop("MPD")
+            logging.info("MPD is paused, clearing discord RPC")
+            RPC_connections.get("MPD").discord_RPC.clear()
 
     elif data.state:
         if not RPC_connections.get("MPD"):
