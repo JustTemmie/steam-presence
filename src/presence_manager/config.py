@@ -70,13 +70,13 @@ class ConfigApp(GenericConfig):
         self.cycle_interval: int = 5
         self.blacklist: list[str] = []
         self.presedence_rules: dict[str: str] = {
-            # "mpd": "last_fm" in this example, mpd takes presedence over last.fm
+            # "mpd": "last_fm" # in this example, mpd takes presedence over last.fm
         }
 
 class ConfigDiscord(GenericConfig):
     def __init__(self):
         self.enabled: bool = True
-        # discord only displays 1 app ID on your profile at a time, so we're just using 14 hard coded app IDs
+        # discord only displays 1 app ID on your profile at a time, so we're just using 20 hard coded app IDs
         # these are *NOT* user IDs, do *NOT* change these unless you actively use the discord developer portal
         # i will make fun of you in public discussions if you run into problems due to changing these
         self.app_ids: list[int] = [
@@ -94,7 +94,14 @@ class ConfigDiscord(GenericConfig):
             1433283516803584071,
             1433283551494930624,
             1433283600035479704,
+            1445382457271652474,
+            1445382571591602217,
+            1445382681411063840,
+            1445382780002238545,
+            1445382923900686418,
+            1445383025365094422
         ]
+
         self.status_data: DiscordData = {
             "activity_type": ActivityType.PLAYING,
             "status_display_type": StatusDisplayType.NAME,
