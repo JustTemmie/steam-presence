@@ -95,16 +95,20 @@ while True:
     expired_IDs: list[Union[int, str]] = []
     for identifier, connection in RPC_connections.items():
         logging.debug("Refreshing connection for %s", identifier)
-        if not connection.refresh():
+        connection.refresh()
+
+        if connection.get_time_since_timeout() > 600:
+            connection.close_RPC()
             expired_IDs.append(identifier)
 
+            logging.info(
+                "Deleting connection to %s after being connected for %s seconds",
+                identifier,
+                round(time.time() - connection.creation_time, 1)
+            )
+            print("–" * presence_manager.get_terminal_width())
+
     for identifier in expired_IDs:
-        logging.info(
-            "Deleting connection to %s after being connected for %s seconds",
-            identifier,
-            round(time.time() - RPC_connections.get(identifier).creation_time, 1)
-        )
-        print("–" * presence_manager.get_terminal_width())
         RPC_connections.pop(identifier)
     
     logging.debug("----- Cycle completed at %s -----", round(time.time()))

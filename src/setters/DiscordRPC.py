@@ -177,6 +177,9 @@ class DiscordRPC:
                         "url": url
                     })
     
+    def get_time_since_timeout(self) -> float:
+        return max(0, time() - self.last_update - self.config.app.timeout)
+    
     def close_RPC(self):
         if self.config.discord.enabled:
             try:
@@ -185,9 +188,9 @@ class DiscordRPC:
                 pass
     
     def refresh(self) -> bool:
-        # close the connection if it's been more than a minute since the last update
-        if self.last_update + self.config.app.timeout < time():
-            self.close_RPC()
+        # hide the connection if it's been more than a minute since the last update
+        if self.get_time_since_timeout() > 0:
+            self.discord_RPC.clear()
             return False
         
         if self.config.discord.enabled:
