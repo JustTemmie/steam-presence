@@ -13,14 +13,14 @@ STEAM_GETTERS: list[SteamGetter] = []
 def run_steam_cycle(RPC_connections, config: Config, ):
     if not config.steam.enabled and STEAM_GETTERS:
         return
-    
+
     if presence_manager.blocked_by_presedence(
         Platforms.STEAM,
         RPC_connections.values(),
         config
     ):
         return
-    
+
     if len(STEAM_GETTERS) == 0:
         logging.info("Instancing Steam getters")
         for user in config.steam.users:
@@ -34,8 +34,11 @@ def run_steam_cycle(RPC_connections, config: Config, ):
             if not RPC_connections.get(rpc_id):
                 if not steam_game.app_name:
                     continue
-                
-                logging.info("Found %s being played on steam, creating new steam RPC", steam_game.app_name)
+
+                logging.info(
+                    "Found %s being played on steam, creating new steam RPC",
+                    steam_game.app_name
+                )
 
                 rpc_session = DiscordRPC(config, Platforms.STEAM)
 
@@ -51,13 +54,15 @@ def run_steam_cycle(RPC_connections, config: Config, ):
 
                 rpc_session.instanciate(
                     steam_game.app_name,
-                    presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                    presence_manager.get_unused_discord_id(
+                        [rpc.discord_app_id for rpc in RPC_connections.values()],
+                        config
+                    )
                 )
 
                 RPC_connections[rpc_id] = rpc_session
-            
-            rpc_session = RPC_connections[rpc_id]
 
+            rpc_session = RPC_connections[rpc_id]
             rpc_session.steam_payload = steam_game
 
             rpc_session.update()

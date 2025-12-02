@@ -56,17 +56,17 @@ class SteamAPI:
     def __init__(self, config: Config, user: SteamUser):
         self.config = config
         self.user = user
-        
+
         self.api_key = user.api_key
 
     def get_current_state(self) -> Optional[getCurrentStateResponse]:
-        url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
+        url = f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={self.api_key}&steamids={self.user.user_id}"
         r = fetch(url)
 
         if not r:
             logging.error("failed to fetch current state")
             return getCurrentStateResponse()
-        
+
         player_summaries = r.json()
 
         if not player_summaries:
@@ -87,7 +87,7 @@ class SteamAPI:
             display_name=player_summary.get("personaname"),
             profile_url=player_summary.get("profileurl")
         )
-    
+
     # returns html data or None
     def fetch_mini_profile_data(self) -> fetchMiniProfileDataResponse:
         # convert steam ID 64 to steam ID 3, yes, really
@@ -104,7 +104,7 @@ class SteamAPI:
         mini_profile = r.content
 
         soup = BeautifulSoup(mini_profile, "html.parser")
-        
+
         rich_presence_span = soup.find("span", class_="rich_presence")
         rich_presence = rich_presence_span.text.strip() if rich_presence_span else None
 
@@ -119,7 +119,7 @@ class SteamAPI:
 
         badge_container = soup.find('div', class_='miniprofile_featuredcontainer')
         badge_name = badge_container.find('div', class_='name').text.strip() if badge_container else None
-        
+
         return fetchMiniProfileDataResponse(
             rich_presence = rich_presence,
             background_url = background_url,
@@ -127,7 +127,7 @@ class SteamAPI:
             profile_badge_url = profile_badge_url,
             profile_badge_name = badge_name,
         )
-    
+
     def fetch_app_details(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
         url = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
         r = fetch(
@@ -184,7 +184,7 @@ class SteamAPI:
             achievement_count,
             release_date,
         )
-    
+
     def fetch_app_reviews(self, app_id: Union[str, int]) -> fetchAppReviewsResponse:
         url = f"https://store.steampowered.com/appreviews/{app_id}?json=1"
         r = fetch(

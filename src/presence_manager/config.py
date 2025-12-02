@@ -1,9 +1,11 @@
 import logging
 import json
+
 from typing import Optional
+from dataclasses import dataclass
+
 from pypresence import ActivityType, StatusDisplayType
 
-from dataclasses import dataclass
 
 def _deep_merge(original, update):
     for key, value in update.items():
@@ -15,13 +17,13 @@ def _deep_merge(original, update):
             _deep_merge(original[key], value)
         else:
             original[key] = value
-    
+
     return original
 
 class GenericConfig:
     def load(self, update: dict):
         data = _deep_merge(self.__dict__, update)
-        
+
         for key, value in data.items():
             setattr(self, key, value)
 
@@ -111,7 +113,8 @@ class ConfigDiscord(GenericConfig):
             },
             "large_images": {
                 "{steam_grid_db.icon}": None,
-                "{steam.capsule_header_image}": None, # these are still here, due to injected status lines being prioritized above all else
+                # these are still here, due to injected status lines being prioritized above all else
+                "{steam.capsule_header_image}": None,
                 "{steam.capsule_vertical_image}": None,
                 "{steam.hero_capsule}": None,
             },
@@ -290,7 +293,7 @@ class Config:
         self.mpd = ConfigMpd()
         self.last_fm = ConfigLastFm()
         self.default_game = ConfigDefaultGame()
-    
+
     def load(self, config_path="config.json"):
         logging.info("Loading config file")
 
@@ -304,7 +307,7 @@ class Config:
             else:
                 logging.error("could not find a config path at '%s' - exiting\n%s", config_path, e)
                 exit()
-        
+
         self.app.load(config.get("app", {}))
         self.discord.load(config.get("discord", {}))
         self.steam_grid_db.load(config.get("steam_grid_db", {}))
@@ -320,5 +323,5 @@ class Config:
         case_insensitive_per_app = {}
         for key, value in self.discord.per_app_status_data.items():
             case_insensitive_per_app[key.casefold()] = value
-        
+
         self.discord.per_app_status_data = case_insensitive_per_app

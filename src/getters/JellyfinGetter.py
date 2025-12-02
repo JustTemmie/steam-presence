@@ -27,10 +27,10 @@ class JellyfinGetter:
         data = r.json()
         if not data:
             return JellyfinFetchPayload()
-        
+
         # with open("test.json", "w", encoding="utf-8") as f:
         #     json.dump(data, f)
-        
+
         for session in data:
             if session.get("UserName") != self.username:
                 continue
@@ -71,7 +71,5 @@ class JellyfinGetter:
                     length = now_playing.get("RunTimeTicks") / 10000 / 1000, # seconds
                     media_type = now_playing.get("Type", "").casefold(),
                 )
-        
+
         return JellyfinFetchPayload()
-
-

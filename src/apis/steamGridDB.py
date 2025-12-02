@@ -34,7 +34,7 @@ def _api_fetch(endpoint: str, api_key: str, data: Optional[dict] = None) -> Opti
     if not r:
         logging.error("failed to fetch %s", endpoint)
         return None
-    
+
     return r.json()
 
 def get_id_with_name(
@@ -84,7 +84,7 @@ def get_icon_with_id(
             "types": "static,animated"
         },
     ]
-    
+
     # why are enums like this?
     if isinstance(platform, SteamGridPlatforms):
         platform = platform.value
@@ -94,10 +94,10 @@ def get_icon_with_id(
     # "/icons/{platform}/{app_id}" is external
     if platform is None:
         platform = "game"
-    
+
     for data in datas:
         r = _api_fetch(f"icons/{platform}/{app_id}", api_key, data=data)
-        
+
         if r and len(data) >= 1:
             icons = r.get("data", [])
 
@@ -111,7 +111,7 @@ def get_icon_with_id(
                 else:
                     if icon.get("thumb"):
                         return icon.get("thumb")
-    
+
     return None
 
 def fetch_steam_grid_db(
@@ -128,19 +128,19 @@ def fetch_steam_grid_db(
                     app_id = entry.get("id")
                     platform = SteamGridPlatforms.INTERNAL
                     break
-        
+
         if not app_id:
             app_id = get_id_with_name(
                 config.steam_grid_db.api_key,
                 app_name
             )
             platform = SteamGridPlatforms.INTERNAL
-    
+
     if app_id:
         return SteamGridDBFetchPayload(get_icon_with_id(
             config.steam_grid_db.api_key,
             app_id,
             platform
         ))
-    
+
     return SteamGridDBFetchPayload()

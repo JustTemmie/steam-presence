@@ -1,10 +1,9 @@
-
 import time
 import logging
 
 from typing import Union
 
-import src.presence_manager.logger # just need to initialize it
+import src.presence_manager.logger as logger
 import src.presence_manager.misc as presence_manager
 
 from src.setters.DiscordRPC import DiscordRPC
@@ -14,22 +13,26 @@ from src.presence_manager.per_platform_cycle.jellyfin import run_jellyfin_cycle
 from src.presence_manager.per_platform_cycle.last_fm import run_last_fm_cycle
 from src.presence_manager.per_platform_cycle.local import run_local_cycle
 from src.presence_manager.per_platform_cycle.mpd import run_mpd_cycle
-from src.presence_manager.per_platform_cycle.steam import run_steam_cycle 
+from src.presence_manager.per_platform_cycle.steam import run_steam_cycle
 
+logger.initialize()
 logging.info("Starting setup!")
 
 config = Config()
 config.load()
 
 class ServiceCooldown:
+    """
+    """
+
     def __init__(self, cooldown):
         self.cooldown: float = cooldown
         self.next_tick: float = time.time()
-    
+
     def is_ready(self) -> bool:
         if self.next_tick > time.time():
             return False
-        
+
         self.next_tick = time.time() + self.cooldown
         return True
 
@@ -75,16 +78,20 @@ while True:
     if DEFAULT_GAME:
         if len(RPC_connections) == 0:
             logging.info("Switching to displaying the default game.")
-            RPC_connections["DEFAULT"] = DEFAULT_GAME
-            RPC_connections["DEFAULT"].default_game_payload = config.default_game
+            DEFAULT_GAME.default_game_payload = config.default_game
 
             if config.default_game.inject_discord_status_data:
-                RPC_connections["DEFAULT"].inject_bonus_status_data(config.default_game.discord_status_data)
-            
-            RPC_connections["DEFAULT"].instanciate(
+                DEFAULT_GAME.inject_bonus_status_data(config.default_game.discord_status_data)
+
+            DEFAULT_GAME.instanciate(
                 config.default_game.name,
-                presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                presence_manager.get_unused_discord_id(
+                    [rpc.discord_app_id for rpc in RPC_connections.values()],
+                    config
+                )
             )
+
+            RPC_connections["DEFAULT"] = DEFAULT_GAME
 
         elif len(RPC_connections) == 1 and RPC_connections.get("DEFAULT"):
             RPC_connections["DEFAULT"].update()
@@ -110,7 +117,7 @@ while True:
 
     for identifier in expired_IDs:
         RPC_connections.pop(identifier)
-    
+
     logging.debug("----- Cycle completed at %s -----", round(time.time()))
 
     try:

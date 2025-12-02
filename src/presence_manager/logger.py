@@ -1,38 +1,45 @@
-# this file should only be imported once, preferably in main.py or smth
-
-from src.presence_manager.command_line_args import args
+"""
+    Responsible for setting up the desired logging behaviour
+"""
 
 import logging
 import os
 import datetime
 
-log_level = logging.INFO
+from src.presence_manager.command_line_args import args
 
-if args.log_level:
-    log_level = args.log_level
+def initialize():
+    """
+        Only intended to be called once to setup correct logging behaviour
+    """
 
-# enable logging to file if in debug mode
-if log_level <= logging.DEBUG:
-    if not os.path.isdir("logs"):
-        os.mkdir("logs")
+    log_level = logging.INFO
 
-    logging.basicConfig(
-        level=log_level,
-        format="%(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(f"logs/{datetime.datetime.now()}.log")
-        ]
-    )
+    if args.log_level:
+        log_level = args.log_level
 
-else:
-    logging.basicConfig(
-        level=log_level,
-        format="%(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(),
-        ]
-    )
+    # enable logging to file if in debug mode
+    if log_level <= logging.DEBUG:
+        if not os.path.isdir("logs"):
+            os.mkdir("logs")
 
-logging.info("Logging enabled")
-logging.debug("Logging enabled")
+        logging.basicConfig(
+            level=log_level,
+            format="%(levelname)s - %(message)s",
+            handlers=[
+                logging.StreamHandler(),
+                logging.FileHandler(f"logs/{datetime.datetime.now()}.log")
+            ]
+        )
+
+    else:
+        logging.basicConfig(
+            level=log_level,
+            format="%(levelname)s - %(message)s",
+            handlers=[
+                logging.StreamHandler(),
+            ]
+        )
+
+    logging.info("Logging enabled")
+    logging.debug("Logging enabled")

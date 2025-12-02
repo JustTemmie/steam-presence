@@ -1,7 +1,7 @@
 import os
 import logging
 import random
-from typing import Optional, Union
+from typing import Optional
 
 from src.presence_manager.interfaces import Platforms
 from src.presence_manager.config import Config
@@ -16,7 +16,7 @@ def get_terminal_width() -> int:
         width = size.columns
     except Exception:
         width = 10
-    
+
     return width
 
 def get_unused_discord_id(used_ids: list[int], config: Config) -> Optional[int]:
@@ -25,11 +25,14 @@ def get_unused_discord_id(used_ids: list[int], config: Config) -> Optional[int]:
     if available_ids:
         return random.choice(available_ids)
 
-    logging.warning("all %s discord IDs have been used up, can't create any more RPC connections", len(config.discord.app_ids))
+    logging.warning(
+        "all %s discord IDs have been used up, can't create any more RPC connections",
+        len(config.discord.app_ids)
+    )
     return None
 
 def blocked_by_presedence(
-    platform: Platforms, 
+    platform: Platforms,
     existing_connections: list[DiscordRPC],
     config: Config
 ) -> bool:
@@ -39,10 +42,10 @@ def blocked_by_presedence(
     for blocking, blocked in presedence_rules.items():
         if blocked == platform.value:
             blocking_platforms.append(blocking)
-    
+
     for connection in existing_connections:
         if connection.platform.value in blocking_platforms:
             logging.debug("%s takes presedence over %s", connection.platform, platform)
             return True
-    
+
     return False

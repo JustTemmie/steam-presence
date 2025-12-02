@@ -62,7 +62,7 @@ class LocalGameFetchPayload:
 class MpdFetchPayload:
     file: Optional[str] = None
     folder: Optional[str] = None
-    
+
     file_path: Optional[str] = None
     last_modified: Optional[str] = None
     added: Optional[str] = None
@@ -90,7 +90,7 @@ class MpdFetchPayload:
     bitrate: Optional[str] = None
 
     fetched_at: Optional[float] = None
-    
+
     music_brainz_cover_art: Optional[str] = None
 
 # ID: "last_fm"

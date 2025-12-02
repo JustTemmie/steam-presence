@@ -12,7 +12,7 @@ MPD_GETTER_REFERENCE: list[MpdGetter] = []
 def run_mpd_cycle(RPC_connections, config: Config):
     if not config.mpd.enabled:
         return
-    
+
     if presence_manager.blocked_by_presedence(
         Platforms.MPD,
         RPC_connections.values(),
@@ -26,8 +26,6 @@ def run_mpd_cycle(RPC_connections, config: Config):
 
     data = MPD_GETTER_REFERENCE[0].fetch()
 
-    print("data.state =", data.state)
-
     if not data.title or (data.state and data.state != "play"):
         if RPC_connections.get("MPD"):
             RPC_connections.get("MPD").clear_RPC()
@@ -40,10 +38,13 @@ def run_mpd_cycle(RPC_connections, config: Config):
 
             if config.mpd.inject_discord_status_data:
                 rpc_session.inject_bonus_status_data(config.mpd.discord_status_data)
-            
+
             rpc_session.instanciate(
                 config.mpd.app_name,
-                presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                presence_manager.get_unused_discord_id(
+                    [rpc.discord_app_id for rpc in RPC_connections.values()],
+                    config
+                )
             )
 
             RPC_connections["MPD"] = rpc_session
@@ -52,15 +53,15 @@ def run_mpd_cycle(RPC_connections, config: Config):
         # clear any mpd data that may be incorrect for a different song
         if rpc_session.mpd_payload and rpc_session.mpd_payload.title != data.title:
             logging.info("Detected new MPD song %s, updating data", data.title)
-            print("–" * presence_manager.get_terminal_width())        
+            print("–" * presence_manager.get_terminal_width())
             rpc_session.mpd_payload = None
-        
+
         if data.fetched_at and data.elapsed and data.duration:
             try:
                 rpc_session.start_time = data.fetched_at - float(data.elapsed)
                 rpc_session.end_time = data.fetched_at - float(data.elapsed) + float(data.duration)
             except ValueError:
                 pass
-        
+
         rpc_session.mpd_payload = data
         rpc_session.update()

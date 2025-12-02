@@ -20,13 +20,13 @@ def run_local_cycle(RPC_connections, config: Config):
         config
     ):
         return
-    
+
     if len(LOCAL_GETTER_REFERENCE) == 0:
         logging.info("Instancing Local getter")
         LOCAL_GETTER_REFERENCE.append(LocalGetter(config))
 
     processes = LOCAL_GETTER_REFERENCE[0].fetch()
-    
+
     for process in processes:
         rpc_id = process.process_name
 
@@ -48,17 +48,19 @@ def run_local_cycle(RPC_connections, config: Config):
 
                 rpc_session.instanciate(
                     process.display_name,
-                    presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                    presence_manager.get_unused_discord_id(
+                        [rpc.discord_app_id for rpc in RPC_connections.values()],
+                        config
+                    )
                 )
-                
+
                 rpc_session.start_time = process.start_time
 
                 RPC_connections[rpc_id] = rpc_session
             else:
                 break
-            
-        game = RPC_connections[rpc_id]
 
+        game = RPC_connections[rpc_id]
         game.local_payload = process
 
         game.update()

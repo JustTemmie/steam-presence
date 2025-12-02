@@ -1,6 +1,7 @@
-import psutil
 import getpass
 import logging
+
+import psutil
 
 from src.presence_manager.config import Config
 from src.presence_manager.interfaces import LocalGameFetchPayload
@@ -11,10 +12,10 @@ current_user = getpass.getuser()
 class LocalGetter:
     def __init__(self, config: Config):
         self.config = config
-    
+
     def fetch(self) -> list[LocalGameFetchPayload]:
         logging.debug("Fetching local process information")
-        
+
         return_payloads: list[LocalGameFetchPayload] = []
 
         desired_processes: list[psutil.Process] = {}
@@ -48,6 +49,5 @@ class LocalGetter:
                 display_name = display_name,
             )
             return_payloads.append(payload)
-        
-        return return_payloads
 
+        return return_payloads

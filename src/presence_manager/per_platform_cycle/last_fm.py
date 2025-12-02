@@ -12,7 +12,7 @@ LAST_FM_GETTERS: list[LastFmGetter] = []
 def run_last_fm_cycle(RPC_connections, config: Config):
     if not config.last_fm.enabled:
         return
-    
+
     if presence_manager.blocked_by_presedence(
         Platforms.LAST_FM,
         RPC_connections.values(),
@@ -37,9 +37,12 @@ def run_last_fm_cycle(RPC_connections, config: Config):
                     RPC_connections.pop(rpc_id)
 
             else:
-                if not RPC_connections.get(rpc_id):                        
-                    logging.info("Found %s listening to music thru last.fm, creating new last.fm RPC", last_fm_session.username)
-                    
+                if not RPC_connections.get(rpc_id):
+                    logging.info(
+                        "Found %s listening to music thru last.fm, creating new last.fm RPC",
+                        last_fm_session.username
+                    )
+
                     rpc_session = DiscordRPC(config, Platforms.LAST_FM)
 
                     if config.last_fm.inject_discord_status_data:
@@ -47,15 +50,18 @@ def run_last_fm_cycle(RPC_connections, config: Config):
 
                     rpc_session.instanciate(
                         config.last_fm.app_name,
-                        presence_manager.get_unused_discord_id([rpc.discord_app_id for rpc in RPC_connections.values()], config)
+                        presence_manager.get_unused_discord_id(
+                            [rpc.discord_app_id for rpc in RPC_connections.values()],
+                            config
+                        )
                     )
 
                     rpc_session.start_time = None
 
                     RPC_connections[rpc_id] = rpc_session
-                
+
                 # note that start and end time aren't set for last.fm, as the data is simply not available
                 rpc_session = RPC_connections[rpc_id]
                 rpc_session.last_fm_payload = last_fm_session
-                
+
                 rpc_session.update()

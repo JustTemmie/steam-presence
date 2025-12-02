@@ -14,7 +14,7 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     if not r:
         logging.info("MusicBrainz search failed")
         return None
-    
+
     data = r.json()
     release_group_list = data.get("release-groups", [])
     release_group = release_group_list[0] if release_group_list else {}
@@ -27,7 +27,7 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     if not id:
         logging.info("failed to find a music brainz ID for %s %s", artist, album)
         return None
-    
+
     cover_art_resp = fetch(
         f"https://coverartarchive.org/release/{mb_id}",
         cache_ttl = 3600
@@ -36,14 +36,14 @@ def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     if not cover_art_resp:
         logging.info("Cover Art Archive request failed")
         return None
-    
+
     data = cover_art_resp.json()
 
     for img in data.get("images", []):
         if img.get("front"):
             return img.get("thumbnails", {}).get("small")
-    
+
     if data.get("images"):
         return data["images"][0]["image"]
-    
+
     return None

@@ -21,7 +21,7 @@ class MpdGetter:
         with socket.create_connection((self.host, self.port)) as conn:
             conn.recv(1024)
             data = b""
-        
+
             if self.password:
                 conn.sendall(f"password {self.password}\n".encode())
                 response = conn.recv(1024)
@@ -34,7 +34,7 @@ class MpdGetter:
 
             while data.count(b"OK\n") < 2:
                 data += conn.recv(4096)
-        
+
         info = {}
 
         try:
@@ -44,7 +44,7 @@ class MpdGetter:
                     info[key.lower()] = val
         except Exception:
             return MpdFetchPayload()
-        
+
         if (self.music_brainz and
             info.get("artist") and
             (info.get("album") or info.get("title"))
@@ -55,12 +55,12 @@ class MpdGetter:
             )
         else:
             music_brainz_cover_art = None
-        
+
         try:
             folder, file = info.get("file", "").rsplit("/", 1)
         except ValueError:
             return MpdFetchPayload()
-        
+
         return MpdFetchPayload(
             file = file,
             folder = folder,

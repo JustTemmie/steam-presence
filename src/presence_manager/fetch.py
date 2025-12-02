@@ -20,12 +20,12 @@ def _get_cached(key: str, ttl: float) -> Optional[requests.Response]:
     with _LOCK:
         if key not in _CACHE:
             return None
-        
+
         response, fetched_at = _CACHE[key]
         if time.time() - fetched_at > ttl:
             del _CACHE[key]
             return None
-        
+
         return response
 
 
@@ -57,11 +57,11 @@ def fetch(
 
         if r.status_code != 200:
             return
-    
+
         if cache_ttl > 0:
             _store_cached(key, r)
 
         return r
-    
+
     except (requests.ConnectTimeout, requests.ConnectionError, requests.exceptions.ReadTimeout):
         return None
