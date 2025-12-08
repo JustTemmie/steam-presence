@@ -1132,7 +1132,7 @@ def main():
     global currentVersion
     # this always has to match the newest release tag
     currentVersion = "v1.12.2"
-
+    
     # check if there's any updates for the program
     checkForUpdate()
     # does various things, such as verifying that certain files are in certain locations
