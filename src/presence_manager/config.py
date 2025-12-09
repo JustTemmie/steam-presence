@@ -27,14 +27,20 @@ class GenericConfig:
         for key, value in data.items():
             setattr(self, key, value)
 
+# used by small and large images, in addition to buttons
+@dataclass
+class DiscordMedia:
+    url: Optional[str]
+    label: Optional[str]
+
 @dataclass
 class DiscordData:
     activity_type: Optional[ActivityType]
     status_display_type: Optional[StatusDisplayType]
     status_lines: list[str]
-    small_images: dict[str, str]
-    large_images: dict[str, str]
-    buttons: dict[str, str]
+    small_images: list[DiscordMedia]
+    large_images: list[DiscordMedia]
+    buttons: list[DiscordMedia]
 
 @dataclass
 class SteamUser:
@@ -109,26 +115,39 @@ class ConfigDiscord(GenericConfig):
             "status_display_type": StatusDisplayType.NAME,
             "status_lines": [
             ],
-            "small_images": {
-            },
-            "large_images": {
-                "{steam_grid_db.icon}": None,
-                # these are still here, due to injected status lines being prioritized above all else
-                "{steam.capsule_header_image}": None,
-                "{steam.capsule_vertical_image}": None,
-                "{steam.hero_capsule}": None,
-            },
-            "buttons": {
-
-            }
+            "small_images": [
+            ],
+            "large_images": [
+                {
+                    "url": "{steam_grid_db.icon}",
+                    "label": None,
+                },
+                {
+                    "url": "{steam.capsule_header_image}",
+                    "label": None,
+                },
+                {
+                    "url": "{steam.capsule_vertical_image}",
+                    "label": None,
+                },
+                {
+                    "url": "{steam.hero_capsule}",
+                    "label": None,
+                },
+            ],
+            "buttons": [
+            ]
         }
         # the discord trackmania icon SUCKS due to being super blurry
         # so it's a good example of a per app config
         self.per_app_status_data: dict[str, DiscordData] = {
             "Trackmania": { # case-insensitive name
-                "large_images": {
-                    "https://img.icons8.com/?size=256&id=LJEz2yMtDm2f": None,
-                },
+                "large_images": [
+                    {
+                        "url": "https://img.icons8.com/?size=256&id=LJEz2yMtDm2f",
+                        "label": None
+                    }
+                ]
             },
         }
 
@@ -156,9 +175,12 @@ class ConfigSteam(GenericConfig):
                 "{steam.rich_presence}",
                 "{steam.review_description} reviews ({steam.review_percent}%)",
             ],
-            "buttons": {
-                "on steam! – {steam.price_formatted}": "https://store.steampowered.com/app/{steam.app_id}"
-            }
+            "buttons": [
+                {
+                    "url": "https://store.steampowered.com/app/{steam.app_id}",
+                    "label": "on steam! – {steam.price_formatted}"
+                }
+            ]
         }
 
 # TODO, not implemented
@@ -181,13 +203,22 @@ class ConfigJellyfin(GenericConfig):
         self.default_discord_status_data: DiscordData = {
             "activity_type": ActivityType.WATCHING,
             "status_display_type": StatusDisplayType.DETAILS,
-            "large_images": {
+            "large_images": [
                 # after playing around with the numbers, this seems to be close the best resolution for discord
                 # anything higher and it just looks "oversharpened"
-                "{jellyfin.public_url}/Items/{jellyfin.series_id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100": None,
-                "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100": None,
-                "https://avatars.githubusercontent.com/u/45698031?s=512.png": None
-            }
+                {
+                    "url": "{jellyfin.public_url}/Items/{jellyfin.series_id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100",
+                    "label": None,
+                },
+                {
+                    "url": "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100",
+                    "label": None,
+                },
+                {
+                    "url": "https://avatars.githubusercontent.com/u/45698031?s=512.png",
+                    "label": None,
+                },
+            ]
         }
         self.per_media_type_discord_status_data: dict[str, DiscordData] = {
             "episode": {
@@ -234,12 +265,18 @@ class ConfigMpd(GenericConfig):
             "status_display_type": StatusDisplayType.DETAILS,
             "status_lines": [
                 "{mpd.title}",
-                "{mpd.artist} / {mpd.album}",
                 "{mpd.artist}",
             ],
-            "large_images": {
-                "{mpd.music_brainz_cover_art}": None
-            }
+            "large_images": [
+                {
+                    "url": "{mpd.music_brainz_cover_art}",
+                    "label": "{mpd.album}"
+                },
+                {
+                    "url": "{mpd.music_brainz_cover_art}",
+                    "label": None
+                }
+            ]
         }
 
 class ConfigLastFm(GenericConfig):
@@ -258,12 +295,18 @@ class ConfigLastFm(GenericConfig):
                 "{last_fm.artist_name} / {last_fm.album_name}",
                 "{last_fm.album_name}",
             ],
-            "large_images": {
-                "{last_fm.album_art}": None
-            },
-            "buttons": {
-                "{last_fm.track_name} on Last.fm": "{last_fm.track_url}"
-            }
+            "large_images": [
+                {
+                    "url": "{last_fm.album_art}",
+                    "label": None
+                }
+            ],
+            "buttons": [
+                {
+                    "url": "{last_fm.track_url}",
+                    "label": "{last_fm.track_name} on Last.fm"
+                }
+            ]
         }
 
 class ConfigDefaultGame(GenericConfig):

@@ -7,7 +7,7 @@ import pypresence
 from pypresence import ActivityType, StatusDisplayType
 
 import src.presence_manager.misc as presence_manager
-from src.presence_manager.config import Config, DiscordData
+from src.presence_manager.config import Config, DiscordData, DiscordMedia
 from src.presence_manager.interfaces import (
     LocalGameFetchPayload, SteamFetchPayload,
     JellyfinFetchPayload, MpdFetchPayload,
@@ -35,7 +35,7 @@ class DiscordRPC:
         )
 
         # all activity types display details and state, in addition to text on image hovers
-        # for some reason ungodly reason, listening, competing, and streaming activities
+        # for some ungodly reason, listening, competing, and streaming activities
         # also displays the large image text
         self.status_data: DiscordData = copy.deepcopy(config.discord.status_data)
 
@@ -83,23 +83,23 @@ class DiscordRPC:
 
         if status_data.get("status_lines"):
             self.status_data["status_lines"] = \
-                status_data.get("status_lines", []) \
-                + self.status_data.get("status_lines", [])
+                self.status_data.get("status_lines", []) \
+                + status_data.get("status_lines", [])
 
         if status_data.get("small_images"):
             self.status_data["small_images"] = \
-                status_data.get("small_images", {}) \
-                | self.status_data.get("small_images", {})
+                self.status_data.get("small_images", []) \
+                + status_data.get("small_images", [])
 
         if status_data.get("large_images"):
             self.status_data["large_images"] = \
-                status_data.get("large_images", {}) \
-                | self.status_data.get("large_images", {})
+                self.status_data.get("large_images", []) \
+                + status_data.get("large_images", [])
 
         if status_data.get("buttons"):
             self.status_data["buttons"] = \
-                status_data.get("buttons", {}) \
-                | self.status_data.get("buttons", {})
+                self.status_data.get("buttons", []) \
+                + status_data.get("buttons", [])
 
     def instanciate(self, name: str, discord_app_id: int) -> bool:
         # skip app if it's found in the blacklist
@@ -166,37 +166,52 @@ class DiscordRPC:
         if len(status_lines) >= 2:
             self.state = status_lines[1]
 
-        for large_image_url, large_image_text in self.status_data.get("large_images", {}).items():
-            image_url = format_rpc_data(large_image_url)
-            image_text = format_rpc_data(large_image_text)
-            # Continue if large_image_text was explicitly set to None
-            if image_url and (image_text or large_image_text is None):
-                self.large_image_url = image_url
-                self.large_image_text = image_text
-                break
 
-        for small_image_url, small_image_text in self.status_data.get("small_images", {}).items():
-            image_url = format_rpc_data(small_image_url)
-            image_text = format_rpc_data(small_image_text)
-            if image_url and (image_text or small_image_text is None):
+        small_image_status_data: list[DiscordMedia] = [
+            DiscordMedia(**field) for field in self.status_data.get("small_images", [])
+        ]
+        large_image_status_data: list[DiscordMedia] = [
+            DiscordMedia(**field) for field in self.status_data.get("large_images", [])
+        ]
+        button_status_data: list[DiscordMedia] = [
+            DiscordMedia(**field) for field in self.status_data.get("buttons", [])
+        ]
+
+        for entry in small_image_status_data:
+            image_url = format_rpc_data(entry.url)
+            image_text = format_rpc_data(entry.label)
+            
+            # Continue if the label was explicitly set to None
+            if image_url and (image_text or entry.label is None):
                 self.small_image_url = image_url
                 self.small_image_text = image_text
                 break
-
-        for raw_label, raw_url in self.status_data.get("buttons", {}).items():
-            label = format_rpc_data(raw_label)
-            url = format_rpc_data(raw_url)
-            if label and url:
-                if len(label) > 32:
+        
+        for entry in large_image_status_data:
+            image_url = format_rpc_data(entry.url)
+            image_text = format_rpc_data(entry.label)
+            
+            # Continue if the label was explicitly set to None
+            if image_url and (image_text or entry.label is None):
+                self.large_image_url = image_url
+                self.large_image_text = image_text
+                break
+        
+        for entry in button_status_data:
+            button_url = format_rpc_data(entry.url)
+            button_label = format_rpc_data(entry.label)
+            
+            if button_url and button_label:
+                if len(button_label) > 32:
                     logging.warning(
                         "discord caps labels at 32, %s was skipped due to having a length of %s",
-                        label,
-                        len(label)
+                        button_label,
+                        len(button_label)
                     )
                 else:
                     self.discord_buttons.append({
-                        "label": label,
-                        "url": url
+                        "url": button_url,
+                        "label": button_label
                     })
 
     def get_time_since_timeout(self) -> float:
@@ -236,8 +251,8 @@ class DiscordRPC:
                     start = self.start_time, end = self.end_time,
                     large_image = self.large_image_url,
                     small_image = self.small_image_url,
-                    # pypresence breaks if you hand it an empty string or array
-                    # while this workaround is scuffed, it works
+                    # pypresence breaks if you hand it an empty string or array.
+                    # while this workaround may be scuffed, it works
                     large_text = self.large_image_text if self.large_image_text else None,
                     small_text = self.small_image_text if self.small_image_text else None,
                     buttons = self.discord_buttons if self.discord_buttons else None
@@ -247,7 +262,7 @@ class DiscordRPC:
                 self.close_RPC()
                 return False
 
-        if not self.config.discord.enabled or logging.root.level < 10:
+        if self.config.discord.enabled is False or logging.root.level < 10:
             print("refreshing rpc with:")
             print(f"name = {self.app_name}")
             print(f"discord_app_id = {self.discord_app_id}")
