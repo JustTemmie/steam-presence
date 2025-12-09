@@ -27,20 +27,25 @@ class GenericConfig:
         for key, value in data.items():
             setattr(self, key, value)
 
-# used by small and large images, in addition to buttons
 @dataclass
-class DiscordMedia:
-    url: Optional[str]
-    label: Optional[str]
+class DiscordImage:
+    image: Optional[str] = None
+    url: Optional[str] = None
+    label: Optional[str] = None
+
+@dataclass
+class DiscordButton:
+    url: Optional[str] = None
+    label: Optional[str] = None
 
 @dataclass
 class DiscordData:
     activity_type: Optional[ActivityType]
     status_display_type: Optional[StatusDisplayType]
     status_lines: list[str]
-    small_images: list[DiscordMedia]
-    large_images: list[DiscordMedia]
-    buttons: list[DiscordMedia]
+    small_images: list[DiscordImage]
+    large_images: list[DiscordImage]
+    buttons: list[DiscordButton]
 
 @dataclass
 class SteamUser:
@@ -119,20 +124,16 @@ class ConfigDiscord(GenericConfig):
             ],
             "large_images": [
                 {
-                    "url": "{steam_grid_db.icon}",
-                    "label": None,
+                    "image": "{steam_grid_db.icon}",
                 },
                 {
-                    "url": "{steam.capsule_header_image}",
-                    "label": None,
+                    "image": "{steam.capsule_header_image}",
                 },
                 {
-                    "url": "{steam.capsule_vertical_image}",
-                    "label": None,
+                    "image": "{steam.capsule_vertical_image}",
                 },
                 {
-                    "url": "{steam.hero_capsule}",
-                    "label": None,
+                    "image": "{steam.hero_capsule}",
                 },
             ],
             "buttons": [
@@ -144,8 +145,7 @@ class ConfigDiscord(GenericConfig):
             "Trackmania": { # case-insensitive name
                 "large_images": [
                     {
-                        "url": "https://img.icons8.com/?size=256&id=LJEz2yMtDm2f",
-                        "label": None
+                        "image": "https://img.icons8.com/?size=256&id=LJEz2yMtDm2f",
                     }
                 ]
             },
@@ -207,16 +207,13 @@ class ConfigJellyfin(GenericConfig):
                 # after playing around with the numbers, this seems to be close the best resolution for discord
                 # anything higher and it just looks "oversharpened"
                 {
-                    "url": "{jellyfin.public_url}/Items/{jellyfin.series_id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100",
-                    "label": None,
+                    "image": "{jellyfin.public_url}/Items/{jellyfin.series_id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100",
                 },
                 {
-                    "url": "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100",
-                    "label": None,
+                    "image": "{jellyfin.public_url}/Items/{jellyfin.id}/Images/Primary?fillHeight=128&fillWidth=128&quality=100",
                 },
                 {
-                    "url": "https://avatars.githubusercontent.com/u/45698031?s=512.png",
-                    "label": None,
+                    "image": "https://avatars.githubusercontent.com/u/45698031?s=512.png",
                 },
             ]
         }
@@ -269,12 +266,11 @@ class ConfigMpd(GenericConfig):
             ],
             "large_images": [
                 {
-                    "url": "{mpd.music_brainz_cover_art}",
+                    "image": "{mpd.music_brainz_cover_art}",
                     "label": "{mpd.album}"
                 },
                 {
-                    "url": "{mpd.music_brainz_cover_art}",
-                    "label": None
+                    "image": "{mpd.music_brainz_cover_art}",
                 }
             ]
         }
@@ -292,21 +288,26 @@ class ConfigLastFm(GenericConfig):
             "status_display_type": StatusDisplayType.DETAILS,
             "status_lines": [
                 "{last_fm.track_name}",
-                "{last_fm.artist_name} / {last_fm.album_name}",
-                "{last_fm.album_name}",
+                "{last_fm.artist_name}",
             ],
             "large_images": [
                 {
-                    "url": "{last_fm.album_art}",
-                    "label": None
-                }
-            ],
-            "buttons": [
-                {
+                    "image": "{last_fm.album_art}",
+                    "label": "{last_fm.album_name}",
                     "url": "{last_fm.track_url}",
-                    "label": "{last_fm.track_name} on Last.fm"
-                }
-            ]
+                },
+                {
+                    "image": "{last_fm.album_art}",
+                    "url": "{last_fm.track_url}",
+                },
+                {
+                    "image": "{last_fm.album_art}",
+                    "label": "{last_fm.album_name}",
+                },
+                {
+                    "image": "{last_fm.album_art}",
+                },
+            ],
         }
 
 class ConfigDefaultGame(GenericConfig):

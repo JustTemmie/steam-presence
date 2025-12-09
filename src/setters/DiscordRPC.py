@@ -7,7 +7,7 @@ import pypresence
 from pypresence import ActivityType, StatusDisplayType
 
 import src.presence_manager.misc as presence_manager
-from src.presence_manager.config import Config, DiscordData, DiscordMedia
+from src.presence_manager.config import Config, DiscordData, DiscordImage, DiscordButton
 from src.presence_manager.interfaces import (
     LocalGameFetchPayload, SteamFetchPayload,
     JellyfinFetchPayload, MpdFetchPayload,
@@ -46,10 +46,12 @@ class DiscordRPC:
         self.start_time: int = None
         self.end_time: int = None
 
+        self.large_image_image: Optional[str] = None
         self.large_image_url: Optional[str] = None
-        self.large_image_text: str = ""
+        self.large_image_text: Optional[str] = None
+        self.small_image_image: Optional[str] = None
         self.small_image_url: Optional[str] = None
-        self.small_image_text: str = ""
+        self.small_image_text: Optional[str] = None
 
         self.discord_image_url: Optional[str] = None
 
@@ -167,40 +169,44 @@ class DiscordRPC:
             self.state = status_lines[1]
 
 
-        small_image_status_data: list[DiscordMedia] = [
-            DiscordMedia(**field) for field in self.status_data.get("small_images", [])
+        small_image_status_data: list[DiscordImage] = [
+            DiscordImage(**field) for field in self.status_data.get("small_images", [])
         ]
-        large_image_status_data: list[DiscordMedia] = [
-            DiscordMedia(**field) for field in self.status_data.get("large_images", [])
+        large_image_status_data: list[DiscordImage] = [
+            DiscordImage(**field) for field in self.status_data.get("large_images", [])
         ]
-        button_status_data: list[DiscordMedia] = [
-            DiscordMedia(**field) for field in self.status_data.get("buttons", [])
+        button_status_data: list[DiscordButton] = [
+            DiscordButton(**field) for field in self.status_data.get("buttons", [])
         ]
 
         for entry in small_image_status_data:
+            image_image = format_rpc_data(entry.image)
             image_url = format_rpc_data(entry.url)
             image_text = format_rpc_data(entry.label)
-            
+
             # Continue if the label was explicitly set to None
-            if image_url and (image_text or entry.label is None):
+            if image_image and (image_url or entry.url is None) and (image_text or entry.label is None):
+                self.small_image_image = image_image
                 self.small_image_url = image_url
                 self.small_image_text = image_text
                 break
-        
+
         for entry in large_image_status_data:
+            image_image = format_rpc_data(entry.image)
             image_url = format_rpc_data(entry.url)
             image_text = format_rpc_data(entry.label)
-            
+
             # Continue if the label was explicitly set to None
-            if image_url and (image_text or entry.label is None):
+            if image_image and (image_url or entry.url is None) and (image_text or entry.label is None):
+                self.large_image_image = image_image
                 self.large_image_url = image_url
                 self.large_image_text = image_text
                 break
-        
+
         for entry in button_status_data:
             button_url = format_rpc_data(entry.url)
             button_label = format_rpc_data(entry.label)
-            
+
             if button_url and button_label:
                 if len(button_label) > 32:
                     logging.warning(
@@ -249,12 +255,14 @@ class DiscordRPC:
                     status_display_type = self.status_display_type,
                     details = self.details, state = self.state,
                     start = self.start_time, end = self.end_time,
-                    large_image = self.large_image_url,
-                    small_image = self.small_image_url,
+                    large_image = self.large_image_image,
+                    small_image = self.small_image_image,
                     # pypresence breaks if you hand it an empty string or array.
                     # while this workaround may be scuffed, it works
                     large_text = self.large_image_text if self.large_image_text else None,
+                    large_url = self.large_image_url if self.large_image_url else None,
                     small_text = self.small_image_text if self.small_image_text else None,
+                    small_url = self.small_image_url if self.small_image_url else None,
                     buttons = self.discord_buttons if self.discord_buttons else None
                 )
             except pypresence.exceptions.PipeClosed:
@@ -272,8 +280,10 @@ class DiscordRPC:
             print(f"state = {self.state}")
             print(f"start_time = {self.start_time}")
             print(f"end_time = {self.end_time}")
+            print(f"large_image_image = {self.large_image_image}")
             print(f"large_image_text = {self.large_image_text}")
             print(f"large_image_url = {self.large_image_url}")
+            print(f"small_image_image = {self.small_image_image}")
             print(f"small_image_text = {self.small_image_text}")
             print(f"small_image_url = {self.small_image_url}")
             print(f"buttons = {self.discord_buttons}")
