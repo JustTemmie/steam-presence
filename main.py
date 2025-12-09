@@ -104,7 +104,7 @@ while True:
         logging.debug("Refreshing connection for %s", identifier)
         connection.refresh()
 
-        if connection.get_time_since_timeout() > 600:
+        if connection.get_time_since_timeout() > config.app.lifetime:
             connection.close_RPC()
             expired_IDs.append(identifier)
 

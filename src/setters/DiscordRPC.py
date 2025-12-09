@@ -221,7 +221,7 @@ class DiscordRPC:
                     })
 
     def get_time_since_timeout(self) -> float:
-        return max(0, time() - self.last_update - self.config.app.timeout)
+        return max(0, time() - self.last_update - self.config.app.clear_timeout)
 
     def clear_RPC(self):
         if self.config.discord.enabled:
@@ -230,7 +230,7 @@ class DiscordRPC:
         # this directly changes the last_update to make sure
         # it doesn't try to reconnect before getting an update
         # though this could probably be done in a better way
-        new_last_update = time() - self.config.app.timeout
+        new_last_update = time() - self.config.app.clear_timeout
         if self.last_update > new_last_update:
             self.last_update = new_last_update
 

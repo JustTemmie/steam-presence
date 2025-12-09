@@ -79,7 +79,8 @@ class SGDBLookupTable:
 
 class ConfigApp(GenericConfig):
     def __init__(self):
-        self.timeout: int = 55
+        self.clear_timeout: int = 30
+        self.lifetime: int = 600
         self.cycle_interval: int = 5
         self.blacklist: list[str] = []
         self.presedence_rules: dict[str: str] = {
