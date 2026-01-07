@@ -1,12 +1,12 @@
 import logging
 
-import src.presence_manager.misc as presence_manager
-import src.presence_manager.cover_art as cover_art
-from src.presence_manager.interfaces import Platforms
+import src.steam_presence.misc as steam_presence
+import src.steam_presence.cover_art as cover_art
+from src.steam_presence.interfaces import Platforms
 
 from src.getters.MpdGetter import MpdGetter
 from src.setters.DiscordRPC import DiscordRPC
-from src.presence_manager.config import Config
+from src.steam_presence.config import Config
 
 MPD_GETTER_REFERENCE: list[MpdGetter] = []
 
@@ -14,7 +14,7 @@ def run_mpd_cycle(RPC_connections, config: Config):
     if not config.mpd.enabled:
         return
 
-    if presence_manager.blocked_by_presedence(
+    if steam_presence.blocked_by_presedence(
         Platforms.MPD,
         RPC_connections.values(),
         config
@@ -42,7 +42,7 @@ def run_mpd_cycle(RPC_connections, config: Config):
 
             rpc_session.instanciate(
                 config.mpd.app_name,
-                presence_manager.get_unused_discord_id(
+                steam_presence.get_unused_discord_id(
                     [rpc.discord_app_id for rpc in RPC_connections.values()],
                     config
                 )
@@ -56,7 +56,7 @@ def run_mpd_cycle(RPC_connections, config: Config):
         if rpc_session.mpd_payload and rpc_session.mpd_payload.title != data.title:
             logging.info("Detected new MPD song %s, updating data", data.title)
             rpc_session.mpd_payload = None
-            print("–" * presence_manager.get_terminal_width())
+            print("–" * steam_presence.get_terminal_width())
 
         if data.fetched_at and data.elapsed and data.duration:
             try:

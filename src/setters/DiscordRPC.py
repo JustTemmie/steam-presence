@@ -6,9 +6,9 @@ from typing import Dict, Optional
 import pypresence
 from pypresence import ActivityType, StatusDisplayType
 
-import src.presence_manager.misc as presence_manager
-from src.presence_manager.config import Config, DiscordData, DiscordImage, DiscordButton
-from src.presence_manager.interfaces import (
+import src.steam_presence.misc as steam_presence
+from src.steam_presence.config import Config, DiscordData, DiscordImage, DiscordButton
+from src.steam_presence.interfaces import (
     LocalGameFetchPayload, SteamFetchPayload,
     JellyfinFetchPayload, MpdFetchPayload,
     LastFmFetchPayload, Platforms)
@@ -133,7 +133,7 @@ class DiscordRPC:
 
         logging.info("Succesfully established Discord RPC connection for %s", name)
 
-        print("–" * presence_manager.get_terminal_width())
+        print("–" * steam_presence.get_terminal_width())
 
         return True
 

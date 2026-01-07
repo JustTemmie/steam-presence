@@ -3,9 +3,9 @@ import logging
 from enum import Enum
 from typing import Union, Optional
 
-from src.presence_manager.config import Config, SGDBLookupTable
-from src.presence_manager.interfaces import SteamGridDBFetchPayload
-from src.presence_manager.fetch import fetch
+from src.steam_presence.config import Config, SGDBLookupTable
+from src.steam_presence.interfaces import SteamGridDBFetchPayload
+from src.steam_presence.fetch import fetch
 
 
 class SteamGridPlatforms(Enum):

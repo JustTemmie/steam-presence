@@ -1,12 +1,12 @@
 import logging
 
-import src.presence_manager.misc as presence_manager
-from src.presence_manager.interfaces import Platforms
+import src.steam_presence.misc as steam_presence
+from src.steam_presence.interfaces import Platforms
 
 import src.apis.steamGridDB as steamGridDB
 from src.getters.SteamGetter import SteamGetter
 from src.setters.DiscordRPC import DiscordRPC
-from src.presence_manager.config import Config, SteamUser
+from src.steam_presence.config import Config, SteamUser
 
 STEAM_GETTERS: list[SteamGetter] = []
 
@@ -14,7 +14,7 @@ def run_steam_cycle(RPC_connections, config: Config, ):
     if not config.steam.enabled and STEAM_GETTERS:
         return
 
-    if presence_manager.blocked_by_presedence(
+    if steam_presence.blocked_by_presedence(
         Platforms.STEAM,
         RPC_connections.values(),
         config
@@ -54,7 +54,7 @@ def run_steam_cycle(RPC_connections, config: Config, ):
 
                 rpc_session.instanciate(
                     steam_game.app_name,
-                    presence_manager.get_unused_discord_id(
+                    steam_presence.get_unused_discord_id(
                         [rpc.discord_app_id for rpc in RPC_connections.values()],
                         config
                     )

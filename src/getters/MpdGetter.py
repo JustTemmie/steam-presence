@@ -4,8 +4,8 @@ import time
 
 from src.apis.musicBrainz import fetch_cover_art_url
 
-from src.presence_manager.config import Config
-from src.presence_manager.interfaces import MpdFetchPayload
+from src.steam_presence.config import Config
+from src.steam_presence.interfaces import MpdFetchPayload
 
 class MpdGetter:
     def __init__(self, config: Config):

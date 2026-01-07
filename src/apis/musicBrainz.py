@@ -2,7 +2,7 @@ import logging
 import requests
 from typing import Optional
 
-from src.presence_manager.fetch import fetch
+from src.steam_presence.fetch import fetch
 
 def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     query = f"artist:{artist} AND release:{album}"

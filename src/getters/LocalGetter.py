@@ -3,8 +3,8 @@ import logging
 
 import psutil
 
-from src.presence_manager.config import Config
-from src.presence_manager.interfaces import LocalGameFetchPayload
+from src.steam_presence.config import Config
+from src.steam_presence.interfaces import LocalGameFetchPayload
 
 
 current_user = getpass.getuser()

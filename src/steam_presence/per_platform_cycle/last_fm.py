@@ -1,11 +1,11 @@
 import logging
 
-import src.presence_manager.misc as presence_manager
-from src.presence_manager.interfaces import Platforms
+import src.steam_presence.misc as steam_presence
+from src.steam_presence.interfaces import Platforms
 
 from src.getters.LastFmGetter import LastFmGetter
 from src.setters.DiscordRPC import DiscordRPC
-from src.presence_manager.config import Config, LastFmUser
+from src.steam_presence.config import Config, LastFmUser
 
 LAST_FM_GETTERS: list[LastFmGetter] = []
 
@@ -13,7 +13,7 @@ def run_last_fm_cycle(RPC_connections, config: Config):
     if not config.last_fm.enabled:
         return
 
-    if presence_manager.blocked_by_presedence(
+    if steam_presence.blocked_by_presedence(
         Platforms.LAST_FM,
         RPC_connections.values(),
         config
@@ -50,7 +50,7 @@ def run_last_fm_cycle(RPC_connections, config: Config):
 
                     rpc_session.instanciate(
                         config.last_fm.app_name,
-                        presence_manager.get_unused_discord_id(
+                        steam_presence.get_unused_discord_id(
                             [rpc.discord_app_id for rpc in RPC_connections.values()],
                             config
                         )

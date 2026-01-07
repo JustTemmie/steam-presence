@@ -9,7 +9,7 @@ from typing import Optional
 from mutagen import File
 
 import src.apis.catbox as catbox
-import src.presence_manager.disk_cache as disk_cache
+import src.steam_presence.disk_cache as disk_cache
 
 mpd_directory = "cache/mpd/"
 

@@ -3,17 +3,17 @@ import logging
 
 from typing import Union
 
-import src.presence_manager.logger as logger
-import src.presence_manager.misc as presence_manager
+import src.steam_presence.logger as logger
+import src.steam_presence.misc as steam_presence
 
 from src.setters.DiscordRPC import DiscordRPC
-from src.presence_manager.config import Config
+from src.steam_presence.config import Config
 
-from src.presence_manager.per_platform_cycle.jellyfin import run_jellyfin_cycle
-from src.presence_manager.per_platform_cycle.last_fm import run_last_fm_cycle
-from src.presence_manager.per_platform_cycle.local import run_local_cycle
-from src.presence_manager.per_platform_cycle.mpd import run_mpd_cycle
-from src.presence_manager.per_platform_cycle.steam import run_steam_cycle
+from src.steam_presence.per_platform_cycle.jellyfin import run_jellyfin_cycle
+from src.steam_presence.per_platform_cycle.last_fm import run_last_fm_cycle
+from src.steam_presence.per_platform_cycle.local import run_local_cycle
+from src.steam_presence.per_platform_cycle.mpd import run_mpd_cycle
+from src.steam_presence.per_platform_cycle.steam import run_steam_cycle
 
 logger.initialize()
 logging.info("Starting setup!")
@@ -52,7 +52,7 @@ RPC_connections: dict[Union[int, str], DiscordRPC] = {}
 DEFAULT_GAME = DiscordRPC(config, None) if config.default_game.enabled else None
 
 logging.info("Initial setup complete!")
-print("–" * presence_manager.get_terminal_width())
+print("–" * steam_presence.get_terminal_width())
 
 while True:
     cycle_start_time = time.time()
@@ -85,7 +85,7 @@ while True:
 
             DEFAULT_GAME.instanciate(
                 config.default_game.name,
-                presence_manager.get_unused_discord_id(
+                steam_presence.get_unused_discord_id(
                     [rpc.discord_app_id for rpc in RPC_connections.values()],
                     config
                 )
@@ -113,7 +113,7 @@ while True:
                 identifier,
                 round(time.time() - connection.creation_time, 1)
             )
-            print("–" * presence_manager.get_terminal_width())
+            print("–" * steam_presence.get_terminal_width())
 
     for identifier in expired_IDs:
         RPC_connections.pop(identifier)

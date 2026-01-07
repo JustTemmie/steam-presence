@@ -1,9 +1,9 @@
 import logging
 
-from src.presence_manager.config import Config, JellyfinInstance
-from src.presence_manager.interfaces import JellyfinFetchPayload
+from src.steam_presence.config import Config, JellyfinInstance
+from src.steam_presence.interfaces import JellyfinFetchPayload
 
-from src.presence_manager.fetch import fetch
+from src.steam_presence.fetch import fetch
 
 class JellyfinGetter:
     def __init__(self, config: Config, instance: JellyfinInstance):

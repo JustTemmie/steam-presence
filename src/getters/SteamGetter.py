@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from typing import Union, Optional
 from bs4 import BeautifulSoup
 
-from src.presence_manager.config import Config, SteamUser
-from src.presence_manager.interfaces import SteamFetchPayload
+from src.steam_presence.config import Config, SteamUser
+from src.steam_presence.interfaces import SteamFetchPayload
 
-from src.presence_manager.fetch import fetch
+from src.steam_presence.fetch import fetch
 
 @dataclass
 class getCurrentStateResponse:

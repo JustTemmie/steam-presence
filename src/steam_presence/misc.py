@@ -3,8 +3,8 @@ import logging
 import random
 from typing import Optional
 
-from src.presence_manager.interfaces import Platforms
-from src.presence_manager.config import Config
+from src.steam_presence.interfaces import Platforms
+from src.steam_presence.config import Config
 
 from src.setters.DiscordRPC import DiscordRPC
 

@@ -6,7 +6,7 @@ import logging
 import os
 import datetime
 
-from src.presence_manager.command_line_args import args
+from src.steam_presence.command_line_args import args
 
 def initialize():
     """

@@ -1,10 +1,10 @@
 
 import logging
 
-from src.presence_manager.config import Config, LastFmUser
-from src.presence_manager.interfaces import LastFmFetchPayload
+from src.steam_presence.config import Config, LastFmUser
+from src.steam_presence.interfaces import LastFmFetchPayload
 
-from src.presence_manager.fetch import fetch
+from src.steam_presence.fetch import fetch
 
 class LastFmGetter:
     def __init__(self, config: Config, user: LastFmUser):
