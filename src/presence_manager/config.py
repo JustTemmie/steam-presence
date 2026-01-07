@@ -197,6 +197,7 @@ class ConfigJellyfin(GenericConfig):
         # so an instance URL of http://192.168.1.20:8096 won't work if you want images
         self.enabled: bool = False
         self.cooldown: int = 0
+        self.catbox: bool = False
         self.instances: list[JellyfinInstance] = []
 
         self.app_name: str = "Jellyfin"
@@ -255,6 +256,9 @@ class ConfigMpd(GenericConfig):
         self.server_url: str = "localhost:6600"
         self.password: Optional[str] = None
         self.music_brainz: bool = False
+        
+        self.music_library_base_path: Optional[str] # only used by catbox
+        self.catbox: bool = False
 
         self.app_name: str = "MPD"
         self.inject_discord_status_data: bool = True
@@ -267,12 +271,23 @@ class ConfigMpd(GenericConfig):
             ],
             "large_images": [
                 {
+                    "image": "{mpd.catbox_mutagen_art}",
+                    "label": "{mpd.album}"
+                },
+                {
+                    "image": "{mpd.catbox_mutagen_art}",
+                },
+                {
                     "image": "{mpd.music_brainz_cover_art}",
                     "label": "{mpd.album}"
                 },
                 {
                     "image": "{mpd.music_brainz_cover_art}",
-                }
+                },
+                { # if no image is available
+                    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Music_Icon.svg/250px-Music_Icon.svg.png",
+                    "label": "{mpd.album}"
+                },
             ]
         }
 
@@ -363,6 +378,10 @@ class Config:
         self.mpd.load(config.get("mpd", {}))
         self.last_fm.load(config.get("last_fm", {}))
         self.default_game.load(config.get("default_game", {}))
+
+        # ensure music library path ends with /
+        if not self.mpd.music_library_base_path.endswith("/"):
+            self.mpd.music_library_base_path += "/"
 
         # ensure the app name checks are case-insensitive
         case_insensitive_per_app = {}

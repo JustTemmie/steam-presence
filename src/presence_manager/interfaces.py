@@ -92,6 +92,7 @@ class MpdFetchPayload:
     fetched_at: Optional[float] = None
 
     music_brainz_cover_art: Optional[str] = None
+    catbox_mutagen_art: Optional[str] = None
 
 # ID: "last_fm"
 @dataclass

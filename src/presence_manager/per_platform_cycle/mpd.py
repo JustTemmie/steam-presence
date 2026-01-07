@@ -1,6 +1,7 @@
 import logging
 
 import src.presence_manager.misc as presence_manager
+import src.presence_manager.cover_art as cover_art
 from src.presence_manager.interfaces import Platforms
 
 from src.getters.MpdGetter import MpdGetter
@@ -49,12 +50,13 @@ def run_mpd_cycle(RPC_connections, config: Config):
 
             RPC_connections["MPD"] = rpc_session
 
+
         rpc_session = RPC_connections.get("MPD")
         # clear any mpd data that may be incorrect for a different song
         if rpc_session.mpd_payload and rpc_session.mpd_payload.title != data.title:
             logging.info("Detected new MPD song %s, updating data", data.title)
-            print("–" * presence_manager.get_terminal_width())
             rpc_session.mpd_payload = None
+            print("–" * presence_manager.get_terminal_width())
 
         if data.fetched_at and data.elapsed and data.duration:
             try:
@@ -62,6 +64,12 @@ def run_mpd_cycle(RPC_connections, config: Config):
                 rpc_session.end_time = data.fetched_at - float(data.elapsed) + float(data.duration)
             except ValueError:
                 pass
+
+        if isinstance(config.mpd.music_library_base_path, str) and isinstance(data.file_path, str):
+            cover_art_hash = cover_art.extract_cover_art(config.mpd.music_library_base_path + data.file_path)
+            if cover_art_hash:
+                data.catbox_mutagen_art = cover_art.get_catbox_link(cover_art_hash)
+        
 
         rpc_session.mpd_payload = data
         rpc_session.update()

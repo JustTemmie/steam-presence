@@ -2,7 +2,6 @@ import os
 import time
 import json
 
-from dataclasses import dataclass
 from typing import Optional
 import threading
 
@@ -25,11 +24,10 @@ def cache_fetch(bank: str, key: str, ttl: float) -> Optional[dict]:
 
         if fetched.get("last_update", 0) > time.time() - ttl:
             return fetched.get("value")
-        
-        else:
-            cache.pop(key)
-            with open(bank, 'w', encoding="utf-8") as f:
-                json.dump(cache, f)
+
+        cache.pop(key)
+        with open(bank, 'w', encoding="utf-8") as f:
+            json.dump(cache, f)
 
 def cache_store(bank: str, key: str, value: dict):
     with DISK_LOCK:
@@ -44,7 +42,7 @@ def cache_store(bank: str, key: str, value: dict):
         if os.path.exists(bank):
             with open(bank, 'r', encoding="utf-8") as f:
                 cache = json.load(f)
-        
+    
         cache[key] = {
             "value": value,
             "last_update": time.time()
