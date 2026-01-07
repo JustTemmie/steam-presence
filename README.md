@@ -1,3 +1,5 @@
+requires python 3.11+
+
 # Steam Presence
 [![License](https://shields.io/github/license/justtemmie/steam-presence?color=purple)](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 ![GitHub last commit](https://img.shields.io/github/last-commit/justtemmie/steam-presence)

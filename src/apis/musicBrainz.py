@@ -6,9 +6,10 @@ from src.presence_manager.fetch import fetch
 
 def fetch_cover_art_url(artist: str, album: str) -> Optional[str]:
     query = f"artist:{artist} AND release:{album}"
+    url = f"https://musicbrainz.org/ws/2/release-group/?query={query}&limit=1&fmt=json"
 
     r = fetch(
-        f"https://musicbrainz.org/ws/2/release-group/?query={query}&limit=1&fmt=json",
+        url,
         cache_ttl = 7200
     )
 

@@ -28,7 +28,7 @@ class LastFmGetter:
         if not data:
             return LastFmFetchPayload()
 
-        # with open("lastfm.json", "w", encoding="utf-8") as f:
+        # with open("dev/lastfm.json", "w", encoding="utf-8") as f:
         #     json.dump(data, f)
 
         tracks = data.get("recenttracks", {}).get("track")

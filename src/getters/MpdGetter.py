@@ -57,8 +57,14 @@ class MpdGetter:
             music_brainz_cover_art = None
 
         try:
-            folder, file = info.get("file", "").rsplit("/", 1)
-        except ValueError:
+            file = folder = None
+
+            pathes = info.get("file", "").rsplit("/", 2)
+            if len(pathes) >= 1:
+                file = pathes[-1]
+            if len(pathes) >= 2:
+                folder = pathes[-2]
+        except ValueError as e:
             return MpdFetchPayload()
 
         return MpdFetchPayload(
@@ -68,7 +74,7 @@ class MpdGetter:
             last_modified = info.get("last-modified"),
             added = info.get("added"),
             format = info.get("format"),
-            title = info.get("title"),
+            title = info.get("title") or file,
             artist = info.get("artist"),
             date = info.get("date"),
             album = info.get("album"),

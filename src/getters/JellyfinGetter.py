@@ -28,7 +28,7 @@ class JellyfinGetter:
         if not data:
             return JellyfinFetchPayload()
 
-        # with open("test.json", "w", encoding="utf-8") as f:
+        # with open("dev/jellyfin.json", "w", encoding="utf-8") as f:
         #     json.dump(data, f)
 
         for session in data:

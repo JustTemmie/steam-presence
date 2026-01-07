@@ -7,6 +7,9 @@ git+https://github.com/qwertyquerty/pypresence.git@24e913c86e9ed7857444845ad08b3
 # used to check the resolution of images
 pillow
 
+# used to extract images from music files
+mutagen
+
 # steam
 # browser-cookie3 # fetching browser cookies
 

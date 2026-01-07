@@ -1,8 +1,11 @@
 config.json
+dev/
 
 __pycache__/
 venv/
 logs/
+
+cache/
 
 v1/
 featurelist.md
