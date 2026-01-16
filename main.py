@@ -1206,6 +1206,7 @@ def main():
                 # checks to make sure the old RPC has been closed
                 if isPlaying:
                     log(f"RPC for {previousGameName} still open, closing it")
+                    RPC.clear()
                     RPC.close()
                     
                 # redefine and reconnect to the RPC object
