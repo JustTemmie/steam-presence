@@ -1173,6 +1173,7 @@ def main():
                 if isPlaying:
                     log(f"closing previous rich presence object, no longer playing {previousGameName}")
                     print("----------------------------------------------------------")
+                    RPC.clear()
                     RPC.close()
                     
                     # set previous game name to "", this is used to check if the game has changed
