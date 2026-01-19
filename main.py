@@ -277,7 +277,7 @@ def getImageFromSGDB(loops=0):
 
 def getGameSteamID():
     # fetches a list of ALL games on steam
-    r = makeWebRequest(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+    r = makeWebRequest(f"https://api.steampowered.com/IStoreService/GetAppList/v1/?key={steamAPIKey}&format=json")
     if r == "error":
         return
     
@@ -297,7 +297,7 @@ def getGameSteamID():
     global gameSteamID
         
     # loops thru every game until it finds one matching your game's name
-    for i in respone["applist"]["apps"]:
+    for i in respone["response"]["apps"]:
         if gameName.lower() == i["name"].lower():
 
             if gameSteamID == 0:
@@ -311,7 +311,7 @@ def getGameSteamID():
     if " demo" in gameName.lower():
         tempGameName = copy(gameName.lower())
         tempGameName.replace(" demo", "")
-        for i in respone["applist"]["apps"]:
+        for i in respone["response"]["apps"]:
             if tempGameName.lower() == i["name"].lower():
 
                 if gameSteamID == 0:
@@ -1173,6 +1173,7 @@ def main():
                 if isPlaying:
                     log(f"closing previous rich presence object, no longer playing {previousGameName}")
                     print("----------------------------------------------------------")
+                    RPC.clear()
                     RPC.close()
                     
                     # set previous game name to "", this is used to check if the game has changed
@@ -1205,6 +1206,7 @@ def main():
                 # checks to make sure the old RPC has been closed
                 if isPlaying:
                     log(f"RPC for {previousGameName} still open, closing it")
+                    RPC.clear()
                     RPC.close()
                     
                 # redefine and reconnect to the RPC object
