@@ -327,21 +327,6 @@ class ConfigLastFm(GenericConfig):
             ],
         }
 
-class ConfigDefaultGame(GenericConfig):
-    def __init__(self):
-        self.enabled: bool = False
-        self.name: str = "Breath of the Wild"
-        self.details: str = "Fighting a Stalnox."
-        self.state: str = None
-
-        self.inject_discord_status_data: bool = True
-        self.discord_status_data: DiscordData = {
-            "status_lines": [
-                "{default.details}",
-                "{default.state}",
-            ]
-        }
-
 class Config:
     def __init__(self):
         self.app = ConfigApp()
@@ -353,7 +338,6 @@ class Config:
         self.local = ConfigLocal()
         self.mpd = ConfigMpd()
         self.last_fm = ConfigLastFm()
-        self.default_game = ConfigDefaultGame()
 
     def load(self, config_path="config.json"):
         logging.info("Loading config file")
@@ -378,7 +362,6 @@ class Config:
         self.local.load(config.get("local", {}))
         self.mpd.load(config.get("mpd", {}))
         self.last_fm.load(config.get("last_fm", {}))
-        self.default_game.load(config.get("default_game", {}))
 
         # ensure music library path ends with /
         if not self.mpd.music_library_base_path.endswith("/"):

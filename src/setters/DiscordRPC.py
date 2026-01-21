@@ -62,7 +62,6 @@ class DiscordRPC:
         self.last_fm_payload: LastFmFetchPayload = None
         self.steam_grid_db_payload = None
         self.epic_games_store_payload = None
-        self.default_game_payload = None
 
     def _get_RPC_data(self) -> dict:
         return {
@@ -73,7 +72,6 @@ class DiscordRPC:
             "mpd": self.mpd_payload,
             "steam": self.steam_payload,
             "steam_grid_db": self.steam_grid_db_payload,
-            "default": self.default_game_payload,
         }
 
     def inject_bonus_status_data(self, status_data: DiscordData):

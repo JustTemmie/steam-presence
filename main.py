@@ -49,8 +49,6 @@ service_cooldowns = ServiceCooldowns()
 # key is just a generic identifier such as process ID or steam ID
 RPC_connections: dict[Union[int, str], DiscordRPC] = {}
 
-DEFAULT_GAME = DiscordRPC(config, None) if config.default_game.enabled else None
-
 logging.info("Initial setup complete!")
 print("–" * steam_presence.get_terminal_width())
 
@@ -74,29 +72,6 @@ while True:
         run_steam_cycle(RPC_connections, config)
 
     logging.debug("Processing complete!")
-
-    if DEFAULT_GAME:
-        if len(RPC_connections) == 0:
-            logging.info("Switching to displaying the default game.")
-            DEFAULT_GAME.default_game_payload = config.default_game
-
-            if config.default_game.inject_discord_status_data:
-                DEFAULT_GAME.inject_bonus_status_data(config.default_game.discord_status_data)
-
-            DEFAULT_GAME.instanciate(
-                config.default_game.name,
-                steam_presence.get_unused_discord_id(
-                    [rpc.discord_app_id for rpc in RPC_connections.values()],
-                    config
-                )
-            )
-
-            RPC_connections["DEFAULT"] = DEFAULT_GAME
-
-        elif len(RPC_connections) == 1 and RPC_connections.get("DEFAULT"):
-            RPC_connections["DEFAULT"].update()
-        else:
-            RPC_connections.pop("DEFAULT")
 
 
     expired_IDs: list[Union[int, str]] = []
