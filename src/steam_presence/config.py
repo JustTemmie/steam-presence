@@ -83,6 +83,7 @@ class ConfigApp(GenericConfig):
         self.lifetime: int = 600
         self.cycle_interval: int = 5
         self.blacklist: list[str] = []
+        self.whitelist: list[str] = []
         self.presedence_rules: dict[str: str] = {
             # "mpd": "last_fm" # in this example, mpd takes presedence over last.fm
         }

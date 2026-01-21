@@ -109,6 +109,14 @@ class DiscordRPC:
             logging.info("%s is in the blacklist, skipping RPC object creation.", name)
             return False
 
+        # skip app if it's not found in the whitelist
+        if (
+            self.config.app.whitelist and
+            name.casefold() not in map(str.casefold, self.config.app.whitelist)
+        ):
+            logging.info("%s is not in the whitelist, skipping RPC object creation.", name)
+            return False
+
         logging.info("Trying to establish Discord RPC connection for %s", name)
         self.app_name = name
         self.discord_app_id = discord_app_id
