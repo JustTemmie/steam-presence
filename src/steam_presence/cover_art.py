@@ -79,8 +79,7 @@ def extract_cover_art(file_path: str) -> Optional[str]:
     return None
 
 def get_catbox_link(art_hash: str) -> Optional[str]:
-    # 90 day ttl, they should in theory never be deleted on the catbox servers
-    cache_result = disk_cache.cache_fetch(bank="mpd", key=art_hash, ttl=86400*90)
+    cache_result = disk_cache.cache_fetch(bank="mpd", key=art_hash, ttl=3600*72)
     if cache_result:
         return cache_result.get("url")
 
