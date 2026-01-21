@@ -1,0 +1,37 @@
+services:
+  steam-presence:
+    image: ghcr.io/JustTemmie/steam-presence:latest
+    container_name: steam-presence
+    restart: unless-stopped
+    depends_on:
+      discord:
+        condition: service_healthy    # wait until discord passes its health‑check
+    volumes:
+      - tmp:/tmp
+      - ./config.json:/app/config.json
+
+  # https://hub.docker.com/r/kasmweb/discord
+  discord:
+    image: kasmweb/discord:1.16.0
+    container_name: discord
+    restart: unless-stopped
+    ports:
+      - 6901:6901/tcp
+    environment:
+      # username is 'kasm_user'
+      VNC_PW: changeme
+    shm_size: 512m
+    # check if the discord desktop app is running
+    healthcheck:
+      test: ["CMD", "curl", "127.0.0.1:6463"]
+      interval: 5s
+      timeout: 2s
+      retries: 6
+      start_period: 10s
+    volumes:
+      - tmp:/tmp
+      - kasm-user:/home/kasm-user
+
+volumes:
+  tmp:  # discord IPC socket is located in /tmp, so we share that dir to both containers
+  kasm-user:  # persist home directory of kasm user
