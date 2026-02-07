@@ -132,16 +132,22 @@ class DiscordRPC:
         # this check exists to allow development without having discord running
         if self.config.discord.enabled:
             self.discord_RPC = pypresence.Presence(client_id=self.discord_app_id)
-            try:
-                self.discord_RPC.connect()
-            except pypresence.exceptions.DiscordNotFound:
+            if not self.connect():
                 logging.warning("Failed to connect to discord, is it running?")
+                return False
 
         logging.info("Succesfully established Discord RPC connection for %s", name)
 
         print("–" * steam_presence.get_terminal_width())
 
         return True
+    
+    def connect(self) -> bool:
+        try:
+            self.discord_RPC.connect()
+            return True
+        except pypresence.exceptions.DiscordNotFound:
+            return False
 
     def update(self) -> None:
         logging.debug("Updating data for %s", self.app_name)
@@ -231,7 +237,10 @@ class DiscordRPC:
 
     def clear_RPC(self):
         if self.config.discord.enabled:
-            self.discord_RPC.clear()
+            try:
+                self.discord_RPC.clear()
+            except pypresence.exceptions.PipeClosed:
+                self.close_RPC()
 
         # this directly changes the last_update to make sure
         # it doesn't try to reconnect before getting an update
@@ -241,6 +250,7 @@ class DiscordRPC:
             self.last_update = new_last_update
 
     def close_RPC(self):
+        self.last_update = 0
         if self.config.discord.enabled:
             try:
                 self.discord_RPC.close()
@@ -271,8 +281,11 @@ class DiscordRPC:
                     small_url = self.small_image_url if self.small_image_url else None,
                     buttons = self.discord_buttons if self.discord_buttons else None
                 )
+            except AssertionError:
+                self.connect()
+                return False
             except pypresence.exceptions.PipeClosed:
-                logging.warning("discord RPC pipe closed, disonnecting...")
+                logging.warning("discord RPC pipe closed, clearing...")
                 self.close_RPC()
                 return False
 

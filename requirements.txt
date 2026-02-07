@@ -2,7 +2,7 @@ beautifulsoup4
 requests
 
 # pypresence with large_url support, switch to 4.6.2 when that releases
-git+https://github.com/qwertyquerty/pypresence.git@24e913c86e9ed7857444845ad08b310a53f0a3fb
+git+https://github.com/qwertyquerty/pypresence.git@168c0fc3c00d8b974017cfcd18a4e801b6b78dae
 
 # used to check the resolution of images
 pillow
