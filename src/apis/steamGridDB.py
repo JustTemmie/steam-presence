@@ -32,7 +32,7 @@ def _api_fetch(endpoint: str, api_key: str, data: Optional[dict] = None) -> Opti
     )
 
     if not r:
-        logging.error("failed to fetch %s", endpoint)
+        logging.warning("failed to fetch %s", endpoint)
         return None
 
     return r.json()

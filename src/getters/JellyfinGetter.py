@@ -21,7 +21,7 @@ class JellyfinGetter:
         r = fetch(url)
 
         if not r:
-            logging.error("failed to fetch jellyfin session for %s", self.username)
+            logging.warning("failed to fetch jellyfin session for %s", self.username)
             return JellyfinFetchPayload()
 
         data = r.json()

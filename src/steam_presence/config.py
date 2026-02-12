@@ -340,7 +340,7 @@ class Config:
         self.last_fm = ConfigLastFm()
 
     def load(self, config_path="config.json"):
-        logging.info("Loading config file")
+        logging.debug("Loading config file")
 
         try:
             with open(config_path, "r", encoding="utf-8", errors="replace") as f:

@@ -32,15 +32,15 @@ def upload_file(
     try:
         with open(file_path, "rb") as f:
             files = {"fileToUpload": (file_path, f)}
-            logging.debug("uploading %s to catbox", file_path)
+            logging.debug("Uploading %s to catbox", file_path)
             response = requests.post(url, data=data, files=files, timeout=120)
-            logging.debug("finished uploading %s to catbox", file_path)
+            logging.info("Sucessfully uploaded %s to catbox", file_path)
 
         response.raise_for_status()
         return response.text
 
     except requests.exceptions.RequestException:
-        logging.error("catbox upload failed: %s", file_path)
+        logging.error("Catbox upload failed: %s", file_path)
         return None
 
     finally:

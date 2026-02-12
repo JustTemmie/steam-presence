@@ -64,7 +64,7 @@ class SteamAPI:
         r = fetch(url)
 
         if not r:
-            logging.error("failed to fetch current state")
+            logging.warning("failed to fetch current state")
             return getCurrentStateResponse()
 
         player_summaries = r.json()
@@ -98,7 +98,7 @@ class SteamAPI:
         )
 
         if not r:
-            logging.error("failed to fetch mini profile")
+            logging.warning("failed to fetch mini profile")
             return fetchMiniProfileDataResponse()
 
         mini_profile = r.content
@@ -136,7 +136,7 @@ class SteamAPI:
         )
 
         if not r:
-            logging.error("failed to fetch app details for %s", app_ID)
+            logging.warning("failed to fetch app details for %s", app_ID)
             return fetchAppDetailsResponse()
 
         data = r.json()
@@ -193,7 +193,7 @@ class SteamAPI:
         )
 
         if not r:
-            logging.error("failed to fetch app reviews for %s", app_id)
+            logging.warning("failed to fetch app reviews for %s", app_id)
             return fetchAppReviewsResponse()
 
         data = r.json()

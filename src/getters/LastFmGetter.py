@@ -21,7 +21,7 @@ class LastFmGetter:
         r = fetch(url)
 
         if not r:
-            logging.error("failed to fetch last.fm session for %s", self.username)
+            logging.warning("failed to fetch last.fm session for %s", self.username)
             return LastFmFetchPayload()
 
         data = r.json()
