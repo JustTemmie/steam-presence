@@ -6,20 +6,6 @@ from dataclasses import dataclass
 
 from pypresence import ActivityType, StatusDisplayType
 
-
-def _deep_merge(original, update):
-    for key, value in update.items():
-        if (
-            key in original
-            and isinstance(original[key], dict)
-            and isinstance(value, dict)
-        ):
-            _deep_merge(original[key], value)
-        else:
-            original[key] = value
-
-    return original
-
 class GenericConfig:
     def load(self, update: dict):
         data = _deep_merge(self.__dict__, update)
@@ -27,69 +13,26 @@ class GenericConfig:
         for key, value in data.items():
             setattr(self, key, value)
 
-@dataclass
-class DiscordImage:
-    image: Optional[str] = None
-    url: Optional[str] = None
-    label: Optional[str] = None
-
-@dataclass
-class DiscordButton:
-    url: Optional[str] = None
-    label: Optional[str] = None
-
-@dataclass
-class DiscordData:
-    activity_type: Optional[ActivityType]
-    status_display_type: Optional[StatusDisplayType]
-    status_lines: list[str]
-    small_images: list[DiscordImage]
-    large_images: list[DiscordImage]
-    buttons: list[DiscordButton]
-
-@dataclass
-class SteamUser:
-    api_key: str = ""
-    user_id: int = 0
-    # web_scrape: bool = False
-    # auto_fetch_cookies: bool = False
-    # cookie_browser: str = ""
-
-@dataclass
-class JellyfinInstance:
-    api_key: str = ""
-    username: str = ""
-    server_url: str = ""
-    public_url: Optional[str] = None
-
-@dataclass
-class LastFmUser:
-    api_key: str = ""
-    username: str = ""
-
-@dataclass
-class LocalProcess:
-    process_name: str
-    display_name: str
-
-@dataclass
-class SGDBLookupTable:
-    name: str
-    id: int
-
 class ConfigApp(GenericConfig):
     def __init__(self):
+        # seconds of inactivity required to clear a status
         self.clear_timeout: int = 30
+        # seconds of inactivity required to delete a status from memory
         self.lifetime: int = 600
+        # seconds between cycles
         self.cycle_interval: int = 5
+        # games / songs / whatever to blacklist
         self.blacklist: list[str] = []
+        # games / songs / whatever to whitelist, does nothing if empty
         self.whitelist: list[str] = []
+        # in the format of `"a": "b"`, ignore information from fetcher b if fetcher a is in memory
         self.presedence_rules: dict[str: str] = {
             # "mpd": "last_fm" # in this example, mpd takes presedence over last.fm
         }
 
 class ConfigDiscord(GenericConfig):
     def __init__(self):
+        # should discord support be enabled (almost certainly)
         self.enabled: bool = True
         # discord only displays 1 app ID on your profile at a time, so we're just using 20 hard coded app IDs
         # these are *NOT* user IDs, do *NOT* change these unless you actively use the discord developer portal
@@ -117,6 +60,7 @@ class ConfigDiscord(GenericConfig):
             1445383025365094422
         ]
 
+        # see DiscordData dataclass for more information
         self.status_data: DiscordData = {
             "activity_type": ActivityType.PLAYING,
             "status_display_type": StatusDisplayType.NAME,
@@ -156,7 +100,11 @@ class ConfigDiscord(GenericConfig):
 class ConfigSteamGridDB(GenericConfig):
     def __init__(self):
         self.enabled: bool = False
+        # get an api key here https://www.steamgriddb.com/profile/preferences/api
         self.api_key: str = "NONE"
+        # used to overwrite name to steamgridDB IDs
+        # useful in cases where the wrong app appears for a search
+        # for example, blender bros being above blender (program)
         self.lookup_table: list[SGDBLookupTable] = [
             {
                 "name": "Blender",
@@ -166,12 +114,16 @@ class ConfigSteamGridDB(GenericConfig):
 
 class ConfigSteam(GenericConfig):
     def __init__(self):
+        # wheter or not to enable steam support
         self.enabled: bool = False
+        # minimum duration in seconds between api calls, set to avoid rate limiting
         self.cooldown: int = 25
+        # see SteamUser for more info
         self.users: list[SteamUser] = []
-        # self.steam_store_button: bool = True
 
+        # used to enable or disable the discord_status_data field
         self.inject_discord_status_data: bool = True
+        # see DiscordData for more info
         self.discord_status_data: DiscordData = {
             "status_lines": [
                 "{steam.rich_presence}",
@@ -196,13 +148,22 @@ class ConfigJellyfin(GenericConfig):
         # warning: if you enable jellyfin images, your IP will be visible via inspect element
         # it will also require your instance to be accessible by the wider internet
         # so an instance URL of http://192.168.1.20:8096 won't work if you want images
+
+        # whether or not to enable jellyfin
         self.enabled: bool = False
+        # minimum duration in seconds between api calls, set to avoid rate limiting
         self.cooldown: int = 0
-        self.catbox: bool = False
+        # not implemented
+        # self.catbox: bool = False
+        # see JellyfinInstance for more info
         self.instances: list[JellyfinInstance] = []
 
+        # overwrite the app name used by discord
         self.app_name: str = "Jellyfin"
+
+        # used to enable or disable both the default_discord_status_data and per_media_type_discord_status_data fields
         self.inject_discord_status_data: bool = True
+        # see DiscordData for more info
         self.default_discord_status_data: DiscordData = {
             "activity_type": ActivityType.WATCHING,
             "status_display_type": StatusDisplayType.DETAILS,
@@ -220,6 +181,7 @@ class ConfigJellyfin(GenericConfig):
                 },
             ]
         }
+        # DiscordData on a per media-type basis
         self.per_media_type_discord_status_data: dict[str, DiscordData] = {
             "episode": {
                 "status_lines": [
@@ -326,6 +288,72 @@ class ConfigLastFm(GenericConfig):
                 },
             ],
         }
+
+
+def _deep_merge(original, update):
+    for key, value in update.items():
+        if (
+            key in original
+            and isinstance(original[key], dict)
+            and isinstance(value, dict)
+        ):
+            _deep_merge(original[key], value)
+        else:
+            original[key] = value
+
+    return original
+
+
+@dataclass
+class DiscordImage:
+    image: Optional[str] = None
+    url: Optional[str] = None
+    label: Optional[str] = None
+
+@dataclass
+class DiscordButton:
+    url: Optional[str] = None
+    label: Optional[str] = None
+
+@dataclass
+class DiscordData:
+    activity_type: Optional[ActivityType]
+    status_display_type: Optional[StatusDisplayType]
+    status_lines: list[str]
+    small_images: list[DiscordImage]
+    large_images: list[DiscordImage]
+    buttons: list[DiscordButton]
+
+@dataclass
+class SteamUser:
+    api_key: str = ""
+    user_id: int = 0
+    # web_scrape: bool = False
+    # auto_fetch_cookies: bool = False
+    # cookie_browser: str = ""
+
+@dataclass
+class JellyfinInstance:
+    api_key: str = ""
+    username: str = ""
+    server_url: str = ""
+    public_url: Optional[str] = None
+
+@dataclass
+class LastFmUser:
+    api_key: str = ""
+    username: str = ""
+
+@dataclass
+class LocalProcess:
+    process_name: str
+    display_name: str
+
+@dataclass
+class SGDBLookupTable:
+    name: str
+    id: int
+
 
 class Config:
     def __init__(self):
