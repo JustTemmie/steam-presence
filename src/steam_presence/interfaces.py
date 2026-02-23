@@ -115,6 +115,7 @@ class SteamFetchPayload:
 
     # Current account state
     app_name: Optional[str] = None
+    app_playtime: Optional[int] = None
     app_id: Optional[int] = None
     avatar_url: Optional[str] = None
     display_name: Optional[str] = None

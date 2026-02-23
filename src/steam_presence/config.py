@@ -127,6 +127,7 @@ class ConfigSteam(GenericConfig):
         self.discord_status_data: DiscordData = {
             "status_lines": [
                 "{steam.rich_presence}",
+                "{steam.app_playtime} hours on record",
                 "{steam.review_description} reviews ({steam.review_percent}%)",
             ],
             "buttons": [

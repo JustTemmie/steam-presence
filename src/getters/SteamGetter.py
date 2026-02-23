@@ -1,5 +1,6 @@
 import logging
 
+from math import floor
 from dataclasses import dataclass
 from typing import Union, Optional
 from bs4 import BeautifulSoup
@@ -87,7 +88,7 @@ class SteamAPI:
             display_name=player_summary.get("personaname"),
             profile_url=player_summary.get("profileurl")
         )
-
+    
     # returns html data or None
     def fetch_mini_profile_data(self) -> fetchMiniProfileDataResponse:
         # convert steam ID 64 to steam ID 3, yes, really
@@ -127,6 +128,25 @@ class SteamAPI:
             profile_badge_url = profile_badge_url,
             profile_badge_name = badge_name,
         )
+    
+    def fetch_app_playtime(self, app_ID: Union[str, int]) -> Optional[int]:
+        url = f"https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={self.api_key}&steamid={self.user.user_id}"
+        r = fetch(
+            url,
+            cache_ttl=3600
+        )
+
+        if not r:
+            logging.warning("failed to fetch playtime")
+            return None
+        
+        try:
+            data = r.json().get("response")
+            for app in data.get("games"):
+                if app.get("appid") == int(app_ID):
+                    return floor(app.get("playtime_forever") / 60)
+        except:
+            return
 
     def fetch_app_details(self, app_ID: Union[str, int], currency: str = "us") -> fetchAppDetailsResponse:
         url = f"https://store.steampowered.com/api/appdetails?json=1&appids={app_ID}&cc={currency}"
@@ -240,6 +260,8 @@ class SteamGetter:
         mini_profile_data: fetchMiniProfileDataResponse = self.api.fetch_mini_profile_data()
         app_details_data: fetchAppDetailsResponse = self.api.fetch_app_details(current_app_id)
         app_reviews: fetchAppReviewsResponse = self.api.fetch_app_reviews(current_app_id)
+        app_playtime: Optional[int] = self.api.fetch_app_playtime(current_app_id)
+        print(app_playtime)
 
         # surely there's a better way to pass this much data
         return SteamFetchPayload(
@@ -248,6 +270,7 @@ class SteamGetter:
             logo = f"https://steamcdn-a.akamaihd.net/steam/apps/{current_game_info.app_id}/logo.png",
 
             app_name = current_game_info.app_name,
+            app_playtime = app_playtime,
             app_id = current_game_info.app_id,
             avatar_url = current_game_info.avatar_url,
             display_name = current_game_info.display_name,
