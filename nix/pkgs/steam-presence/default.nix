@@ -46,23 +46,23 @@ in
       cp -r ./* $out/share/steam-presence
 
       mkdir -p $out/bin
-      cat > $out/bin/steam-presence <<'EOF'
+      cat > $out/bin/steam-presence <<EOF
       #!${bash}/bin/bash
       set -eo pipefail
 
       # Determine runtime directory (env overrides default)
-      RUNTIME_DIR="''${STEAM_PRESENCE_RUNTIME_DIR:-$HOME/.local/state/steam-presence}"
+      RUNTIME_DIR="\''${STEAM_PRESENCE_RUNTIME_DIR:-$HOME/.local/state/steam-presence}"
 
       # Store app dir (where upstream sources live)
       STORE_APP_DIR="$out/share/steam-presence"
 
       # Ensure runtime dir exists and seed it if main.py is missing
-      if [ ! -f "$RUNTIME_DIR/main.py" ]; then
-        ${coreutils}/bin/mkdir -p "$RUNTIME_DIR"
-        ${coreutils}/bin/cp -r "$STORE_APP_DIR/." "$RUNTIME_DIR/"
+      if [ ! -f "\$RUNTIME_DIR/main.py" ]; then
+        ${coreutils}/bin/mkdir -p "\$RUNTIME_DIR"
+        ${coreutils}/bin/cp -r "\$STORE_APP_DIR/." "\$RUNTIME_DIR/"
       fi
 
-      cd "$RUNTIME_DIR"
+      cd "\$RUNTIME_DIR"
       exec ${pythonEnv}/bin/python "main.py"
       EOF
       chmod +x $out/bin/steam-presence
