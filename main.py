@@ -816,6 +816,7 @@ def setPresenceDetails():
     global startTime
     global currentGameBlacklisted
     
+    name = None
     details = None
     state = None
     buttons = None
@@ -836,7 +837,7 @@ def setPresenceDetails():
     
     # if the game ID is corresponding to "a game on steam" - set the details field to be the real game name
     if appID == defaultAppID or appID == defaultLocalAppID:
-        details = gameName
+        name = gameName
     
     if activeRichPresence != gameRichPresence:
         if gameRichPresence != "":
@@ -880,6 +881,7 @@ def setPresenceDetails():
     
     try:
         RPC.update(
+            name = name,
             details = details, state = state,
             start = startTime,
             large_image = coverImage, large_text = coverImageText,
