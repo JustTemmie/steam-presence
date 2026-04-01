@@ -276,6 +276,12 @@ def getImageFromSGDB(loops=0):
         log(f"SGDB doesn't seem to have any entries for {gameName}")
 
 def getGameSteamID():
+    global gameSteamID
+
+    if gameSteamID:
+        log(f"steam app ID {gameSteamID} was already set for {gameName}")
+        return gameSteamID
+
     # fetches a list of ALL games on steam
     r = makeWebRequest(f"https://api.steampowered.com/IStoreService/GetAppList/v1/?key={steamAPIKey}&format=json")
     if r == "error":
@@ -293,8 +299,6 @@ def getGameSteamID():
         return
 
     respone = r.json()
-    
-    global gameSteamID
         
     # loops thru every game until it finds one matching your game's name
     for i in respone["response"]["apps"]:
@@ -538,6 +542,7 @@ def getSteamPresence():
 
 
     global isPlayingSteamGame
+    global gameSteamID
 
     # sort the players based on position in the config file
     sorted_response = []
@@ -555,6 +560,9 @@ def getSteamPresence():
             if game_title != gameName:
                 log(f"found game {game_title} played by {sorted_response[i]['personaname']}")
             isPlayingSteamGame = True
+            # Use the gameid from the API response if available
+            if "gameid" in sorted_response[i]:
+                gameSteamID = int(sorted_response[i]["gameid"])
             return game_title
 
     return ""
