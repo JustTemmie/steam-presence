@@ -117,6 +117,7 @@ def getConfigFile():
         "FETCH_STEAM_RICH_PRESENCE": True,
         "FETCH_STEAM_REVIEWS": False,
         "ADD_STEAM_STORE_BUTTON": False,
+        "STEAM_STORE_REGION": "us",
         
         "WEB_SCRAPE": False,
         
@@ -444,7 +445,7 @@ def getGameImage():
 
 
 def getGamePrice():
-    r = makeWebRequest(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}&cc=us")
+    r = makeWebRequest(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}&cc={steamStoreRegion}")
     if r == "error":
         return
     
@@ -456,11 +457,21 @@ def getGamePrice():
         return
     
     respone = r.json()
+
+    if respone[str(gameSteamID)]["data"]["is_free"]:
+        return "Free"
     
     if "price_overview" not in respone[str(gameSteamID)]["data"]:
+        log(f"No price data found for {gameSteamID}")
         return
+
+    priceFormatted = respone[str(gameSteamID)]["data"]["price_overview"]["final_formatted"]
+
+    if "discount_percent" in respone[str(gameSteamID)]["data"]["price_overview"]:
+        discount = respone[str(gameSteamID)]["data"]["price_overview"]["discount_percent"]
+        priceFormatted = f"{priceFormatted} (-{discount}%)"
     
-    return respone[str(gameSteamID)]["data"]["price_overview"]["final_formatted"]
+    return priceFormatted
         
         
 # web scrapes the user's web page, sending the needed cookies along with the request
@@ -856,20 +867,20 @@ def setPresenceDetails():
     
     if addSteamStoreButton and gameSteamID != 0:
         price = getGamePrice()
-        if price == None:
-            price = "Free"
-        else:
-            price += " USD"
-        label = f"{gameName} on steam - {price}"
-        if len(label) > 32:
-            label = f"{gameName} - {price}"
-        if len(label) > 32:
-            label = f"get it on steam! - {price}"
-        if len(label) > 32:
-            label = f"on steam! - {price}"
+        log(f"price of {gameName} - {price}")
+        if price != None:
+            if price == "Free":
+                price = "Free"
+            label = f"{gameName} on steam - {price}"
+            if len(label) > 32:
+                label = f"{gameName} - {price}"
+            if len(label) > 32:
+                label = f"get it on steam! - {price}"
+            if len(label) > 32:
+                label = f"on steam! - {price}"
+
+            buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
             
-        buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
-    
     
     log("pushing presence to Discord")
     
@@ -1033,6 +1044,7 @@ def main():
     global customIconText
     
     global addSteamStoreButton
+    global steamStoreRegion
     
     
     log("loading config file")
@@ -1061,6 +1073,7 @@ def main():
     doSteamRichPresence = config["FETCH_STEAM_RICH_PRESENCE"]
     fetchSteamReviews = config["FETCH_STEAM_REVIEWS"]
     addSteamStoreButton = config["ADD_STEAM_STORE_BUTTON"]
+    steamStoreRegion = config["STEAM_STORE_REGION"]
     
     # load these later on
     customIconURL = None
