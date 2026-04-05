@@ -632,7 +632,7 @@ def getSteamRichPresence():
 # the detected game, save the discord game ID associated with said title to RAM, this is used to report to discord as that game 
 def getGameDiscordID(loops=0):
     log(f"fetching the Discord game ID for {gameName}")
-    r = makeWebRequest("https://discordapp.com/api/v8/applications/detectable")
+    r = makeWebRequest("https://discordapp.com/api/v9/games/detectable")
     
     if r.status_code != 200:
         error(f"status code {r.status_code} returned whilst trying to find the game's ID from discord")
