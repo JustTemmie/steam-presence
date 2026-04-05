@@ -473,7 +473,8 @@ def getGamePrice():
 
     if "discount_percent" in respone[str(gameSteamID)]["data"]["price_overview"]:
         discount = respone[str(gameSteamID)]["data"]["price_overview"]["discount_percent"]
-        priceFormatted = f"{priceFormatted} (-{discount}%)"
+        if discount > 0:
+            priceFormatted = f"{priceFormatted} (-{discount}%)"
     
     return priceFormatted
         
@@ -888,7 +889,7 @@ def setPresenceDetails():
                 label = f"on steam! - {price}"
 
             buttons = [{"label": label, "url": f"https://store.steampowered.com/app/{gameSteamID}"}]
-            
+        
     
     log("pushing presence to Discord")
     
