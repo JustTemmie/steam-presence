@@ -1011,7 +1011,7 @@ def checkForUpdate():
 def main():
     global currentVersion
     # this always has to match the newest release tag
-    currentVersion = "v1.12.3"
+    currentVersion = "v1.12.4"
     
     # check if there's any updates for the program
     checkForUpdate()
