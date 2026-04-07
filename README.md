@@ -90,6 +90,8 @@ follow the **setup** guide
 
 and for linux users, run the [Installer](#automatic-installer)
 
+for Docker users, see the [Docker](#docker) section at the bottom.
+
 for Nix/NixOS users, see the [Nix/NixOS](#nixnixos) section at the bottom.
 
 ## Setup
@@ -475,6 +477,19 @@ make this script executable using `chmod +x startup.sh`
 then run `crontab -e` and add `@reboot  /home/USER/startup.sh` to the end of the crontab file.
 
 if you've done these steps the script should launch itself after your computer turns on.
+
+## Docker
+
+A Compose file example is available [here](docker-compose.yml).  The example includes the desktop
+Discord client provided by [kasmweb](https://hub.docker.com/r/kasmweb/discord) which will allow you
+to run a headless stack on a server without requiring a traditional desktop Discord client.
+
+- The [config.json](#minimal) file is bind-mounted from the host filesystem to the necessary path in the `steam-presence` container.
+
+- After the stack has been started, with your browser go to
+  `https://<docker_host>:6901`, log in with username `kasm_user` and the
+  password specified in the `VNC_PW` environment variable in the
+  [docker-compose.yml](docker-compose.yml) file.
 
 ## Nix/NixOS
 
