@@ -1,5 +1,5 @@
 python-steamgriddb
-pypresence == 4.3.0
+pypresence
 beautifulsoup4
 requests
 psutil
