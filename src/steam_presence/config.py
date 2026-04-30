@@ -1,6 +1,7 @@
 import logging
 import json
 
+import os.path
 from typing import Optional
 from dataclasses import dataclass
 
@@ -221,7 +222,7 @@ class ConfigMpd(GenericConfig):
         self.password: Optional[str] = None
         self.music_brainz: bool = False
         
-        self.music_library_base_path: Optional[str] # only used by catbox
+        self.music_library_base_path: Optional[str] = "~/Music" # only used by catbox
         self.catbox: bool = False
 
         self.app_name: str = "MPD"
@@ -391,6 +392,10 @@ class Config:
         self.local.load(config.get("local", {}))
         self.mpd.load(config.get("mpd", {}))
         self.last_fm.load(config.get("last_fm", {}))
+
+
+        if self.mpd.music_library_base_path.startswith("~"):
+            self.mpd.music_library_base_path = os.path.expanduser(self.mpd.music_library_base_path)
 
         # ensure music library path ends with /
         if not self.mpd.music_library_base_path.endswith("/"):

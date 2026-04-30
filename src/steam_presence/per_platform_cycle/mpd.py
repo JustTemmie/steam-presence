@@ -65,7 +65,7 @@ def run_mpd_cycle(RPC_connections, config: Config):
             except ValueError:
                 pass
 
-        if isinstance(config.mpd.music_library_base_path, str) and isinstance(data.file_path, str):
+        if isinstance(data.file_path, str):
             cover_art_hash = cover_art.extract_cover_art(config.mpd.music_library_base_path + data.file_path)
             if cover_art_hash:
                 data.catbox_mutagen_art = cover_art.get_catbox_link(cover_art_hash)
