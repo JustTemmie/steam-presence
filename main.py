@@ -416,8 +416,14 @@ def getImageFromSGDB(loops=0):
 
 
 def getGameSteamID():
+    global gameSteamID
+
+    if gameSteamID:
+        log(f"steam app ID {gameSteamID} was already set for {gameName}")
+        return gameSteamID
+
     # fetches a list of ALL games on steam
-    r = makeWebRequest(f"https://api.steampowered.com/ISteamApps/GetAppList/v0002/?key={steamAPIKey}&format=json")
+    r = makeWebRequest(f"https://api.steampowered.com/IStoreService/GetAppList/v1/?key={steamAPIKey}&format=json")
     if r == "error":
         return
 
@@ -438,7 +444,7 @@ def getGameSteamID():
     global gameSteamID
 
     # loops thru every game until it finds one matching your game's name
-    for i in respone["applist"]["apps"]:
+    for i in respone["response"]["apps"]:
         if gameName.lower() == i["name"].lower():
 
             if gameSteamID == 0:
@@ -451,7 +457,7 @@ def getGameSteamID():
     if " demo" in gameName.lower():
         tempGameName = copy(gameName.lower())
         tempGameName.replace(" demo", "")
-        for i in respone["applist"]["apps"]:
+        for i in respone["response"]["apps"]:
             if tempGameName.lower() == i["name"].lower():
 
                 if gameSteamID == 0:
@@ -583,7 +589,7 @@ def getGameImage():
 
 
 def getGamePrice():
-    r = makeWebRequest(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}&cc=us")
+    r = makeWebRequest(f"https://store.steampowered.com/api/appdetails?appids={gameSteamID}&cc={steamStoreRegion}")
     if r == "error":
         return
 
@@ -598,6 +604,7 @@ def getGamePrice():
     respone = r.json()
 
     if "price_overview" not in respone[str(gameSteamID)]["data"]:
+        log(f"No price data found for {gameSteamID}")
         return
 
     return respone[str(gameSteamID)]["data"]["price_overview"]["final_formatted"]
@@ -676,6 +683,7 @@ def getSteamPresence():
         error("There seems to be an incorrect account ID given, please verify that your user ID(s) are correct")
 
     global isPlayingSteamGame
+    global gameSteamID
 
     # sort the players based on position in the config file
     sorted_response = []
@@ -692,6 +700,9 @@ def getSteamPresence():
             if game_title != gameName:
                 log(f"found game {game_title} played by {sorted_response[i]['personaname']}")
             isPlayingSteamGame = True
+            # Use the gameid from the API response if available
+            if "gameid" in sorted_response[i]:
+                gameSteamID = int(sorted_response[i]["gameid"])
             return game_title
 
     return ""
@@ -1131,7 +1142,7 @@ def checkForUpdate():
 def main():
     global currentVersion
     # this always has to match the newest release tag
-    currentVersion = "v1.12.2"
+    currentVersion = "v1.12.4"
     
     # check if there's any updates for the program
     checkForUpdate()
@@ -1321,6 +1332,7 @@ def main():
                 if isPlaying:
                     log(f"closing previous rich presence object, no longer playing {previousGameName}")
                     print("----------------------------------------------------------")
+                    RPC.clear()
                     RPC.close()
 
                     # set previous game name to "", this is used to check if the game has changed
@@ -1353,6 +1365,7 @@ def main():
                 # checks to make sure the old RPC has been closed
                 if isPlaying:
                     log(f"RPC for {previousGameName} still open, closing it")
+                    RPC.clear()
                     RPC.close()
 
                 # redefine and reconnect to the RPC object

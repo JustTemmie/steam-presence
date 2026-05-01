@@ -7,6 +7,7 @@
     "FETCH_STEAM_RICH_PRESENCE": true,
     "FETCH_STEAM_REVIEWS": false,
     "ADD_STEAM_STORE_BUTTON": false,
+    "STEAM_STORE_REGION": "us",
 
     "WEB_SCRAPE": false,
     
