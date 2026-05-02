@@ -8,8 +8,9 @@ from base64 import b64decode
 from typing import Optional
 from mutagen import File
 
-import src.apis.catbox as catbox
+import src.apis.upload_file as upload_file
 import src.steam_presence.disk_cache as disk_cache
+from src.steam_presence.config import Config
 
 mpd_directory = "cache/mpd/"
 
@@ -78,16 +79,26 @@ def extract_cover_art(file_path: str) -> Optional[str]:
     logging.info("couldn't find any cover art for %s", file_path)
     return None
 
-def get_catbox_link(art_hash: str) -> Optional[str]:
+def get_coverart_link(config: Config, art_hash: str) -> Optional[str]:
     cache_result = disk_cache.cache_fetch(bank="mpd", key=art_hash, ttl=3600*72)
+    print(cache_result)
     if cache_result:
         return cache_result.get("url")
 
     def upload_task():
         file_path = mpd_directory + f"{art_hash}.jpg"
-        link = catbox.upload_file(file_path, ttl="72h")
-        if link:
-            disk_cache.cache_store(bank="mpd", key=art_hash, value={"url": link})
+
+        if config.mpd.catbox:
+            catbox_link = upload_file.upload_catbox_file(file_path, ttl="72h")
+            if catbox_link:
+                disk_cache.cache_store(bank="mpd", key=art_hash, value={"url": catbox_link})
+                return
+        
+        if config.mpd.uguu:
+            uguu_link = upload_file.upload_uguu_file(file_path)
+            if uguu_link:
+                disk_cache.cache_store(bank="mpd", key=art_hash, value={"url": uguu_link})
+                return
 
     threading.Thread(target=upload_task, daemon=True).start()
     return None
