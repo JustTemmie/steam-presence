@@ -81,7 +81,6 @@ def extract_cover_art(file_path: str) -> Optional[str]:
 
 def get_coverart_link(config: Config, art_hash: str) -> Optional[str]:
     cache_result = disk_cache.cache_fetch(bank="mpd", key=art_hash, ttl=3600*72)
-    print(cache_result)
     if cache_result:
         return cache_result.get("url")
 
