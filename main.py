@@ -15,6 +15,12 @@ import os
 # for general programing
 import copy
 
+# for regular expressions, used in the function `getGameDiscordID()`
+import re
+
+# for converting roman numerals to integers, used in the function `getGameDiscordID()`
+import roman
+
 try:
     # requesting data from steam's API
     import requests
@@ -640,6 +646,21 @@ def getSteamRichPresence():
 # requests a list of all games recognized internally by discord, if any of the names matches
 # the detected game, save the discord game ID associated with said title to RAM, this is used to report to discord as that game 
 def getGameDiscordID(loops=0):
+    def replace_roman_numerals(input_string):
+        # Find all Roman numerals in the string
+        roman_numerals = re.findall(r'\b[MDCLXVI]+\b', input_string)
+
+        # Replace each Roman numeral with its integer value
+        for numeral in roman_numerals:
+            try:
+                integer_value = roman.fromRoman(numeral)
+                input_string = input_string.replace(numeral, str(integer_value))
+            except roman.InvalidRomanNumeralError:
+                # Skip if the detected pattern is not a valid Roman numeral
+                continue
+
+        return input_string
+
     log(f"fetching the Discord game ID for {gameName}")
     r = makeWebRequest("https://discordapp.com/api/v9/games/detectable")
     
@@ -683,7 +704,13 @@ def getGameDiscordID(loops=0):
         gameNames.append(i["name"])
         # for handling demos of games, adding it as a valid discord name because it's easier
         gameNames.append(i["name"] + " demo")
-        
+
+        # Replace Roman numerals if used
+        tempRomanCheck = replace_roman_numerals(i["name"])
+        # If Roman numerals are used add to the list of aliases
+        if tempRomanCheck != i["name"]:
+            gameNames.append(tempRomanCheck)
+                    
         # make a list containing all the names of said game
         if "aliases" in i:
             aliases = i["aliases"]
