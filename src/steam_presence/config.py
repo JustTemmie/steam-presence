@@ -1,6 +1,7 @@
 import logging
 import json
 
+import os.path
 from typing import Optional
 from dataclasses import dataclass
 
@@ -227,8 +228,9 @@ class ConfigMpd(GenericConfig):
         self.password: Optional[str] = None
         self.music_brainz: bool = False
         
-        self.music_library_base_path: Optional[str] # only used by catbox
+        self.music_library_base_path: Optional[str] = "~/Music" # only used by catbox
         self.catbox: bool = False
+        self.uguu: bool = False
 
         self.app_name: str = "MPD"
         self.inject_discord_status_data: bool = True
@@ -241,11 +243,11 @@ class ConfigMpd(GenericConfig):
             ],
             "large_images": [
                 {
-                    "image": "{mpd.catbox_mutagen_art}",
+                    "image": "{mpd.coverart_mutagen_art}",
                     "label": "{mpd.album}"
                 },
                 {
-                    "image": "{mpd.catbox_mutagen_art}",
+                    "image": "{mpd.coverart_mutagen_art}",
                 },
                 {
                     "image": "{mpd.music_brainz_cover_art}",
@@ -397,6 +399,10 @@ class Config:
         self.local.load(config.get("local", {}))
         self.mpd.load(config.get("mpd", {}))
         self.last_fm.load(config.get("last_fm", {}))
+
+
+        if self.mpd.music_library_base_path.startswith("~"):
+            self.mpd.music_library_base_path = os.path.expanduser(self.mpd.music_library_base_path)
 
         # ensure music library path ends with /
         if hasattr(self.mpd, "music_library_base_path") and not self.mpd.music_library_base_path.endswith("/"):
