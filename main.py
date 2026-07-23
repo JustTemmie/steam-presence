@@ -80,7 +80,7 @@ while True:
         connection.refresh()
 
         if connection.get_time_since_timeout() > config.app.lifetime:
-            connection.close_RPC()
+            connection.close_RPC() 
             expired_IDs.append(identifier)
 
             logging.info(

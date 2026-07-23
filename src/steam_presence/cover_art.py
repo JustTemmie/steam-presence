@@ -3,10 +3,10 @@ import json
 import hashlib
 import threading
 import logging
+import mutagen
 
 from base64 import b64decode
 from typing import Optional
-from mutagen import File
 
 import src.apis.catbox as catbox
 import src.steam_presence.disk_cache as disk_cache
@@ -38,7 +38,7 @@ def extract_cover_art(file_path: str) -> Optional[str]:
         if art_hash:
             return art_hash
 
-    audio = File(file_path)
+    audio = mutagen.File(file_path)
 
     if audio is None:
         logging.critical("couldn't load audio file %s", file_path)
@@ -79,7 +79,7 @@ def extract_cover_art(file_path: str) -> Optional[str]:
     return None
 
 def get_catbox_link(art_hash: str) -> Optional[str]:
-    cache_result = disk_cache.cache_fetch(bank="mpd", key=art_hash, ttl=3600*72)
+    cache_result = disk_cache.cache_fetch(bank="mpd", key=art_hash)
     if cache_result:
         return cache_result.get("url")
 
@@ -87,7 +87,7 @@ def get_catbox_link(art_hash: str) -> Optional[str]:
         file_path = mpd_directory + f"{art_hash}.jpg"
         link = catbox.upload_file(file_path, ttl="72h")
         if link:
-            disk_cache.cache_store(bank="mpd", key=art_hash, value={"url": link})
+            disk_cache.cache_store(bank="mpd", key=art_hash, value={"url": link}, ttl=3600*72)
 
     threading.Thread(target=upload_task, daemon=True).start()
     return None

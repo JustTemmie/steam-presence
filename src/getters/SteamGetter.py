@@ -261,7 +261,6 @@ class SteamGetter:
         app_details_data: fetchAppDetailsResponse = self.api.fetch_app_details(current_app_id)
         app_reviews: fetchAppReviewsResponse = self.api.fetch_app_reviews(current_app_id)
         app_playtime: Optional[int] = self.api.fetch_app_playtime(current_app_id)
-        print(app_playtime)
 
         # surely there's a better way to pass this much data
         return SteamFetchPayload(

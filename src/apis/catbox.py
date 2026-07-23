@@ -34,9 +34,9 @@ def upload_file(
             files = {"fileToUpload": (file_path, f)}
             logging.debug("Uploading %s to catbox", file_path)
             response = requests.post(url, data=data, files=files, timeout=120)
-            logging.info("Sucessfully uploaded %s to catbox", file_path)
 
         response.raise_for_status()
+        logging.info("Successfully uploaded %s to catbox", file_path)
         return response.text
 
     except requests.exceptions.RequestException:

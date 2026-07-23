@@ -11,6 +11,13 @@ class Platforms(Enum):
     MPD = "mpd"
     STEAM = "steam"
 
+# ID: "discord"
+@dataclass
+class DiscordFetchPayload:
+    application_id: Optional[int] = None
+    icon: Optional[str] = None
+    cover_image: Optional[str] = None
+
 # ID: "steam_grid_db"
 @dataclass
 class SteamGridDBFetchPayload:

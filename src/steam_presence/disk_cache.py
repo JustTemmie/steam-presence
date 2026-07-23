@@ -7,7 +7,7 @@ import threading
 
 DISK_LOCK = threading.RLock()
 
-def cache_fetch(bank: str, key: str, ttl: float) -> Optional[dict]:
+def cache_fetch(bank: str, key: str) -> Optional[dict]:
     with DISK_LOCK:
         os.makedirs("cache", exist_ok=True)
 
@@ -22,14 +22,14 @@ def cache_fetch(bank: str, key: str, ttl: float) -> Optional[dict]:
         if not fetched:
             return
 
-        if fetched.get("last_update", 0) > time.time() - ttl:
+        if fetched.get("expire_at", 0) > time.time():
             return fetched.get("value")
 
         cache.pop(key)
         with open(bank, 'w', encoding="utf-8") as f:
             json.dump(cache, f)
 
-def cache_store(bank: str, key: str, value: dict):
+def cache_store(bank: str, key: str, value: dict, ttl: float):
     with DISK_LOCK:
         os.makedirs("cache", exist_ok=True)
 
@@ -45,7 +45,7 @@ def cache_store(bank: str, key: str, value: dict):
     
         cache[key] = {
             "value": value,
-            "last_update": time.time()
+            "expire_at": time.time() + ttl
         }
 
         with open(bank, 'w', encoding="utf-8") as f:

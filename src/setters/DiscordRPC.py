@@ -6,12 +6,14 @@ from typing import Dict, Optional
 import pypresence
 from pypresence import ActivityType, StatusDisplayType
 
+from src.getters.DiscordGetter import DiscordGetter
 import src.steam_presence.misc as steam_presence
 from src.steam_presence.config import Config, DiscordData, DiscordImage, DiscordButton
 from src.steam_presence.interfaces import (
-    LocalGameFetchPayload, SteamFetchPayload,
-    JellyfinFetchPayload, MpdFetchPayload,
-    LastFmFetchPayload, Platforms)
+    DiscordFetchPayload, LocalGameFetchPayload,
+    SteamFetchPayload, JellyfinFetchPayload,
+    MpdFetchPayload, LastFmFetchPayload,
+    Platforms)
 
 
 class DiscordRPC:
@@ -24,6 +26,9 @@ class DiscordRPC:
         self.app_name: str = ""
         self.last_update: float = 0
         self.creation_time = time()
+        self.instanciated: bool = False
+        
+        self.discord_getter = DiscordGetter(config)
 
         self.activity_type: ActivityType = config.discord.status_data.get(
             "activity_type",
@@ -56,6 +61,7 @@ class DiscordRPC:
         self.discord_image_url: Optional[str] = None
 
         self.steam_payload: SteamFetchPayload = None
+        self.discord_payload: DiscordFetchPayload = None
         self.local_payload: LocalGameFetchPayload = None
         self.jellyfin_payload: JellyfinFetchPayload = None
         self.mpd_payload: MpdFetchPayload = None
@@ -66,6 +72,7 @@ class DiscordRPC:
     def _get_RPC_data(self) -> dict:
         return {
             # "epic_games_store": self.epic_games_store_payload,
+            "discord": self.discord_payload,
             "jellyfin": self.jellyfin_payload,
             "last_fm": self.last_fm_payload,
             "local": self.local_payload,
@@ -101,25 +108,31 @@ class DiscordRPC:
                 self.status_data.get("buttons", []) \
                 + status_data.get("buttons", [])
 
-    def instanciate(self, name: str, discord_app_id: int) -> bool:
+    def instanciate(self, app_name: str, discord_app_id: int) -> bool:
         # skip app if it's found in the blacklist
-        if name.casefold() in map(str.casefold, self.config.app.blacklist):
-            logging.info("%s is in the blacklist, skipping RPC object creation.", name)
+        if app_name.casefold() in map(str.casefold, self.config.app.blacklist):
+            logging.info("%s is in the blacklist, skipping RPC object creation.", app_name)
             return False
+        
 
         # skip app if it's not found in the whitelist
         if (
             self.config.app.whitelist and
-            name.casefold() not in map(str.casefold, self.config.app.whitelist)
+            app_name.casefold() not in map(str.casefold, self.config.app.whitelist)
         ):
-            logging.info("%s is not in the whitelist, skipping RPC object creation.", name)
+            logging.info("%s is not in the whitelist, skipping RPC object creation.", app_name)
             return False
 
-        logging.info("Trying to establish Discord RPC connection for %s", name)
-        self.app_name = name
+        logging.info("Trying to establish Discord RPC connection for %s", app_name)
+        self.app_name = app_name
         self.discord_app_id = discord_app_id
+        self.instanciated = True
 
         self.start_time = time()
+
+        self.discord_payload = self.discord_getter.fetch(app_name)
+        if self.discord_payload.application_id:
+            self.discord_app_id = self.discord_payload.application_id
 
         # overwrite config data with per app config data if applicable
         for key, value in self.config.discord.per_app_status_data.get(
@@ -136,7 +149,7 @@ class DiscordRPC:
                 logging.warning("Failed to connect to discord, is it running?")
                 return False
 
-        logging.info("Succesfully established Discord RPC connection for %s", name)
+        logging.info("Succesfully established Discord RPC connection for %s", app_name)
 
         print("–" * steam_presence.get_terminal_width())
 
@@ -149,7 +162,9 @@ class DiscordRPC:
         except pypresence.exceptions.DiscordNotFound:
             return False
 
-    def update(self) -> None:
+    def update(self) -> bool:
+        if not self.instanciated: return False
+
         logging.debug("Updating data for %s", self.app_name)
 
         self.last_update = time()
@@ -231,11 +246,15 @@ class DiscordRPC:
                         "url": button_url,
                         "label": button_label
                     })
+        
+        return True
 
     def get_time_since_timeout(self) -> float:
         return max(0, time() - self.last_update - self.config.app.clear_timeout)
 
     def clear_RPC(self):
+        if not self.instanciated: return
+
         if self.config.discord.enabled:
             try:
                 self.discord_RPC.clear()
@@ -250,14 +269,21 @@ class DiscordRPC:
             self.last_update = new_last_update
 
     def close_RPC(self):
-        self.last_update = 0
+        if not self.instanciated: return
+
         if self.config.discord.enabled:
             try:
                 self.discord_RPC.close()
             except AssertionError:
                 pass
 
+        # this really isn't how the instanciation flag was meant to be used, but it works
+        self.instanciated = False
+        self.last_update = 0
+
     def refresh(self) -> bool:
+        if not self.instanciated: return False
+
         # hide the connection if it's been more than a minute since the last update
         if self.get_time_since_timeout() > 0:
             self.clear_RPC()
@@ -276,16 +302,14 @@ class DiscordRPC:
                     # pypresence breaks if you hand it an empty string or array.
                     # while this workaround may be scuffed, it works
                     large_text = self.large_image_text if self.large_image_text else None,
-                    large_url = self.large_image_url if self.large_image_url else None,
                     small_text = self.small_image_text if self.small_image_text else None,
-                    small_url = self.small_image_url if self.small_image_url else None,
                     buttons = self.discord_buttons if self.discord_buttons else None
                 )
             except AssertionError:
                 self.connect()
                 return False
             except pypresence.exceptions.PipeClosed:
-                logging.warning("discord RPC pipe closed, clearing...")
+                logging.warning("discord RPC pipe closed, cleaning up...")
                 self.close_RPC()
                 return False
 

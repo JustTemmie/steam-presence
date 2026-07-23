@@ -43,3 +43,5 @@ def initialize():
 
     logging.info("Logging enabled")
     logging.debug("Logging enabled")
+
+    logging.info("Running from %s", os.get_exec_path())

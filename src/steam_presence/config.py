@@ -70,7 +70,13 @@ class ConfigDiscord(GenericConfig):
             ],
             "large_images": [
                 {
+                    "image": "{discord.icon}",
+                },
+                {
                     "image": "{steam_grid_db.icon}",
+                },
+                {
+                    "image": "{discord.cover_image}",
                 },
                 {
                     "image": "{steam.capsule_header_image}",
@@ -128,7 +134,7 @@ class ConfigSteam(GenericConfig):
             "status_lines": [
                 "{steam.rich_presence}",
                 "{steam.app_playtime} hours on record",
-                "{steam.review_description} reviews ({steam.review_percent}%)",
+                "{steam.review_description} ({steam.review_percent}%)",
             ],
             "buttons": [
                 {
@@ -228,7 +234,7 @@ class ConfigMpd(GenericConfig):
         self.inject_discord_status_data: bool = True
         self.discord_status_data: DiscordData = {
             "activity_type": ActivityType.LISTENING,
-            "status_display_type": StatusDisplayType.DETAILS,
+            "status_display_type": StatusDisplayType.STATE,
             "status_lines": [
                 "{mpd.title}",
                 "{mpd.artist}",
@@ -393,7 +399,7 @@ class Config:
         self.last_fm.load(config.get("last_fm", {}))
 
         # ensure music library path ends with /
-        if not self.mpd.music_library_base_path.endswith("/"):
+        if hasattr(self.mpd, "music_library_base_path") and not self.mpd.music_library_base_path.endswith("/"):
             self.mpd.music_library_base_path += "/"
 
         # ensure the app name checks are case-insensitive
@@ -402,3 +408,5 @@ class Config:
             case_insensitive_per_app[key.casefold()] = value
 
         self.discord.per_app_status_data = case_insensitive_per_app
+
+        logging.info("config: %s", self.app.__dict__)
