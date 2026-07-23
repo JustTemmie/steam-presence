@@ -32,11 +32,11 @@ def upload_catbox_file(
     try:
         with open(file_path, "rb") as f:
             files = {"fileToUpload": (file_path, f)}
-            logging.debug("Uploading %s to catbox", file_path)
+            logging.debug("Uploading to catbox: %s", file_path)
             response = requests.post(url, data=data, files=files, timeout=120)
 
         response.raise_for_status()
-        logging.info("Successfully uploaded %s to catbox", file_path)
+        logging.info("Successful catbox upload: %s", file_path)
         return response.text
 
     except requests.exceptions.RequestException:
@@ -61,9 +61,9 @@ def upload_uguu_file(
     try:
         with open(file_path, "rb") as f:
             files = {"files[]": (file_path, f)}
-            logging.debug("Uploading %s to uguu", file_path)
+            logging.debug("Uploading to uguu: %s", file_path)
             response = requests.post(url, files=files, timeout=120)
-            logging.info("Sucessfully uploaded %s to uguu", file_path)
+            logging.info("Sucessful uguu upload: %s", file_path)
 
         response.raise_for_status()
         try:

@@ -415,4 +415,4 @@ class Config:
 
         self.discord.per_app_status_data = case_insensitive_per_app
 
-        logging.info("config: %s", self.app.__dict__)
+        # logging.info("config: %s", self.app.__dict__)
