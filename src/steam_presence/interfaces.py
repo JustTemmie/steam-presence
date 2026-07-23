@@ -97,9 +97,10 @@ class MpdFetchPayload:
     bitrate: Optional[str] = None
 
     fetched_at: Optional[float] = None
+    next_song_data: Optional["MpdFetchPayload"] = None
 
     music_brainz_cover_art: Optional[str] = None
-    catbox_mutagen_art: Optional[str] = None
+    mutagen_cover_art: Optional[str] = None
 
 # ID: "last_fm"
 @dataclass

@@ -17,7 +17,7 @@ def get_terminal_width() -> int:
     except Exception:
         width = 10
 
-    return width
+    return width if width > 10 else 10
 
 def get_unused_discord_id(used_ids: list[int], config: Config) -> Optional[int]:
     # returning a random ID helps with a form of "rate limiting" from discord

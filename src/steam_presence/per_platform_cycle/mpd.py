@@ -68,8 +68,13 @@ def run_mpd_cycle(RPC_connections, config: Config):
         if isinstance(data.file_path, str):
             cover_art_hash = cover_art.extract_cover_art(config.mpd.music_library_base_path + data.file_path)
             if cover_art_hash:
-                data.coverart_mutagen_art = cover_art.get_coverart_link(config, cover_art_hash)
-        
+                data.mutagen_cover_art = cover_art.get_coverart_link(config, cover_art_hash)
+
+        if isinstance(data.next_song_data.file_path, str):
+            cover_art_hash = cover_art.extract_cover_art(config.mpd.music_library_base_path + data.next_song_data.file_path)
+            # we don't need to store it anywhere, not important
+            if cover_art_hash:
+                cover_art.get_coverart_link(config, cover_art_hash)
 
         rpc_session.mpd_payload = data
         rpc_session.update()
