@@ -442,6 +442,84 @@ if you're running either Windows or MacOS i cannot really give you any help with
 
 (if you do know a way to run this on startup on any of the mentioned systems, *please* create a pull request with an updated readme)
 
+## Salesforce (optional)
+
+if you want your Discord rich presence to reflect activity from a
+Salesforce org (for example the most-recently-modified Account), you can
+enable the optional Salesforce bridge.
+
+the integration is **off by default** and uses no extra Python dependencies
+beyond `requests`, which is already required by the rest of the script.
+
+### Quick start
+
+1. in your Salesforce org, create a Connected App and capture the
+   `Consumer Key` (`CLIENT_ID`) and `Consumer Secret` (`CLIENT_SECRET`).
+2. decide which OAuth 2.0 flow you want to use:
+   - `client_credentials` (server-to-server) — pre-authorise the
+     integration user on the Connected App.
+   - `password` (username-password) — for sandboxes/Developer orgs only;
+     enable *Allow OAuth Username-Password Flows* on the Connected App
+     policy and supply `USERNAME`, `PASSWORD` and `SECURITY_TOKEN`.
+3. add the `SALESFORCE` block to your `config.json` and set
+   `SALESFORCE.ENABLED` to `true`. a minimal example:
+
+```json
+"SALESFORCE": {
+    "ENABLED": true,
+    "LOGIN_URL": "https://login.salesforce.com",
+    "AUTH_FLOW": "client_credentials",
+    "CLIENT_ID": "REPLACE_ME",
+    "CLIENT_SECRET": "REPLACE_ME",
+    "SOQL": "SELECT Id, Name, Industry FROM Account ORDER BY LastModifiedDate DESC LIMIT 1",
+    "NAME_FIELD": "Name",
+    "STATE_FIELD": "Industry",
+    "ICON_URL": "",
+    "ICON_TEXT": "Salesforce"
+}
+```
+
+### How it shows up in Discord
+
+when the script is not currently showing a Steam / local / webscraped
+game and `SALESFORCE.ENABLED` is true, it polls the configured SOQL
+query and uses the first record:
+
+* `NAME_FIELD` becomes the Discord presence title (the equivalent of a
+  game name);
+* `STATE_FIELD` (optional) becomes the secondary line of the presence;
+* `DETAILS_FIELD` (optional) becomes the primary line;
+* `ICON_URL` / `ICON_TEXT` (optional) override the small-image slot in
+  the Discord rich presence, useful for your company's logo.
+
+if the SOQL query returns no records, or the upstream auth/SOQL call
+fails, the script logs a warning and falls back to no presence — it
+never spams the user with a broken Salesforce state.
+
+### Templated SOQL
+
+if you want to vary the query at runtime (for example to filter by a
+specific record id stored in an env var), set `SOQL_TEMPLATE` and
+`TEMPLATE_FIELDS` instead of `SOQL`:
+
+```json
+"SOQL_TEMPLATE": "SELECT Id, Name FROM Opportunity WHERE AccountId = '{account_id}'",
+"TEMPLATE_FIELDS": { "account_id": "001ABC000000XYZ" }
+```
+
+unknown placeholders surface as a startup-time `ValueError` so the
+misconfiguration is obvious instead of silently returning the literal
+`{name}`.
+
+### Security notes
+
+* the Salesforce module never logs the client secret, password, or
+  security token;
+* OAuth access tokens are cached in-process and re-used until ~60s
+  before their declared expiry;
+* a `401` from the SOQL endpoint automatically drops the cached token
+  so the next cycle re-auths.
+
 # Installation to Automatically Start on Bootupt
 
 ## Automatic Installer

@@ -42,6 +42,20 @@
         "TEXT": "Steam Presence on Discord"
     },
 
+    "SALESFORCE": {
+        "ENABLED": false,
+        "LOGIN_URL": "https://login.salesforce.com",
+        "AUTH_FLOW": "client_credentials",
+        "CLIENT_ID": "SALESFORCE_CLIENT_ID",
+        "CLIENT_SECRET": "SALESFORCE_CLIENT_SECRET",
+        "SOQL": "SELECT Id, Name FROM Account ORDER BY LastModifiedDate DESC LIMIT 1",
+        "NAME_FIELD": "Name",
+        "STATE_FIELD": "",
+        "DETAILS_FIELD": "",
+        "ICON_URL": "",
+        "ICON_TEXT": "Salesforce"
+    },
+
     "BLACKLIST": [
     	"game1",
     	"game2",

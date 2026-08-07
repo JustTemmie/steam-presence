@@ -24,15 +24,18 @@ try:
 
     # used to get the game's cover art
     from steamgrid import SteamGridDB
-    
+
     # used as a backup when cover art
     from bs4 import BeautifulSoup
-    
+
     # used to check applications that are open locally
     import psutil
-    
+
     # used to load cookies for non-steam games
     import http.cookiejar as cookielib
+
+    # optional Salesforce -> Discord presence bridge, see salesforce.py
+    import salesforce
 
 except:
     answer = input("looks like either requests, pypresence, steamgrid, psutil, or beautifulSoup is not installed, do you want to install them? (y/n) ")
@@ -47,7 +50,8 @@ except:
         import psutil
         import requests
         import http.cookiejar as cookielib
-        
+        import salesforce
+
         print("\npackages installed and imported successfully!")
 
 # just shorthand for logs and errors - easier to write in script
@@ -155,7 +159,26 @@ def getConfigFile():
             "URL": "https://raw.githubusercontent.com/JustTemmie/steam-presence/main/readmeimages/defaulticon.png",
             "TEXT": "Steam Presence on Discord"
         },
-  
+
+        # Optional Salesforce -> Discord presence bridge. Disabled by default.
+        # When ENABLED is true and no Steam/local/webscraped game is detected,
+        # the script runs the configured SOQL query and uses the first record
+        # to drive the Discord presence. See salesforce.py for the full
+        # configuration reference.
+        "SALESFORCE": {
+            "ENABLED": False,
+            "LOGIN_URL": "https://login.salesforce.com",
+            "AUTH_FLOW": "client_credentials",
+            "CLIENT_ID": "SALESFORCE_CLIENT_ID",
+            "CLIENT_SECRET": "SALESFORCE_CLIENT_SECRET",
+            "SOQL": "SELECT Id, Name FROM Account ORDER BY LastModifiedDate DESC LIMIT 1",
+            "NAME_FIELD": "Name",
+            "STATE_FIELD": "",
+            "DETAILS_FIELD": "",
+            "ICON_URL": "",
+            "ICON_TEXT": "Salesforce"
+        },
+
         "BLACKLIST" : [
             "game1",
             "game2",
@@ -416,9 +439,16 @@ def getGameReviews():
 def getGameImage():
     global coverImage
     global coverImageText
-    
+    global isPlayingSalesforceRecord
+
+    # Salesforce-driven presences already have their own icon URL supplied
+    # through `salesforce.fetch_presence`; there is no Steam store / SGDB
+    # lookup that makes sense for them.
+    if isPlayingSalesforceRecord:
+        return
+
     coverImage = ""
-    
+
     log(f"fetching icon for {gameName}")
     
     # checks if there's already an existing icon saved to disk for the game 
@@ -834,7 +864,42 @@ def getLocalPresence():
     gameName = processName.title()
     startTime = processCreationTime
 
-    
+
+# pulls a Salesforce record into the same globals `getSteamPresence` and
+# `getLocalPresence` populate. Returns silently when the integration is
+# disabled, when the SOQL query returns no records, or on any upstream
+# error (already logged by `salesforce.fetch_presence`).
+def getSalesforcePresence():
+    global isPlayingSteamGame
+    global isPlayingLocalGame
+    global gameName
+    global gameRichPresence
+    global coverImage
+    global coverImageText
+    global isPlayingSalesforceRecord
+
+    config = getConfigFile()
+    salesforceConfig = config.get("SALESFORCE") or {}
+    if not salesforceConfig.get("ENABLED"):
+        return
+
+    # If the user disabled SOQL or left the client id blank, do nothing
+    # rather than failing every cycle.
+    if not salesforceConfig.get("SOQL") or not salesforceConfig.get("CLIENT_ID"):
+        return
+
+    presence = salesforce.fetch_presence(salesforceConfig)
+    if presence is None:
+        return
+
+    gameName = presence["name"]
+    gameRichPresence = presence.get("state", "")
+    coverImage = presence.get("icon_url") or coverImage
+    coverImageText = presence.get("icon_text") or coverImageText
+    isPlayingSteamGame = False
+    isPlayingLocalGame = False
+    isPlayingSalesforceRecord = True
+
 
 def setPresenceDetails():
     global activeRichPresence
@@ -1045,6 +1110,7 @@ def main():
     global isPlaying
     global isPlayingLocalGame
     global isPlayingSteamGame
+    global isPlayingSalesforceRecord
     
     global coverImage
     global coverImageText
@@ -1113,6 +1179,7 @@ def main():
     isPlaying = False
     isPlayingLocalGame = False
     isPlayingSteamGame = False
+    isPlayingSalesforceRecord = False
     startTime = 0
     coverImage = None
     coverImageText = None
@@ -1177,6 +1244,9 @@ def main():
             
             if gameName == "" and doWebScraping:
                 getWebScrapePresence()
+
+            if gameName == "" and config.get("SALESFORCE", {}).get("ENABLED"):
+                getSalesforcePresence()
         
             if doSteamRichPresence and isPlayingSteamGame:
                 getSteamRichPresence()        
@@ -1184,15 +1254,19 @@ def main():
             
         # if the game has changed
         if previousGameName != gameName:
-            # try finding the game on steam, and saving it's ID to `gameSteamID` 
-            getGameSteamID()
-            
-            # fetch the steam reviews if enabled
-            if fetchSteamReviews:
-                if gameName != "" and gameSteamID != 0:
-                    getGameReviews()
-                else:
-                    gameReviewScore = 0
+            # Steam-side lookups only make sense for actual Steam games; the
+            # Salesforce integration drives its own presence without ever
+            # touching the Steam store API.
+            if not isPlayingSalesforceRecord:
+                # try finding the game on steam, and saving it's ID to `gameSteamID`
+                getGameSteamID()
+
+                # fetch the steam reviews if enabled
+                if fetchSteamReviews:
+                    if gameName != "" and gameSteamID != 0:
+                        getGameReviews()
+                    else:
+                        gameReviewScore = 0
                 
             # if the game has been closed
             if gameName == "":
@@ -1224,9 +1298,15 @@ def main():
     
                 log(f"game changed, updating to '{gameName}'")
 
-                # fetch the new app ID
-                getGameDiscordID()
-                
+                # Salesforce-driven presences do not need a Discord game-ID
+                # lookup - use the default application ID so the pypresence
+                # client can still connect.
+                if isPlayingSalesforceRecord:
+                    appID = defaultAppID
+                else:
+                    # fetch the new app ID
+                    getGameDiscordID()
+
                 # get cover image
                 getGameImage()
                 
