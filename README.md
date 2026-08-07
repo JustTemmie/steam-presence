@@ -90,7 +90,70 @@ follow the **setup** guide
 
 and for linux users, run the [Installer](#automatic-installer)
 
-for Nix/NixOS users, see the [Nix/NixOS](#nixnixos) section at the bottom.
+### Docker
+
+Alternatively you can build a docker image after cloning the repository. 
+
+```
+docker build -t steam-presence:latest .
+```
+
+To run it you need to mount the path where the Discord socket file is. This might vary depending on your setup (and I'm not sure what the steps in Windows would be) but in a Linux install you can echo the content of `$XDG_RUNTIME_DIR` then mount that in the container. 
+
+You should also mount your `config.json` file. 
+
+```
+docker run -e XDG_RUNTIME_DIR='/run/app' -v ~/path/to/steam-presence/config.json:/app/config.json -v /run/user/1000:/run/app:ro steam-presence:latest
+```
+
+Here we are assuming `$XDG_RUNTIME_DIR=/run/user/1000`. 
+
+#### Docker + Discord in Docker as well
+
+You can run Discord itself in a docker container as an alternative to not have to install the Discord client on the host system. Be aware though that depending on the container you use resource usage can vary wildly. 
+
+Here's an example using the Discord container provided by KASM. 
+
+```
+services:
+  kasm-discord:
+    container_name: kasm-discord
+    image: kasmweb/discord:1.14.0
+    restart: unless-stopped
+    ports:
+      - 6901:6901
+    shm_size: 512m
+    environment:
+      VNC_PW: password
+      XDG_RUNTIME_DIR: /run/user/1000
+    volumes:
+      - ./docker-data/kasm-discord/socket:/run/user/1000
+      - ./docker-data/kasm-discord/config/discord:/home/kasm-user/.config/discord
+    user: "0"
+    entrypoint: sh -c "chmod 700 /run/user/1000 && chown -R kasm-user:kasm-user /run/user/1000 && su kasm-user -c '/dockerstartup/kasm_default_profile.sh /dockerstartup/vnc_startup.sh /dockerstartup/kasm_startup.sh'"
+
+  steam-presence:
+    container_name: steam-presence
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      XDG_RUNTIME_DIR: /run/user/1000
+    volumes:
+      - ./docker-data/steam-presence/config.json:/app/config.json
+      - ./docker-data/kasm-discord/socket:/run/user/1000:ro
+    depends_on:
+      - kasm-discord
+```
+
+Save that into a `docker-compose.yaml` file then do `docker compose up -d` to run it, dettach it and set it so that it auto-runs on system startup. 
+
+After that go into `https://<IP>:6901`, log in with `kasm_user` and the password you used in `VNC_PW`. From there you can log into your Discord account and it should work. 
+
+For the `steam-presence` container you need to mount your `config.json` file as indicated in the example. 
+
+For Nix/NixOS users, see the [Nix/NixOS](#nixnixos) section at the bottom.
 
 ## Setup
 ### Minimal

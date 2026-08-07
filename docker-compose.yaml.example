@@ -1,0 +1,30 @@
+services:
+  kasm-discord:
+    container_name: kasm-discord
+    image: kasmweb/discord:1.14.0
+    restart: unless-stopped
+    ports:
+      - 6901:6901
+    shm_size: 512m
+    environment:
+      VNC_PW: password
+      XDG_RUNTIME_DIR: /run/user/1000
+    volumes:
+      - ./docker-data/kasm-discord/socket:/run/user/1000
+      - ./docker-data/kasm-discord/config/discord:/home/kasm-user/.config/discord
+    user: "0"
+    entrypoint: sh -c "chmod 700 /run/user/1000 && chown -R kasm-user:kasm-user /run/user/1000 && su kasm-user -c '/dockerstartup/kasm_default_profile.sh /dockerstartup/vnc_startup.sh /dockerstartup/kasm_startup.sh'"
+
+  steam-presence:
+    container_name: steam-presence
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      XDG_RUNTIME_DIR: /run/user/1000
+    volumes:
+      - ./docker-data/steam-presence/config.json:/app/config.json
+      - ./docker-data/kasm-discord/socket:/run/user/1000:ro
+    depends_on:
+      - kasm-discord
