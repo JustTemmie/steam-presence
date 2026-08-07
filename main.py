@@ -61,7 +61,12 @@ def error(error):
 # this just seems to sometimes happens if your network conection is a bit wack, this function is a replacement for requests.get() and basically just does error handling and stuff
 def makeWebRequest(URL, loops=0):
     try:
-        r = requests.get(URL)
+        r = requests.get(
+            URL,
+            headers = {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"
+            }
+        )
         return r
     except Exception as e:
         if loops > 10:
