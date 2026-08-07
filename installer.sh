@@ -27,7 +27,7 @@ for file in games.txt icons.txt customGameIDs.json; do
 done
 
 echo "Setting up virtual environment"
-mkdir venv
+mkdir -p venv
 cd venv
 python3 -m venv .
 ./bin/python -m pip install --upgrade pip wheel
