@@ -2,12 +2,55 @@ import logging
 import json
 
 import os.path
-from typing import Optional
+from typing import Optional, Callable, ClassVar, Any
 from dataclasses import dataclass
+from pathlib import Path
 
 from pypresence import ActivityType, StatusDisplayType
+    
+# converters: raw text -> typed value
+def _to_str(text: str) -> str:
+    return text
 
-class GenericConfig:
+def _to_optional_str(text: str) -> str | None:
+    return text or None
+
+def _to_int(text: str) -> int:
+    try:
+        return int(text)
+    except ValueError:
+        return 0
+
+# used to support loading varibles from path, such as api keys
+class PathBacked:
+    def _as_path(self, value: object) -> Path | None:
+        if value is None:
+            return None
+        return value if isinstance(value, Path) else Path(str(value))
+
+
+    def _read_text(self, path: Path | None) -> str:
+        if path is None:
+            return ""
+        try:
+            return path.expanduser().read_text(encoding="utf-8").strip()
+        except (OSError, UnicodeDecodeError):
+            return ""
+
+    _path_fields: ClassVar[dict[str, tuple[str, Callable[[str], Any]]]] = {}
+
+    def __setattr__(self, name: str, value: object) -> None:
+        spec = type(self)._path_fields.get(name)
+        if spec is None:
+            object.__setattr__(self, name, value)
+            return
+        value_field, convert = spec
+        path = self._as_path(value)
+        object.__setattr__(self, name, path)
+        object.__setattr__(self, value_field, convert(self._read_text(path)))
+
+
+class GenericConfig(PathBacked):
     def initialize(self, update: dict):
         data = _deep_merge(self.__dict__, update)
 
@@ -105,10 +148,15 @@ class ConfigDiscord(GenericConfig):
         }
 
 class ConfigSteamGridDB(GenericConfig):
+    _path_fields: ClassVar = {
+        "api_key_path": ("api_key", _to_str),
+    }
+
     def __init__(self):
         self.enabled: bool = False
         # get an api key here https://www.steamgriddb.com/profile/preferences/api
         self.api_key: str = "NONE"
+        self.api_key_path: Path | None = None
         # used to overwrite name to steamgridDB IDs
         # useful in cases where the wrong app appears for a search
         # for example, blender bros being above blender (program)
@@ -119,7 +167,7 @@ class ConfigSteamGridDB(GenericConfig):
             }
         ]
 
-class ConfigSteam(GenericConfig):
+class ConfigSteam(GenericConfig): 
     def __init__(self):
         # wheter or not to enable steam support
         self.enabled: bool = False
@@ -313,6 +361,7 @@ def _deep_merge(original, update):
     return original
 
 
+
 @dataclass
 class DiscordImage:
     image: Optional[str] = None
@@ -334,24 +383,53 @@ class DiscordData:
     buttons: list[DiscordButton]
 
 @dataclass
-class SteamUser:
+class SteamUser(PathBacked):
     api_key: str = ""
     user_id: int = 0
+
     # web_scrape: bool = False
     # auto_fetch_cookies: bool = False
     # cookie_browser: str = ""
 
+    api_key_path: Path | None = None
+    user_id_path: Path | None = None
+
+    _path_fields: ClassVar = {
+        "api_key_path": ("api_key", _to_str),
+        "user_id_path": ("user_id", _to_int),
+    }
+
 @dataclass
-class JellyfinInstance:
+class JellyfinInstance(PathBacked):
     api_key: str = ""
     username: str = ""
     server_url: str = ""
     public_url: Optional[str] = None
 
+    api_key_path: Path | None = None
+    username_path: Path | None = None
+    server_url_path: Path | None = None
+    public_url_path: Path | None = None
+
+    _path_fields: ClassVar = {
+        "api_key_path": ("api_key", _to_str),
+        "username_path": ("username", _to_str),
+        "server_url_path": ("server_url", _to_str),
+        "public_url_path": ("public_url", _to_optional_str),
+    }
+
 @dataclass
-class LastFmUser:
+class LastFmUser(PathBacked):
     api_key: str = ""
     username: str = ""
+
+    api_key_path: Path | None = None
+    username_path: Path | None = None
+
+    _path_fields: ClassVar = {
+        "api_key_path": ("api_key", _to_str),
+        "username_path": ("username", _to_str),
+    }
 
 @dataclass
 class LocalProcess:
