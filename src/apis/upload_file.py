@@ -33,7 +33,7 @@ def upload_catbox_file(
         with open(file_path, "rb") as f:
             files = {"fileToUpload": (file_path, f)}
             logging.debug("Uploading to catbox: %s", file_path)
-            response = requests.post(url, data=data, files=files, timeout=120)
+            response = requests.post(url, data=data, files=files, timeout=30)
 
         response.raise_for_status()
         logging.info("Successful catbox upload: %s", file_path)
@@ -62,7 +62,7 @@ def upload_uguu_file(
         with open(file_path, "rb") as f:
             files = {"files[]": (file_path, f)}
             logging.debug("Uploading to uguu: %s", file_path)
-            response = requests.post(url, files=files, timeout=120)
+            response = requests.post(url, files=files, timeout=30)
             logging.info("Sucessful uguu upload: %s", file_path)
 
         response.raise_for_status()
