@@ -91,11 +91,17 @@ class SteamAPI:
     
     # returns html data or None
     def fetch_mini_profile_data(self) -> fetchMiniProfileDataResponse:
+        # this needs doesn't work anymore, needs authentication
+
+
         # convert steam ID 64 to steam ID 3, yes, really
         url = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"
         r = fetch(
             url,
-            cache_ttl=60
+            cache_ttl=360,
+            headers = {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64)"
+            }
         )
 
         if not r:
@@ -115,8 +121,11 @@ class SteamAPI:
         profile_badge_url = soup.find("img", class_="badge_icon").get("src")
 
         video = soup.find('video', class_='miniprofile_nameplate')
-        background_source = video.find('source', type='video/webm')
-        background_url = background_source.get("src")
+        if video:
+            background_source = video.find('source', type='video/webm')
+            background_url = background_source.get("src")
+        else:
+            background_url = None
 
         badge_container = soup.find('div', class_='miniprofile_featuredcontainer')
         badge_name = badge_container.find('div', class_='name').text.strip() if badge_container else None
