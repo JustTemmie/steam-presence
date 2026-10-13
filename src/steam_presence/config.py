@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pypresence import ActivityType, StatusDisplayType
 
 class GenericConfig:
-    def load(self, update: dict):
+    def initialize(self, update: dict):
         data = _deep_merge(self.__dict__, update)
 
         for key, value in data.items():
@@ -228,7 +228,7 @@ class ConfigMpd(GenericConfig):
         self.password: Optional[str] = None
         self.music_brainz: bool = False
         
-        self.music_library_base_path: Optional[str] = "~/Music" # only used by catbox
+        self.music_library_base_path: Optional[str] = "~/Music" # only used to read album art
         self.catbox: bool = False
         self.uguu: bool = False
 
@@ -383,22 +383,18 @@ class Config:
             with open(config_path, "r", encoding="utf-8", errors="replace") as f:
                 config = json.load(f)
         except FileNotFoundError as e:
-            if self.app:
-                logging.warning("couldn't find config, skipping reload")
-                return
-            else:
-                logging.error("could not find a config path at '%s' - exiting\n%s", config_path, e)
-                exit()
+            logging.warning("couldn't find config at '%s', skipping reload\n%s", config_path, e)
+            return
 
-        self.app.load(config.get("app", {}))
-        self.discord.load(config.get("discord", {}))
-        self.steam_grid_db.load(config.get("steam_grid_db", {}))
-        self.steam.load(config.get("steam", {}))
-        self.epic_games_store.load(config.get("epic_games_store", {}))
-        self.jellyfin.load(config.get("jellyfin", {}))
-        self.local.load(config.get("local", {}))
-        self.mpd.load(config.get("mpd", {}))
-        self.last_fm.load(config.get("last_fm", {}))
+        self.app.initialize(config.get("app", {}))
+        self.discord.initialize(config.get("discord", {}))
+        self.steam_grid_db.initialize(config.get("steam_grid_db", {}))
+        self.steam.initialize(config.get("steam", {}))
+        self.epic_games_store.initialize(config.get("epic_games_store", {}))
+        self.jellyfin.initialize(config.get("jellyfin", {}))
+        self.local.initialize(config.get("local", {}))
+        self.mpd.initialize(config.get("mpd", {}))
+        self.last_fm.initialize(config.get("last_fm", {}))
 
 
         if self.mpd.music_library_base_path.startswith("~"):

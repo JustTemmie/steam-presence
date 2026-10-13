@@ -8,6 +8,7 @@ import src.steam_presence.misc as steam_presence
 
 from src.setters.DiscordRPC import DiscordRPC
 from src.steam_presence.config import Config
+from src.steam_presence.command_line_args import args
 
 from src.steam_presence.per_platform_cycle.jellyfin import run_jellyfin_cycle
 from src.steam_presence.per_platform_cycle.last_fm import run_last_fm_cycle
@@ -18,8 +19,14 @@ from src.steam_presence.per_platform_cycle.steam import run_steam_cycle
 logger.initialize()
 logging.info("Starting setup!")
 
+def _load_config():
+    config_args = {}
+    if getattr(args, "config", None):
+        config_args["config_path"] = args.config
+    config.load(**config_args)
+
 config = Config()
-config.load()
+_load_config()
 
 class ServiceCooldown:
     """
@@ -54,7 +61,7 @@ print("–" * steam_presence.get_terminal_width())
 
 while True:
     cycle_start_time = time.time()
-    config.load() # reload
+    _load_config() # reload
 
     if config.mpd.enabled and service_cooldowns.mpd.is_ready():
         run_mpd_cycle(RPC_connections, config)
