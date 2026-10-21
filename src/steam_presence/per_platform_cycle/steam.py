@@ -22,9 +22,9 @@ def run_steam_cycle(RPC_connections, config: Config, ):
         return
 
     if len(STEAM_GETTERS) == 0:
-        logging.info("Instancing Steam getters")
         for user in config.steam.users:
             user = SteamUser(**user)
+            logging.info("Instancing Steam getter for %s", user.user_id)
             STEAM_GETTERS.append(SteamGetter(config, user))
 
     for steam_game in [getter.fetch() for getter in STEAM_GETTERS]:

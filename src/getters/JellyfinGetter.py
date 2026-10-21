@@ -16,9 +16,11 @@ class JellyfinGetter:
 
     def fetch(self) -> JellyfinFetchPayload:
         logging.debug("Fetching jellyfin information")
-
-        url = f"{self.server_url}/Sessions?api_key={self.api_key}"
-        r = fetch(url)
+        url = f"{self.server_url}/Sessions"
+        headers = {
+            "Authorization": f'MediaBrowser Token="{self.api_key}"',
+        }
+        r = fetch(url, headers=headers)
 
         if not r:
             logging.warning("failed to fetch jellyfin session for %s", self.username)

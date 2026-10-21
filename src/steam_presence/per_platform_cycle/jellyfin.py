@@ -22,9 +22,9 @@ def run_jellyfin_cycle(RPC_connections, config: Config):
         return
 
     if len(JELLYFIN_GETTERS) == 0:
-        logging.info("Instancing Jellyfin getters")
         for instance in config.jellyfin.instances:
             instance = JellyfinInstance(**instance)
+            logging.info("Instancing Jellyfin getter for %s", instance.username)
             JELLYFIN_GETTERS.append(JellyfinGetter(config, instance))
 
     for jellyfin_session in [getter.fetch() for getter in JELLYFIN_GETTERS]:

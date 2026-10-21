@@ -3,6 +3,7 @@ import time
 
 from typing import Dict, Tuple, Optional
 import requests
+import logging
 
 _CACHE: Dict[str, Tuple[requests.Response, float]] = {}
 _LOCK = __import__('threading').RLock()
@@ -54,6 +55,8 @@ def fetch(
             headers = headers,
             timeout = 5
         )
+
+        logging.debug("fetching:", r.status_code, url)
 
         if r.status_code != 200:
             return

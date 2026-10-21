@@ -195,7 +195,6 @@ class DiscordRPC:
         if len(status_lines) >= 2:
             self.state = status_lines[1]
 
-
         small_image_status_data: list[DiscordImage] = [
             DiscordImage(**field) for field in self.status_data.get("small_images", [])
         ]
@@ -288,7 +287,7 @@ class DiscordRPC:
         if self.get_time_since_timeout() > 0:
             self.clear_RPC()
             return False
-
+        
         if self.config.discord.enabled:
             try:
                 self.discord_RPC.update(

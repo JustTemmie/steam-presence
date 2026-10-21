@@ -41,9 +41,13 @@ class PathBacked:
 
     def __setattr__(self, name: str, value: object) -> None:
         spec = type(self)._path_fields.get(name)
-        if spec is None:
+        if spec is None: # if it's not a path value
             object.__setattr__(self, name, value)
             return
+
+        if value is None:
+            return
+
         value_field, convert = spec
         path = self._as_path(value)
         object.__setattr__(self, name, path)
@@ -169,7 +173,7 @@ class ConfigSteamGridDB(GenericConfig):
 
 class ConfigSteam(GenericConfig): 
     def __init__(self):
-        # wheter or not to enable steam support
+        # whether or not to enable steam support
         self.enabled: bool = False
         # minimum duration in seconds between api calls, set to avoid rate limiting
         self.cooldown: int = 25

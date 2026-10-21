@@ -21,9 +21,9 @@ def run_last_fm_cycle(RPC_connections, config: Config):
         return
 
     if len(LAST_FM_GETTERS) == 0:
-        logging.info("Instancing Last.fm getters")
         for user in config.last_fm.users:
             user = LastFmUser(**user)
+            logging.info("Instancing Last.fm getter for %s", user.username)
             LAST_FM_GETTERS.append(LastFmGetter(config, user))
 
     for last_fm_session in [getter.fetch() for getter in LAST_FM_GETTERS]:

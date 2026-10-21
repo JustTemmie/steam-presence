@@ -88,11 +88,11 @@ class SteamAPI:
             display_name=player_summary.get("personaname"),
             profile_url=player_summary.get("profileurl")
         )
-    
+
     # returns html data or None
     def fetch_mini_profile_data(self) -> fetchMiniProfileDataResponse:
-        # this needs doesn't work anymore, needs authentication
-
+        # ~~this needs doesn't work anymore, needs authentication~~
+        # this, sometimes works?
 
         # convert steam ID 64 to steam ID 3, yes, really
         url = f"https://steamcommunity.com/miniprofile/{self.user.user_id - 76561197960265728}"

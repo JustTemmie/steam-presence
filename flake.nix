@@ -2,7 +2,7 @@
   description = "steam-presence — Discord Rich Presence for Steam, Last.fm, Jellyfin, MPD and local games";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # or nixos-26.05
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
