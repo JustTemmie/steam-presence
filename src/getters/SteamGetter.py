@@ -1,5 +1,6 @@
 import logging
 
+import requests
 from math import floor
 from dataclasses import dataclass
 from typing import Union, Optional
@@ -225,9 +226,14 @@ class SteamAPI:
             logging.warning("failed to fetch app reviews for %s", app_id)
             return fetchAppReviewsResponse()
 
-        data = r.json()
-        if not data:
-            return fetchAppReviewsResponse()
+        try:
+            data = r.json()
+            if not data:
+                return fetchAppReviewsResponse()
+        except requests.exceptions.JSONDecodeError:
+            logging.warning("failed to decode JSON, returning")
+            return
+            
 
         data = data.get("query_summary", {})
 
