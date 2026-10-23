@@ -232,7 +232,7 @@ class SteamAPI:
                 return fetchAppReviewsResponse()
         except requests.exceptions.JSONDecodeError:
             logging.warning("failed to decode JSON, returning")
-            return
+            return fetchAppReviewsResponse()
             
 
         data = data.get("query_summary", {})
