@@ -92,18 +92,17 @@ Below is each entries default config data
 <details open>
 <summary><h3>Steam Config (Recommended)</h3></summary>
 
-<details open>
-<summary><h4>Minimum Config</h4></summary>
+<h4>Required values</h4>
+
 ```jsonc
 // set this to true
 "enabled": false
 // see SteamUser for more info
 "users": [] 
 ```
-</details>
 
-<details>
-<summary><h4>Advanced settings</h4></summary>
+<h4>Optional settings</h4>
+
 ```jsonc
 // I don't recommend changing
 "cooldown": 25
@@ -125,8 +124,6 @@ Below is each entries default config data
     ]
 }
 ```
-</details>
-
 </details>
 
 <details>
