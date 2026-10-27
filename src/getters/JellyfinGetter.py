@@ -11,8 +11,15 @@ class JellyfinGetter:
 
         self.api_key = instance.api_key
         self.username = instance.username
-        self.server_url = instance.server_url
         self.public_url = instance.public_url
+        self.server_url = instance.server_url or instance.public_url
+
+        if not self.api_key:
+            logging.warning("No api key is defined in jellyfin instance")
+        if not self.username:
+            logging.warning("No username is defined in jellyfin instance")
+        if not self.server_url:
+            logging.warning("No server url is defined in jellyfin instance")
 
     def fetch(self) -> JellyfinFetchPayload:
         logging.debug("Fetching jellyfin information")

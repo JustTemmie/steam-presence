@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pypresence import ActivityType, StatusDisplayType
-    
+
 # converters: raw text -> typed value
 def _to_str(text: str) -> str:
     return text
@@ -279,7 +279,7 @@ class ConfigMpd(GenericConfig):
         self.server_url: str = "localhost:6600"
         self.password: Optional[str] = None
         self.music_brainz: bool = False
-        
+
         self.music_library_base_path: Optional[str] = "~/Music" # only used to read album art
         self.catbox: bool = False
         self.uguu: bool = False
