@@ -92,11 +92,23 @@ Below is each entries default config data
 <details open>
 <summary><h3>Steam Config (Recommended)</h3></summary>
 
+<details open>
+<summary><h4>Minimum Config</h4></summary>
 ```jsonc
-"enabled": false // should probably be set to true
-"cooldown": 25 // I don't recommend changing
-"users": [] // see SteamUser for more info
-"inject_discord_status_data": true // probably shouldn't be touched
+// set this to true
+"enabled": false
+// see SteamUser for more info
+"users": [] 
+```
+</details>
+
+<details>
+<summary><h4>Advanced settings</h4></summary>
+```jsonc
+// I don't recommend changing
+"cooldown": 25
+// power users only, see code for implementation details 
+"inject_discord_status_data": true
 
 // see DiscordData for more info
 "discord_status_data": {
@@ -113,6 +125,7 @@ Below is each entries default config data
     ]
 }
 ```
+</details>
 
 </details>
 
