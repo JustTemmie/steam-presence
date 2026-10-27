@@ -63,23 +63,26 @@ while True:
     cycle_start_time = time.time()
     _load_config() # reload
 
-    if config.mpd.enabled and service_cooldowns.mpd.is_ready():
-        run_mpd_cycle(RPC_connections, config)
+    def _run_service(name, function):
+        section = getattr(config, name, None)
+        cooldown = getattr(service_cooldowns, name, None)
+        if section is None or cooldown is None:
+            logging.error("Unknown section %s", name)
+            return
+        if not (section.enabled and cooldown.is_ready()):
+            return
+        try:
+            function(RPC_connections, config)
+        except Exception as e:
+            logging.warning("Failed to run %s: %s", name, e)
 
-    if config.local.enabled and service_cooldowns.local.is_ready():
-        run_local_cycle(RPC_connections, config)
-
-    if config.jellyfin.enabled and service_cooldowns.jellyfin.is_ready():
-        run_jellyfin_cycle(RPC_connections, config)
-
-    if config.last_fm.enabled and service_cooldowns.last_fm.is_ready():
-        run_last_fm_cycle(RPC_connections, config)
-
-    if config.steam.enabled and service_cooldowns.steam.is_ready():
-        run_steam_cycle(RPC_connections, config)
+    _run_service("mpd", run_mpd_cycle)
+    _run_service("local", run_local_cycle)
+    _run_service("jellyfin", run_jellyfin_cycle)
+    _run_service("last_fm", run_last_fm_cycle)
+    _run_service("steam", run_steam_cycle)
 
     logging.debug("Processing complete!")
-
 
     expired_IDs: list[Union[int, str]] = []
     for identifier, connection in RPC_connections.items():
