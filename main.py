@@ -582,6 +582,8 @@ def getSteamPresence():
                 gameSteamID = int(sorted_response[i]["gameid"])
             return game_title
 
+    # nobody is playing anything on steam, so the steam app ID of a previous game must not be used anymore
+    isPlayingSteamGame = False
     return ""
 
 # webscrape the "enhanced" rich presence information for your profile
@@ -664,6 +666,7 @@ def getGameDiscordID(loops=0):
         response = r.json()
     
     ignoredChars = "®©™℠"
+    customGameNames = []
     
     # check if the "customGameIDs.json" file exists, if so, open it
     if exists(f"{dirname(abspath(__file__))}/data/customGameIDs.json"):
@@ -675,12 +678,27 @@ def getGameDiscordID(loops=0):
             
             # add the values from the file directly to the list returned by discord
             for i in gameIDsFile:
+                customGameNames.append(removeChars(i.lower(), ignoredChars))
                 response.append({
                     "name": i,
                     "id": gameIDsFile[i]
                 })
             
     global appID
+    
+    # prefer matching by steam app ID, discord lists it in the "third_party_skus" of a game
+    # this avoids mismatches caused by Discord and Steam naming the same game differently
+    # only done if the game was detected thru steam's API, as `gameSteamID` might be outdated otherwise
+    # skipped if the user added a custom ID for this game, as that should always take priority
+    if isPlayingSteamGame and gameSteamID and removeChars(gameName.lower(), ignoredChars) not in customGameNames:
+        for i in response:
+            for sku in i.get("third_party_skus") or []:
+                if sku.get("distributor") == "steam" and str(sku.get("id")) == str(gameSteamID):
+                    log(f"found the discord game ID for {gameName} via its steam app ID {gameSteamID} ({i['name']})")
+                    appID = i["id"]
+                    return
+
+        log(f"could not find the discord game ID for {gameName} via its steam app ID {gameSteamID}, falling back to matching by name")
     
     # loop thru all games
     for i in response:
