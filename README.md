@@ -209,7 +209,7 @@ and then taking the ID from that url
 # Discord Application ID
 the `DISCORD_APPLICATION_ID` is the discord application ID of the app you want to use.
 
-please generate one here https://discordapp.com/developers/applications/ or use mine "869994714093465680"
+please generate one here https://discord.com/developers/applications/ or use mine "869994714093465680"
 
 the only thing you need to fill out on their site is the application name itself.
 
@@ -252,7 +252,7 @@ this will make the script scan for games running locally
 
 this is the application ID of the app you want to show up whenever you're playing a game that was detected locally. if you want to, this can be the same as the other default app ID
 
-please generate one here https://discordapp.com/developers/applications/ or use mine "1062648118375616594"
+please generate one here https://discord.com/developers/applications/ or use mine "1062648118375616594"
 
 the only thing you need to fill out on their site is the application name itself.
 
